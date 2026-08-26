@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: '',  // Same origin — proxied by Cloudflare Pages to the Worker
+  // Replace with your deployed Worker URL:
+  // Cloudflare dashboard → Workers & Pages → ai-dnd-worker → copy the workers.dev URL
+  apiUrl: 'https://ai-dnd-worker.ai-dnd.workers.dev',
 };

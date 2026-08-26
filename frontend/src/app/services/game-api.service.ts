@@ -6,17 +6,12 @@ import type {
   LogEntry, CampaignSlot, InventoryEntry,
 } from '../models/game.models';
 import type { CharacterClass, Race, AbilityKey } from '../models/game.models';
+import { environment } from '../../environments/environment';
 
-// In dev, Wrangler runs on :8787. In production, same origin via Cloudflare Pages proxy.
-// Cast to any to avoid TypeScript complaining about process in browser context.
-const envApiUrl = (typeof (globalThis as any)['process'] !== 'undefined')
-  ? (globalThis as any)['process']?.env?.['NG_APP_API_URL'] as string | undefined
-  : undefined;
-const API_BASE = envApiUrl
-  ? envApiUrl
-  : (window.location.origin.includes('localhost')
-      ? 'http://localhost:8787'
-      : window.location.origin);
+// In dev, environment.apiUrl = 'http://localhost:8787'.
+// In production, Angular's fileReplacements swaps environment.ts → environment.prod.ts
+// at build time, so environment.apiUrl is the deployed Worker URL with no runtime env vars needed.
+const API_BASE: string = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
 export class GameApiService {

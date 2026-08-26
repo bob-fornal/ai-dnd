@@ -17,8 +17,19 @@ const app = new Hono<{ Bindings: Env }>();
 app.use('*', logger());
 
 app.use('*', cors({
-  origin: ['http://localhost:4200', 'https://*.pages.dev', 'https://*.workers.dev'],
-  allowMethods: ['GET', 'POST', 'OPTIONS'],
+  // Hono treats array entries as exact strings — use a function for wildcard subdomains.
+  origin: (origin) => {
+    if (!origin) return null;
+    if (
+      origin === 'http://localhost:4200' ||
+      origin.endsWith('.pages.dev') ||       // *.pages.dev (any depth)
+      origin.endsWith('.workers.dev')        // *.workers.dev (any depth)
+    ) {
+      return origin;
+    }
+    return null;
+  },
+  allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   maxAge: 86400,
 }));

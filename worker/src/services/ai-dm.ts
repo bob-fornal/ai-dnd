@@ -90,35 +90,42 @@ export async function askDM(
   let rawText = '';
 
   try {
-    const response = await ai.run('@cf/meta/llama-3.1-8b-instruct', {
+    const response = await (ai as any).run('@cf/meta/llama-3.1-8b-instruct', {
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user',   content: userPrompt },
       ],
       max_tokens: 1024,
       temperature: 0.85,
-    }) as { response?: string } | ReadableStream;
+      response_format: { type: 'json_object' }, // force structured JSON output
+    });
 
     if (response instanceof ReadableStream) {
-      // Shouldn't happen with non-streaming calls, but guard it
       throw new Error('Unexpected streaming response from Worker AI');
     }
-    // Guard: local Wrangler stub may return a non-string value; coerce defensively
     const raw = (response as any).response;
-    rawText = typeof raw === 'string' ? raw : '';
+    rawText = typeof raw === 'string' ? raw
+            : typeof response === 'string' ? response   // some model versions return string directly
+            : '';
+    console.log('[askDM] llama raw length:', rawText.length);
   } catch (err) {
+    console.error('[askDM] llama failed, trying mistral:', err);
     // Fallback: try mistral
     try {
-      const fallback = await ai.run('@cf/mistral/mistral-7b-instruct-v0.1', {
+      const fallback = await (ai as any).run('@cf/mistral/mistral-7b-instruct-v0.1', {
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user',   content: userPrompt },
         ],
         max_tokens: 1024,
-      }) as { response?: string };
+      });
       const raw2 = (fallback as any).response;
-      rawText = typeof raw2 === 'string' ? raw2 : '';
-    } catch {
+      rawText = typeof raw2 === 'string' ? raw2
+              : typeof fallback === 'string' ? fallback
+              : '';
+      console.log('[askDM] mistral raw length:', rawText.length);
+    } catch (err2) {
+      console.error('[askDM] mistral also failed:', err2);
       return fallbackNarrative(playerAction);
     }
   }
@@ -128,16 +135,28 @@ export async function askDM(
 
 // ─── Parse & validate AI response ────────────────────────────────────────────
 function parseAIResponse(raw: string, playerAction: string): AIDMResponse {
-  // Guard against non-string values from the local Wrangler dev AI stub
+  // Guard against non-string or empty values
   if (typeof raw !== 'string' || raw.trim().length === 0) {
     return fallbackNarrative(playerAction);
   }
 
-  // Strip any accidental markdown fences
-  const cleaned = raw
-    .replace(/^```(?:json)?\s*/i, '')
-    .replace(/\s*```$/i, '')
+  // 1. Strip markdown fences (```json … ```)
+  let cleaned = raw
+    .replace(/^```(?:json)?\s*/im, '')
+    .replace(/\s*```\s*$/im, '')
     .trim();
+
+  // 2. If the cleaned text still doesn't look like JSON, extract the first {...} block.
+  //    Models sometimes emit explanation text before or after the JSON object.
+  if (!cleaned.startsWith('{')) {
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if (match) {
+      cleaned = match[0];
+    } else {
+      console.warn('[parseAIResponse] no JSON object found in response:', raw.slice(0, 200));
+      return fallbackNarrative(playerAction);
+    }
+  }
 
   try {
     const parsed = JSON.parse(cleaned) as Partial<AIDMResponse>;
