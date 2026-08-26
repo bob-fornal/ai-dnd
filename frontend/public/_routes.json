@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "description": "Cloudflare Pages routing — proxy /api/* to the Worker, serve SPA for everything else",
+  "include": ["/*"],
+  "exclude": []
+}

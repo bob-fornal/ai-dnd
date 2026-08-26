@@ -1,0 +1,235 @@
+@use '@angular/material' as mat;
+
+// ─── D&D Dark Fantasy Palette ─────────────────────────────────────────────────
+$dnd-primary: mat.define-palette((
+  50:  #f3e5f5,
+  100: #e1bee7,
+  200: #ce93d8,
+  300: #ba68c8,
+  400: #ab47bc,
+  500: #9c27b0,
+  600: #8e24aa,
+  700: #7b1fa2,
+  800: #6a1b9a,
+  900: #4a148c,
+  A100: #ea80fc,
+  A200: #e040fb,
+  A400: #d500f9,
+  A700: #aa00ff,
+  contrast: (
+    50: rgba(0,0,0,.87),
+    100: rgba(0,0,0,.87),
+    200: rgba(0,0,0,.87),
+    300: white,
+    400: white,
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(0,0,0,.87),
+    A200: white,
+    A400: white,
+    A700: white,
+  )
+));
+
+$dnd-accent: mat.define-palette((
+  50:  #fff8e1,
+  100: #ffecb3,
+  200: #ffe082,
+  300: #ffd54f,
+  400: #ffca28,
+  500: #d4a017,
+  600: #c49212,
+  700: #a67c0e,
+  800: #88670b,
+  900: #6b5109,
+  A100: #ffe57f,
+  A200: #ffd740,
+  A400: #ffc400,
+  A700: #ffab00,
+  contrast: (
+    50: rgba(0,0,0,.87),
+    100: rgba(0,0,0,.87),
+    200: rgba(0,0,0,.87),
+    300: rgba(0,0,0,.87),
+    400: rgba(0,0,0,.87),
+    500: rgba(0,0,0,.87),
+    600: rgba(0,0,0,.87),
+    700: rgba(0,0,0,.87),
+    800: rgba(0,0,0,.87),
+    900: white,
+    A100: rgba(0,0,0,.87),
+    A200: rgba(0,0,0,.87),
+    A400: rgba(0,0,0,.87),
+    A700: rgba(0,0,0,.87),
+  )
+));
+
+$dnd-warn: mat.define-palette(mat.$red-palette);
+
+$dnd-theme: mat.define-dark-theme((
+  color: (
+    primary: $dnd-primary,
+    accent:  $dnd-accent,
+    warn:    $dnd-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+@include mat.all-component-themes($dnd-theme);
+
+// ─── Google Fonts ─────────────────────────────────────────────────────────────
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=MedievalSharp&display=swap');
+
+// ─── CSS Custom Properties ────────────────────────────────────────────────────
+:root {
+  --bg-deep:     #0d0d14;
+  --bg-surface:  #13131f;
+  --bg-card:     #1a1a2e;
+  --bg-card-alt: #16213e;
+  --border:      #2a2a4a;
+  --gold:        #d4a017;
+  --gold-light:  #e8c547;
+  --purple:      #7b1fa2;
+  --purple-light:#ab47bc;
+  --red:         #c62828;
+  --red-light:   #ef5350;
+  --green:       #2e7d32;
+  --green-light: #66bb6a;
+  --text:        #e0d5c9;
+  --text-muted:  #8a8099;
+  --text-dim:    #5a5570;
+  --narrative-font: 'Crimson Text', Georgia, serif;
+  --title-font:     'Cinzel', 'Times New Roman', serif;
+  --ui-font:        'Segoe UI', system-ui, sans-serif;
+}
+
+// ─── Global Reset ────────────────────────────────────────────────────────────
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: var(--ui-font);
+  overflow: hidden;
+}
+
+// ─── Scrollbar Styling ────────────────────────────────────────────────────────
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--purple); }
+
+// ─── Typography Utilities ─────────────────────────────────────────────────────
+.title-font    { font-family: var(--title-font); }
+.narrative-font { font-family: var(--narrative-font); font-size: 1.05rem; line-height: 1.8; }
+
+// ─── HP Bar ──────────────────────────────────────────────────────────────────
+.hp-bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+
+  .hp-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width .4s ease, background-color .4s ease;
+
+    &.healthy  { background: var(--green-light); }
+    &.hurt     { background: var(--gold); }
+    &.critical { background: var(--red-light); animation: pulse-red 1s infinite; }
+  }
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .6; }
+}
+
+// ─── Gold Text ────────────────────────────────────────────────────────────────
+.gold { color: var(--gold); }
+.gold-light { color: var(--gold-light); }
+.text-muted { color: var(--text-muted); }
+
+// ─── Parchment Narrative ─────────────────────────────────────────────────────
+.narrative-block {
+  font-family: var(--narrative-font);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--text);
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--gold);
+  background: rgba(212, 160, 23, .04);
+  border-radius: 0 4px 4px 0;
+  margin-bottom: .75rem;
+
+  &.player-action {
+    border-left-color: var(--purple-light);
+    background: rgba(171, 71, 188, .06);
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: .95rem;
+  }
+
+  &.system-msg {
+    border-left-color: var(--gold-light);
+    background: rgba(212, 160, 23, .08);
+    font-size: .9rem;
+    color: var(--gold-light);
+    font-family: var(--ui-font);
+    font-weight: 600;
+  }
+
+  &.combat-msg {
+    border-left-color: var(--red-light);
+    background: rgba(198, 40, 40, .06);
+  }
+}
+
+// ─── Combat Border Flash ─────────────────────────────────────────────────────
+.in-combat-border {
+  box-shadow: 0 0 0 2px var(--red-light), inset 0 0 30px rgba(198,40,40,.08);
+  animation: combat-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes combat-glow {
+  from { box-shadow: 0 0 0 2px var(--red-light), inset 0 0 20px rgba(198,40,40,.05); }
+  to   { box-shadow: 0 0 0 3px var(--red), inset 0 0 40px rgba(198,40,40,.12); }
+}
+
+// ─── Angular Material Overrides ───────────────────────────────────────────────
+.mat-mdc-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border);
+}
+
+.mat-mdc-form-field .mat-mdc-text-field-wrapper {
+  background: var(--bg-card-alt) !important;
+}
+
+.mdc-button--raised {
+  font-family: var(--title-font) !important;
+  letter-spacing: .05em;
+}
+
+// ─── Quick Action Chips ───────────────────────────────────────────────────────
+.action-chip {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  cursor: pointer;
+  font-size: .85rem;
+  transition: border-color .2s, background .2s;
+
+  &:hover {
+    border-color: var(--gold) !important;
+    background: rgba(212, 160, 23, .08) !important;
+  }
+}
