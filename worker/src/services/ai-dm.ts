@@ -103,7 +103,9 @@ export async function askDM(
       // Shouldn't happen with non-streaming calls, but guard it
       throw new Error('Unexpected streaming response from Worker AI');
     }
-    rawText = response.response ?? '';
+    // Guard: local Wrangler stub may return a non-string value; coerce defensively
+    const raw = (response as any).response;
+    rawText = typeof raw === 'string' ? raw : '';
   } catch (err) {
     // Fallback: try mistral
     try {
@@ -114,7 +116,8 @@ export async function askDM(
         ],
         max_tokens: 1024,
       }) as { response?: string };
-      rawText = fallback.response ?? '';
+      const raw2 = (fallback as any).response;
+      rawText = typeof raw2 === 'string' ? raw2 : '';
     } catch {
       return fallbackNarrative(playerAction);
     }
@@ -125,6 +128,11 @@ export async function askDM(
 
 // ─── Parse & validate AI response ────────────────────────────────────────────
 function parseAIResponse(raw: string, playerAction: string): AIDMResponse {
+  // Guard against non-string values from the local Wrangler dev AI stub
+  if (typeof raw !== 'string' || raw.trim().length === 0) {
+    return fallbackNarrative(playerAction);
+  }
+
   // Strip any accidental markdown fences
   const cleaned = raw
     .replace(/^```(?:json)?\s*/i, '')

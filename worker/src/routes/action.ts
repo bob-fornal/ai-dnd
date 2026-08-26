@@ -9,6 +9,7 @@ export const actionRoutes = new Hono<{ Bindings: Env }>();
 
 // POST /api/action — core game loop endpoint
 actionRoutes.post('/', async (c) => {
+  try {
   let body: ActionBody;
   try {
     body = await c.req.json<ActionBody>();
@@ -107,4 +108,11 @@ actionRoutes.post('/', async (c) => {
     combatState:      session.combatState,
     canLevelUp,
   });
+  } catch (err: any) {
+    console.error('[action] Unhandled error:', err);
+    return c.json(
+      { error: 'Internal server error', detail: err?.message ?? 'Unknown error' },
+      500
+    );
+  }
 });
