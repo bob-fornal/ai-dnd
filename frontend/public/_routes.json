@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Cloudflare Pages routing — proxy /api/* to the Worker, serve SPA for everything else",
+  "description": "Serve the Angular SPA for all routes; exclude /api/* so it reaches the Worker.",
   "include": ["/*"],
-  "exclude": []
+  "exclude": ["/api/*"]
 }
