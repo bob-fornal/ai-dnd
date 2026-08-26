@@ -70,7 +70,7 @@ import type { AbilityKey } from '../../models/game.models';
               <span class="ability-key">{{ key.toUpperCase() }}</span>
               <span class="ability-score">{{ c[key] }}</span>
               <span class="ability-mod text-muted">
-                {{ svc.modifiers()?.[key] >= 0 ? '+' : '' }}{{ svc.modifiers()?.[key] }}
+                {{ (svc.modifiers()?.[key] ?? 0) >= 0 ? '+' : '' }}{{ svc.modifiers()?.[key] ?? 0 }}
               </span>
             </div>
           }

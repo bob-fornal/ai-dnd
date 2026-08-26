@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import type {
   Character, ActionResponse, CombatResponse,
   LogEntry, CampaignSlot, InventoryEntry,
@@ -8,8 +8,12 @@ import type {
 import type { CharacterClass, Race, AbilityKey } from '../models/game.models';
 
 // In dev, Wrangler runs on :8787. In production, same origin via Cloudflare Pages proxy.
-const API_BASE = typeof process !== 'undefined' && process.env?.['NG_APP_API_URL']
-  ? process.env['NG_APP_API_URL']
+// Cast to any to avoid TypeScript complaining about process in browser context.
+const envApiUrl = (typeof (globalThis as any)['process'] !== 'undefined')
+  ? (globalThis as any)['process']?.env?.['NG_APP_API_URL'] as string | undefined
+  : undefined;
+const API_BASE = envApiUrl
+  ? envApiUrl
   : (window.location.origin.includes('localhost')
       ? 'http://localhost:8787'
       : window.location.origin);
@@ -85,6 +89,21 @@ export class GameApiService {
   // ── Quests ─────────────────────────────────────────────────────────────────
   generateQuest(sessionId: string, characterId: string): Observable<{ quest: any }> {
     return this.http.post<any>(`${API_BASE}/api/quest/generate`, { sessionId, characterId });
+  }
+
+  // ── Inventory ──────────────────────────────────────────────────────────────
+  getInventory(characterId: string): Observable<{ inventory: InventoryEntry[] }> {
+    return this.http.get<{ character: any; inventory: InventoryEntry[]; activeQuest: any }>(
+      `${API_BASE}/api/character/${characterId}`
+    ).pipe(map(r => ({ inventory: r.inventory })));
+  }
+
+  equipItem(characterId: string, itemId: number, equipped: boolean): Observable<{ success: boolean; inventory: InventoryEntry[] }> {
+    return this.http.patch<any>(`${API_BASE}/api/character/${characterId}/equip`, { itemId, equipped });
+  }
+
+  dropItem(characterId: string, itemId: number): Observable<{ success: boolean; inventory: InventoryEntry[] }> {
+    return this.http.delete<any>(`${API_BASE}/api/character/${characterId}/inventory/${itemId}`);
   }
 
   // ── Shop ───────────────────────────────────────────────────────────────────

@@ -1,85 +1,28 @@
 @use '@angular/material' as mat;
 
-// ─── D&D Dark Fantasy Palette ─────────────────────────────────────────────────
-$dnd-primary: mat.define-palette((
-  50:  #f3e5f5,
-  100: #e1bee7,
-  200: #ce93d8,
-  300: #ba68c8,
-  400: #ab47bc,
-  500: #9c27b0,
-  600: #8e24aa,
-  700: #7b1fa2,
-  800: #6a1b9a,
-  900: #4a148c,
-  A100: #ea80fc,
-  A200: #e040fb,
-  A400: #d500f9,
-  A700: #aa00ff,
-  contrast: (
-    50: rgba(0,0,0,.87),
-    100: rgba(0,0,0,.87),
-    200: rgba(0,0,0,.87),
-    300: white,
-    400: white,
-    500: white,
-    600: white,
-    700: white,
-    800: white,
-    900: white,
-    A100: rgba(0,0,0,.87),
-    A200: white,
-    A400: white,
-    A700: white,
-  )
-));
-
-$dnd-accent: mat.define-palette((
-  50:  #fff8e1,
-  100: #ffecb3,
-  200: #ffe082,
-  300: #ffd54f,
-  400: #ffca28,
-  500: #d4a017,
-  600: #c49212,
-  700: #a67c0e,
-  800: #88670b,
-  900: #6b5109,
-  A100: #ffe57f,
-  A200: #ffd740,
-  A400: #ffc400,
-  A700: #ffab00,
-  contrast: (
-    50: rgba(0,0,0,.87),
-    100: rgba(0,0,0,.87),
-    200: rgba(0,0,0,.87),
-    300: rgba(0,0,0,.87),
-    400: rgba(0,0,0,.87),
-    500: rgba(0,0,0,.87),
-    600: rgba(0,0,0,.87),
-    700: rgba(0,0,0,.87),
-    800: rgba(0,0,0,.87),
-    900: white,
-    A100: rgba(0,0,0,.87),
-    A200: rgba(0,0,0,.87),
-    A400: rgba(0,0,0,.87),
-    A700: rgba(0,0,0,.87),
-  )
-));
-
-$dnd-warn: mat.define-palette(mat.$red-palette);
-
-$dnd-theme: mat.define-dark-theme((
+// ─── Angular Material M3 Theme (Angular Material 18+) ─────────────────────────
+// M3 uses define-theme() + palette variables. Custom per-hue palettes are
+// defined via mat.define-theme; the CSS custom properties below handle all
+// bespoke D&D colours so we just need a close built-in palette here.
+$dnd-theme: mat.define-theme((
   color: (
-    primary: $dnd-primary,
-    accent:  $dnd-accent,
-    warn:    $dnd-warn,
+    theme-type: dark,
+    primary:   mat.$violet-palette,   // M3 violet ≈ D&D arcane purple
+    tertiary:  mat.$orange-palette,   // M3 orange ≈ aged gold/amber tones
   ),
-  typography: mat.define-typography-config(),
-  density: 0,
+  typography: (
+    brand-family: "'Cinzel', 'Times New Roman', serif",
+    plain-family: "'Segoe UI', system-ui, sans-serif",
+    bold-weight:  700,
+  ),
+  density: (
+    scale: 0,
+  ),
 ));
 
-@include mat.all-component-themes($dnd-theme);
+:root {
+  @include mat.all-component-themes($dnd-theme);
+}
 
 // ─── Google Fonts ─────────────────────────────────────────────────────────────
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=MedievalSharp&display=swap');

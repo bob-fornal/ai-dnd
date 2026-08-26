@@ -17,6 +17,7 @@ import { GameApiService } from '../../services/game-api.service';
 import { CharacterStateService } from '../../services/character-state.service';
 import { AuthService } from '../../services/auth.service';
 import { CharacterSheetComponent } from '../character-sheet/character-sheet.component';
+import { InventoryComponent, type InventoryDialogData } from '../inventory/inventory.component';
 import type { LogEntry, CombatState, AbilityKey } from '../../models/game.models';
 
 interface DisplayEntry {
@@ -41,6 +42,17 @@ interface DisplayEntry {
       <!-- ── Left Sidebar: Character Sheet ────────────────────────────────── -->
       <aside class="sidebar left-sidebar">
         <app-character-sheet />
+
+        <!-- Inventory Button -->
+        <div class="sidebar-actions">
+          <button mat-stroked-button class="inv-btn" (click)="openInventory()">
+            <mat-icon>inventory_2</mat-icon>
+            Inventory
+            @if (charSvc.inventory().length > 0) {
+              <span class="inv-count">({{ charSvc.inventory().length }})</span>
+            }
+          </button>
+        </div>
 
         <!-- Level Up Panel -->
         @if (charSvc.canLevelUp()) {
@@ -197,6 +209,28 @@ interface DisplayEntry {
 
     .sidebar-title { font-size: .85rem; margin: .25rem 0 .75rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
 
+    /* ── Sidebar Actions ──────────────────────────────────── */
+    .sidebar-actions {
+      margin-top: .5rem;
+      padding-top: .5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .inv-btn {
+      width: 100%;
+      font-size: .78rem;
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+      justify-content: flex-start;
+    }
+
+    .inv-count {
+      margin-left: auto;
+      color: var(--text-muted);
+      font-size: .72rem;
+    }
+
     /* ── Level Up ─────────────────────────────────────────── */
     .levelup-panel {
       margin-top: .75rem;
@@ -336,6 +370,7 @@ export class GameConsoleComponent implements OnInit, AfterViewChecked {
   private route   = inject(ActivatedRoute);
   private router  = inject(Router);
   private api     = inject(GameApiService);
+  private dialog  = inject(MatDialog);
   readonly charSvc = inject(CharacterStateService);
   private auth    = inject(AuthService);
 
@@ -378,6 +413,11 @@ export class GameConsoleComponent implements OnInit, AfterViewChecked {
           const loc = res.session?.location ?? 'the world';
           this.pushEntry('system', `📍 You are in ${loc}. Your adventure resumes.`);
         }
+
+        // Load inventory into state service
+        this.api.getInventory(res.character.id).subscribe({
+          next: (inv) => this.charSvc.setInventory(inv.inventory),
+        });
 
         // Load log
         this.loadLog();
@@ -516,6 +556,21 @@ export class GameConsoleComponent implements OnInit, AfterViewChecked {
         this.logEntries.set(res.entries);
         if (res.entries.length >= res.total) this.logExhausted.set(true);
       },
+    });
+  }
+
+  openInventory(): void {
+    const dialogData: InventoryDialogData = {
+      characterId: this.characterId,
+      sessionId: this.sessionId,
+    };
+    const ref = this.dialog.open(InventoryComponent, {
+      data: dialogData,
+      panelClass: 'inv-dialog-panel',
+      maxHeight: '90vh',
+    });
+    ref.afterClosed().subscribe(() => {
+      // Refresh inventory signal from service (component already updated it)
     });
   }
 
