@@ -90,7 +90,7 @@ export async function askDM(
   let rawText = '';
 
   try {
-    const response = await (ai as any).run('@cf/meta/llama-3.1-8b-instruct', {
+    const response = await (ai as any).run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user',   content: userPrompt },
@@ -103,24 +103,30 @@ export async function askDM(
     if (response instanceof ReadableStream) {
       throw new Error('Unexpected streaming response from Worker AI');
     }
-    const raw = (response as any).response;
-    rawText = typeof raw === 'string' ? raw
-            : typeof response === 'string' ? response   // some model versions return string directly
+    // llama-3.3-70b returns OpenAI-compatible format: choices[0].message.content
+    // Older models returned: response.response (string)
+    const choicesContent = (response as any)?.choices?.[0]?.message?.content;
+    const legacyContent  = (response as any)?.response;
+    rawText = typeof choicesContent === 'string' && choicesContent.length > 0 ? choicesContent
+            : typeof legacyContent   === 'string' && legacyContent.length  > 0 ? legacyContent
+            : typeof response === 'string' ? response
             : '';
     console.log('[askDM] llama raw length:', rawText.length);
   } catch (err) {
     console.error('[askDM] llama failed, trying mistral:', err);
     // Fallback: try mistral
     try {
-      const fallback = await (ai as any).run('@cf/mistral/mistral-7b-instruct-v0.1', {
+      const fallback = await (ai as any).run('@cf/mistral/mistral-7b-instruct-v0.2-lora', {
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user',   content: userPrompt },
         ],
         max_tokens: 1024,
       });
-      const raw2 = (fallback as any).response;
-      rawText = typeof raw2 === 'string' ? raw2
+      const choicesContent2 = (fallback as any)?.choices?.[0]?.message?.content;
+      const legacyContent2  = (fallback as any)?.response;
+      rawText = typeof choicesContent2 === 'string' && choicesContent2.length > 0 ? choicesContent2
+              : typeof legacyContent2   === 'string' && legacyContent2.length  > 0 ? legacyContent2
               : typeof fallback === 'string' ? fallback
               : '';
       console.log('[askDM] mistral raw length:', rawText.length);
@@ -228,7 +234,7 @@ export async function generateQuest(
   });
 
   try {
-    const response = await ai.run('@cf/meta/llama-3.1-8b-instruct', {
+    const response = await ai.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
       messages: [
         {
           role: 'system',
@@ -274,7 +280,7 @@ export async function generateBackstory(
   cls: string,
 ): Promise<string> {
   try {
-    const response = await ai.run('@cf/meta/llama-3.1-8b-instruct', {
+    const response = await ai.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
       messages: [
         {
           role: 'system',
@@ -301,7 +307,7 @@ export async function generateLevelUpNarrative(
   newLevel: number,
 ): Promise<string> {
   try {
-    const response = await ai.run('@cf/meta/llama-3.1-8b-instruct', {
+    const response = await ai.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
       messages: [
         {
           role: 'system',

@@ -72,7 +72,7 @@
   - Character state: name, class, race, level, HP, relevant abilities.
   - Player input (sanitized).
   - Instruction to return structured JSON with `narrative`, `gameStateChanges`, and `suggestedActions`.
-- **F-07** Worker AI model: `@cf/meta/llama-3.1-8b-instruct` (primary); `@cf/mistral/mistral-7b-instruct-v0.1` (fallback).
+- **F-07** Worker AI model: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (primary); `@cf/mistral/mistral-7b-instruct-v0.2-lora` (fallback).
 - **F-08** AI response is parsed and validated server-side before being returned to the client.
 - **F-09** The AI response JSON schema:
   ```json

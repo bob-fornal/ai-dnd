@@ -103,8 +103,8 @@ wrangler pages deploy dist/frontend/browser --project-name ai-dnd
 
 | Model | Purpose |
 |---|---|
-| `@cf/meta/llama-3.1-8b-instruct` | Primary DM narrative |
-| `@cf/mistral/mistral-7b-instruct-v0.1` | Fallback DM |
+| `@cf/meta/llama-3.3-70b-instruct-fp8-fast` | Primary DM narrative |
+| `@cf/mistral/mistral-7b-instruct-v0.2-lora` | Fallback DM |
 
 Both are included in the Cloudflare Workers AI free tier.
 
