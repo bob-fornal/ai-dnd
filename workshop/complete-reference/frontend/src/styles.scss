@@ -1,0 +1,178 @@
+@use '@angular/material' as mat;
+
+// ─── Angular Material M3 Theme (Angular Material 18+) ─────────────────────────
+// M3 uses define-theme() + palette variables. Custom per-hue palettes are
+// defined via mat.define-theme; the CSS custom properties below handle all
+// bespoke D&D colours so we just need a close built-in palette here.
+$dnd-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary:   mat.$violet-palette,   // M3 violet ≈ D&D arcane purple
+    tertiary:  mat.$orange-palette,   // M3 orange ≈ aged gold/amber tones
+  ),
+  typography: (
+    brand-family: "'Cinzel', 'Times New Roman', serif",
+    plain-family: "'Segoe UI', system-ui, sans-serif",
+    bold-weight:  700,
+  ),
+  density: (
+    scale: 0,
+  ),
+));
+
+:root {
+  @include mat.all-component-themes($dnd-theme);
+}
+
+// ─── Google Fonts ─────────────────────────────────────────────────────────────
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=MedievalSharp&display=swap');
+
+// ─── CSS Custom Properties ────────────────────────────────────────────────────
+:root {
+  --bg-deep:     #0d0d14;
+  --bg-surface:  #13131f;
+  --bg-card:     #1a1a2e;
+  --bg-card-alt: #16213e;
+  --border:      #2a2a4a;
+  --gold:        #d4a017;
+  --gold-light:  #e8c547;
+  --purple:      #7b1fa2;
+  --purple-light:#ab47bc;
+  --red:         #c62828;
+  --red-light:   #ef5350;
+  --green:       #2e7d32;
+  --green-light: #66bb6a;
+  --text:        #e0d5c9;
+  --text-muted:  #8a8099;
+  --text-dim:    #5a5570;
+  --narrative-font: 'Crimson Text', Georgia, serif;
+  --title-font:     'Cinzel', 'Times New Roman', serif;
+  --ui-font:        'Segoe UI', system-ui, sans-serif;
+}
+
+// ─── Global Reset ────────────────────────────────────────────────────────────
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: var(--ui-font);
+  overflow: hidden;
+}
+
+// ─── Scrollbar Styling ────────────────────────────────────────────────────────
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--purple); }
+
+// ─── Typography Utilities ─────────────────────────────────────────────────────
+.title-font    { font-family: var(--title-font); }
+.narrative-font { font-family: var(--narrative-font); font-size: 1.05rem; line-height: 1.8; }
+
+// ─── HP Bar ──────────────────────────────────────────────────────────────────
+.hp-bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+
+  .hp-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width .4s ease, background-color .4s ease;
+
+    &.healthy  { background: var(--green-light); }
+    &.hurt     { background: var(--gold); }
+    &.critical { background: var(--red-light); animation: pulse-red 1s infinite; }
+  }
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .6; }
+}
+
+// ─── Gold Text ────────────────────────────────────────────────────────────────
+.gold { color: var(--gold); }
+.gold-light { color: var(--gold-light); }
+.text-muted { color: var(--text-muted); }
+
+// ─── Parchment Narrative ─────────────────────────────────────────────────────
+.narrative-block {
+  font-family: var(--narrative-font);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--text);
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--gold);
+  background: rgba(212, 160, 23, .04);
+  border-radius: 0 4px 4px 0;
+  margin-bottom: .75rem;
+
+  &.player-action {
+    border-left-color: var(--purple-light);
+    background: rgba(171, 71, 188, .06);
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: .95rem;
+  }
+
+  &.system-msg {
+    border-left-color: var(--gold-light);
+    background: rgba(212, 160, 23, .08);
+    font-size: .9rem;
+    color: var(--gold-light);
+    font-family: var(--ui-font);
+    font-weight: 600;
+  }
+
+  &.combat-msg {
+    border-left-color: var(--red-light);
+    background: rgba(198, 40, 40, .06);
+  }
+}
+
+// ─── Combat Border Flash ─────────────────────────────────────────────────────
+.in-combat-border {
+  box-shadow: 0 0 0 2px var(--red-light), inset 0 0 30px rgba(198,40,40,.08);
+  animation: combat-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes combat-glow {
+  from { box-shadow: 0 0 0 2px var(--red-light), inset 0 0 20px rgba(198,40,40,.05); }
+  to   { box-shadow: 0 0 0 3px var(--red), inset 0 0 40px rgba(198,40,40,.12); }
+}
+
+// ─── Angular Material Overrides ───────────────────────────────────────────────
+.mat-mdc-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border);
+}
+
+.mat-mdc-form-field .mat-mdc-text-field-wrapper {
+  background: var(--bg-card-alt) !important;
+}
+
+.mdc-button--raised {
+  font-family: var(--title-font) !important;
+  letter-spacing: .05em;
+}
+
+// ─── Quick Action Chips ───────────────────────────────────────────────────────
+.action-chip {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  cursor: pointer;
+  font-size: .85rem;
+  transition: border-color .2s, background .2s;
+
+  &:hover {
+    border-color: var(--gold) !important;
+    background: rgba(212, 160, 23, .08) !important;
+  }
+}

@@ -1,0 +1,20 @@
+@use '@angular/material' as mat;
+
+// ─── Angular Material core ─────────────────────────────────────────────────
+// Pulls in the base Material styles (ripples, elevation, typography reset)
+// so components render correctly even before a real theme is configured.
+@include mat.core();
+
+// ─── Minimal global reset ───────────────────────────────────────────────────
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+// TODO(Phase 6): this file becomes the full dark-fantasy Material theme —
+// mat.define-theme() with the D&D palette, CSS custom properties for
+// colors/fonts, HP bars, narrative panels, and other game-specific styles.

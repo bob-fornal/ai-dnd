@@ -1,0 +1,62 @@
+@use '@angular/material' as mat;
+
+// ─── Angular Material core ─────────────────────────────────────────────────
+// Pulls in the base Material styles (ripples, elevation, typography reset)
+// so components render correctly even before a real theme is configured.
+@include mat.core();
+
+// ─── Minimal global reset ───────────────────────────────────────────────────
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+// ─── FOCUS FILE ─────────────────────────────────────────────────────────────
+// This phase turns the placeholder above into the full dark-fantasy Angular
+// Material theme described in PRD.md section 10 (UI/UX Requirements — Theme).
+// Work through the TODOs roughly in this order; the components in this phase
+// (game console, character sheet) already reference the class names and CSS
+// custom properties listed below, so nothing renders "themed" until you do.
+//
+// TODO 1 — Google Fonts: @import the Cinzel (serif, headings/titles),
+//   Crimson Text (serif, narrative body copy) and MedievalSharp families
+//   from fonts.googleapis.com.
+//
+// TODO 2 — Custom Material theme: replace mat.core() above with
+//   mat.define-theme() (theme-type: dark, a violet-ish primary for the
+//   "arcane purple" and an amber/orange tertiary for "aged gold"), then
+//   @include mat.all-component-themes(...) with it under :root.
+//
+// TODO 3 — CSS custom properties: define the full D&D palette as :root
+//   variables — --bg-deep/--bg-surface/--bg-card, --border, --gold/
+//   --gold-light, --purple/--purple-light, --red/--red-light,
+//   --green/--green-light, --text/--text-muted/--text-dim, plus
+//   --narrative-font (Crimson Text), --title-font (Cinzel), --ui-font.
+//
+// TODO 4 — Global look: apply --bg-deep/--text/--ui-font to html/body, add a
+//   themed scrollbar (::-webkit-scrollbar*), and utility classes `.title-font`
+//   / `.narrative-font` / `.gold` / `.text-muted`.
+//
+// TODO 5 — Parchment narrative panel: a `.narrative-block` class (used by
+//   GameConsoleComponent for every log line) with a serif font, a gold
+//   left-border "parchment" look, and variants for `.player-action`,
+//   `.system-msg`, and `.combat-msg`.
+//
+// TODO 6 — HP bar colors: a `.hp-bar` / `.hp-fill` pair (used by
+//   CharacterSheetComponent) with `.healthy` / `.hurt` / `.critical` color
+//   states — critical should pulse.
+//
+// TODO 7 — Combat mode: an `.in-combat-border` class (toggled on the game
+//   console's root element via `charSvc.inCombat()`) that puts a glowing red
+//   border/box-shadow around the whole layout.
+//
+// TODO 8 — Component polish: override default Material card/form-field/
+//   button surfaces to match the dark palette, and style `.action-chip` for
+//   the quick-action suggestion buttons.
+//
+// The complete version of this file lives in the Phase 6 `solution/` folder
+// if you want to see the full result or get unstuck.
