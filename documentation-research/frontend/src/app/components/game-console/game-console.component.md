@@ -2,6 +2,8 @@
 
 `app-game-console`, routed at `/game/:sessionId`. The main play screen, in three columns: character sidebar, narrative console, adventure log.
 
+Files: `.ts`, `.html`, `.css`, `.spec.ts`
+
 ## Layout
 | Area | Contents |
 |---|---|

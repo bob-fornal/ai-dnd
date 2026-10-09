@@ -2,6 +2,8 @@
 
 `app-inventory` is a dialog component that lists the character's items in tabs (All, Weapons, Armor, Consumables) with equip, use, and drop actions.
 
+Files: `.ts`, `.html`, `.css`, `.spec.ts`
+
 ## Key exports
 | Name | Purpose |
 |---|---|

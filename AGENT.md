@@ -45,4 +45,4 @@ Workshop `starter/` and `solution/` copies of a component must have the **same**
 
 - Cloudflare-hosted Angular uses hash routing (`withHashLocation()`, URLs like `/#/game/:id`).
 - Implement in the backend (Worker) first, then the frontend, when a feature touches both. The Worker owns game rules; the AI only narrates.
-- With TypeScript 6+, `tsconfig.app.json` and `tsconfig.spec.json` each need an explicit `rootDir` when `outDir` is set.
+- With TypeScript 6+, every tsconfig that sets `outDir` needs an explicit `rootDir`: the base `tsconfig.json` (the one editors such as VS Code check on its own) as well as `tsconfig.app.json` and `tsconfig.spec.json`. In the frontend this is `"rootDir": "./src"`.

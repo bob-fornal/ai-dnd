@@ -2,6 +2,8 @@
 
 `app-character-sheet` is a presentational sidebar panel. It has no inputs and reads everything from `CharacterStateService`.
 
+Files: `.ts`, `.html`, `.css`, `.spec.ts`
+
 ## Shows
 - Name, level, race, class; an HP bar (`healthy` above 60%, `hurt` 26–60%, `critical` at 25% or below); AC, XP, gold.
 - XP progress bar and "XP to next level" (or "Max Level").

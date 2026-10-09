@@ -2,6 +2,8 @@
 
 `app-character-creation`, routed at `/characters`. A four-step Material stepper: Identity (name and roll method), Race, Class, then Review.
 
+Files: `.ts`, `.html`, `.css`, `.spec.ts`
+
 ## Behavior
 - `createCharacter()` calls `GameApiService.createCharacter`, then:
   1. `CharacterStateService.setCharacter(res.character)`

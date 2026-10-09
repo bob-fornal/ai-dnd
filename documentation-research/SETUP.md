@@ -132,7 +132,7 @@ documentation-research/
 └── frontend/                  Angular 18 SPA
     ├── src/
     │   ├── app/
-    │   │   ├── components/    LoginComponent, CharacterCreation, GameConsole…
+    │   │   ├── components/    One folder per component: .ts, .html, .css, .spec.ts
     │   │   ├── services/      GameApiService, CharacterStateService, AuthService
     │   │   └── models/        game.models.ts (shared types)
     │   └── styles.scss        D&D dark theme + Angular Material overrides

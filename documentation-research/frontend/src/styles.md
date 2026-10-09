@@ -11,7 +11,7 @@ The global theme: an Angular Material M3 theme, the dark-fantasy CSS custom prop
 | Reset | `html, body { overflow: hidden; height: 100% }`, so each layout must scroll its own panes |
 
 ## Rules
-- Components use **these variables and classes** inside their own inline `styles`. Add a new color here as a variable rather than hard-coding it in a component.
+- Components use **these variables and classes** inside their own `.component.css` files (plain CSS, no SCSS). Add a new color here as a variable rather than hard-coding it in a component.
 - `mat.core()` isn't included, so CDK overlay styles (dialogs, snack bars, selects) are missing ([bugs.md B-14](../../bugs.md)).
 - Watch the Angular CSS budget ([DEPLOYMENT_NOTES §1](../../docs/DEPLOYMENT_NOTES.md#1-frontend-build)).
 

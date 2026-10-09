@@ -28,12 +28,12 @@ Angular can split a component across several files. **Treat all of them as one c
 
 | Component files | One doc |
 |---|---|
-| `inventory.component.ts` + `.html` + `.scss`/`.css` (+ `.spec.ts`) | `inventory.component.md` |
+| `inventory.component.ts` + `.html` + `.css` + `.spec.ts` | `inventory.component.md` |
 
-- The doc covers the class (`.ts`), the template (`.html`), and the styles (`.scss`/`.css`). Add a short **Files** line listing which parts exist, for example `Files: .ts, .html, .scss`.
+- The doc covers the class (`.ts`), the template (`.html`), the styles (`.css`), and the tests (`.spec.ts`). Add a short **Files** line listing which parts exist, for example `Files: .ts, .html, .css, .spec.ts`.
 - When you change any one of those files, the component doc is the doc to update.
 - When you read a component, open its doc first, then only the part you need (template, styles, or class) rather than all three.
-- Components in this folder currently use inline `template` and `styles` in the `.ts` file. If one gets split out later, keep the single doc.
+- Components in this folder are split into `.ts`, `.html`, `.css`, and `.spec.ts`, following the root [../AGENT.md](../AGENT.md). Never put an inline `template` or `styles` back into the `.ts` file.
 - The same rule applies to any other code split by concern (for example a service and its `.spec.ts`): one doc per logical unit.
 - Do not document generated or local-state folders (`node_modules/`, `dist/`, `.angular/`, `.wrangler/`).
 - Small config files (`tsconfig*.json`, `angular.json`, `package.json`) don't need their own doc. Cover them in the doc of the code that depends on them, or in [SETUP.md](SETUP.md) if they matter for setup.
