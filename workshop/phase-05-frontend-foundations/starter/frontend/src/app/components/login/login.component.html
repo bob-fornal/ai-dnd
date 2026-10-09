@@ -1,0 +1,77 @@
+<div class="login-bg">
+  <div class="login-container">
+
+    <div class="title-block">
+      <h1 class="title-font">⚔ AI Dungeon</h1>
+      <p class="subtitle text-muted">A dark fantasy adventure powered by Cloudflare Worker AI</p>
+    </div>
+
+    @if (!profile()) {
+      <!-- Username entry -->
+      <mat-card class="login-card">
+        <mat-card-header>
+          <mat-card-title class="title-font">Enter the World</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Your Name, Adventurer</mat-label>
+            <input matInput [(ngModel)]="username" (keyup.enter)="login()"
+                   placeholder="e.g. Aldric, Shadowmere…" maxlength="30" />
+          </mat-form-field>
+          @if (error()) {
+            <p class="error-text">{{ error() }}</p>
+          }
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" class="full-width cta-btn"
+                  (click)="login()">
+            Begin Your Legend
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    } @else {
+      <!-- Campaign slots -->
+      <mat-card class="login-card">
+        <mat-card-header>
+          <mat-card-title class="title-font">
+            Welcome back, {{ profile()!.username }}
+          </mat-card-title>
+          <mat-card-subtitle>Choose a campaign or start anew</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          @if (profile()!.campaigns.length > 0) {
+            <div class="campaign-list">
+              @for (slot of profile()!.campaigns; track slot.slotId) {
+                <div class="campaign-slot" (click)="resumeCampaign(slot)">
+                  <div class="slot-info">
+                    <span class="slot-name title-font">{{ slot.characterName }}</span>
+                    <span class="slot-details text-muted">
+                      Level {{ slot.level }} {{ slot.characterRace }} {{ slot.characterClass }}
+                    </span>
+                    <span class="slot-location text-muted">📍 {{ slot.location }}</span>
+                  </div>
+                  <div class="slot-actions">
+                    <button mat-icon-button color="warn"
+                            (click)="deleteCampaign($event, slot.slotId)">
+                      <mat-icon>delete_forever</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+            <mat-divider />
+          }
+        </mat-card-content>
+        <mat-card-actions class="card-actions">
+          <button mat-raised-button color="primary" (click)="newCampaign()">
+            + New Campaign
+          </button>
+          <button mat-button (click)="switchUser()">
+            Switch Adventurer
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    }
+
+  </div>
+</div>

@@ -1,0 +1,139 @@
+<div class="inv-dialog">
+  <h2 mat-dialog-title class="title-font">
+    <mat-icon>inventory_2</mat-icon>
+    Inventory
+    <span class="gold-chip">{{ character()?.gold ?? 0 }} gp</span>
+  </h2>
+
+  <mat-dialog-content class="inv-content">
+
+    @if (loading()) {
+      <div class="loading-center">
+        <mat-spinner diameter="40" />
+        <p>Loading inventory…</p>
+      </div>
+    } @else {
+
+      <mat-tab-group animationDuration="150ms">
+
+        <!-- ── ALL ──────────────────────────────────────────── -->
+        <mat-tab label="All ({{ inventory().length }})">
+          <ng-container *ngTemplateOutlet="itemList; context: { items: inventory() }" />
+        </mat-tab>
+
+        <!-- ── WEAPONS ──────────────────────────────────────── -->
+        <mat-tab label="Weapons ({{ weapons().length }})">
+          <ng-container *ngTemplateOutlet="itemList; context: { items: weapons() }" />
+        </mat-tab>
+
+        <!-- ── ARMOR ────────────────────────────────────────── -->
+        <mat-tab label="Armor ({{ armors().length }})">
+          <ng-container *ngTemplateOutlet="itemList; context: { items: armors() }" />
+        </mat-tab>
+
+        <!-- ── POTIONS / MISC ───────────────────────────────── -->
+        <mat-tab label="Consumables ({{ consumables().length }})">
+          <ng-container *ngTemplateOutlet="itemList; context: { items: consumables() }" />
+        </mat-tab>
+
+      </mat-tab-group>
+
+    }
+
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="close()">Close</button>
+  </mat-dialog-actions>
+</div>
+
+<!-- ── Item list template ─────────────────────────────────────── -->
+<ng-template #itemList let-items="items">
+  @if (items.length === 0) {
+    <p class="empty-msg text-muted">Nothing here.</p>
+  }
+  <div class="item-list">
+    @for (entry of items; track entry.item_id) {
+      <div class="item-card" [class.equipped]="entry.equipped">
+
+        <div class="item-icon">
+          {{ typeIcon(entry.item?.type) }}
+        </div>
+
+        <div class="item-body">
+          <div class="item-name">
+            {{ entry.item?.name ?? 'Unknown Item' }}
+            @if (entry.equipped) {
+              <span class="equipped-badge">Equipped</span>
+            }
+            @if (entry.quantity > 1) {
+              <span class="qty-badge">×{{ entry.quantity }}</span>
+            }
+          </div>
+
+          <div class="item-stats">
+            @if (entry.item?.effect?.damage) {
+              <span class="stat">⚔ {{ entry.item!.effect.damage }}</span>
+            }
+            @if (entry.item?.effect?.ac_bonus) {
+              <span class="stat">🛡 +{{ entry.item!.effect.ac_bonus }} AC</span>
+            }
+            @if (entry.item?.effect?.attack_bonus) {
+              <span class="stat">🎯 +{{ entry.item!.effect.attack_bonus }} ATK</span>
+            }
+            @if (entry.item?.effect?.heal) {
+              <span class="stat">💚 Heals {{ entry.item!.effect.heal }}</span>
+            }
+            @if (entry.item?.effect?.magic) {
+              <span class="stat magic">✨ Magical</span>
+            }
+            <span class="stat value">{{ entry.item?.value ?? 0 }} gp</span>
+          </div>
+        </div>
+
+        <div class="item-actions">
+          <!-- Equip / Unequip for weapon & armor -->
+          @if (entry.item?.type === 'weapon' || entry.item?.type === 'armor') {
+            <button mat-icon-button
+                    [matTooltip]="entry.equipped ? 'Unequip' : 'Equip'"
+                    [disabled]="actionLoading() === entry.item_id"
+                    (click)="toggleEquip(entry)">
+              @if (actionLoading() === entry.item_id) {
+                <mat-spinner diameter="18" />
+              } @else {
+                <mat-icon>{{ entry.equipped ? 'remove_circle_outline' : 'check_circle_outline' }}</mat-icon>
+              }
+            </button>
+          }
+
+          <!-- Use potion (outside combat context notice handled by DM narrative) -->
+          @if (entry.item?.type === 'potion') {
+            <button mat-icon-button
+                    color="accent"
+                    matTooltip="Use Potion"
+                    [disabled]="actionLoading() === entry.item_id"
+                    (click)="usePotion(entry)">
+              @if (actionLoading() === entry.item_id) {
+                <mat-spinner diameter="18" />
+              } @else {
+                <mat-icon>local_pharmacy</mat-icon>
+              }
+            </button>
+          }
+
+          <!-- Drop -->
+          <button mat-icon-button
+                  color="warn"
+                  matTooltip="Drop Item"
+                  [disabled]="actionLoading() === entry.item_id"
+                  (click)="dropItem(entry)">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+
+      </div>
+
+      <mat-divider />
+    }
+  </div>
+</ng-template>

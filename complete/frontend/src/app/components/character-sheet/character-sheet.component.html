@@ -1,0 +1,72 @@
+@if (svc.character(); as c) {
+  <div class="sheet">
+    <!-- Name & Class -->
+    <div class="char-header">
+      <h3 class="title-font char-name">{{ c.name }}</h3>
+      <span class="char-subtitle text-muted">
+        Level {{ c.level }} {{ c.race }} {{ c.class }}
+      </span>
+    </div>
+
+    <!-- HP Bar -->
+    <div class="stat-row">
+      <span class="stat-label">HP</span>
+      <div class="hp-bar" style="flex:1">
+        <div class="hp-fill"
+             [class.healthy]="svc.hpPercent() > 60"
+             [class.hurt]="svc.hpPercent() <= 60 && svc.hpPercent() > 25"
+             [class.critical]="svc.hpPercent() <= 25"
+             [style.width.%]="svc.hpPercent()"></div>
+      </div>
+      <span class="hp-text">{{ c.hp }}/{{ c.max_hp }}</span>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats">
+      <div class="qstat">
+        <span class="qstat-val gold">{{ c.ac }}</span>
+        <span class="qstat-lbl">AC</span>
+      </div>
+      <div class="qstat">
+        <span class="qstat-val">{{ c.xp }}</span>
+        <span class="qstat-lbl">XP</span>
+      </div>
+      <div class="qstat">
+        <span class="qstat-val gold">{{ c.gold }}g</span>
+        <span class="qstat-lbl">Gold</span>
+      </div>
+    </div>
+
+    <!-- XP Bar -->
+    <div class="xp-row">
+      <div class="xp-track">
+        <div class="xp-fill" [style.width.%]="svc.xpPercent()"></div>
+      </div>
+      @if (c.level < 10) {
+        <span class="xp-label text-muted">{{ svc.xpToNext() }} XP to Level {{ c.level + 1 }}</span>
+      } @else {
+        <span class="xp-label gold">⭐ Max Level</span>
+      }
+    </div>
+
+    <!-- Ability Scores -->
+    <div class="abilities">
+      @for (key of abilityKeys; track key) {
+        <div class="ability-cell" [matTooltip]="abilityLabels[key]">
+          <span class="ability-key">{{ key.toUpperCase() }}</span>
+          <span class="ability-score">{{ c[key] }}</span>
+          <span class="ability-mod text-muted">
+            {{ (svc.modifiers()?.[key] ?? 0) >= 0 ? '+' : '' }}{{ svc.modifiers()?.[key] ?? 0 }}
+          </span>
+        </div>
+      }
+    </div>
+
+    <!-- Level Up Banner -->
+    @if (svc.canLevelUp()) {
+      <div class="levelup-banner gold">
+        ⬆ Level Up Available!
+      </div>
+    }
+  </div>
+}
