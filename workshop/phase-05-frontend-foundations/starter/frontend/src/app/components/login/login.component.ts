@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import type { CampaignSlot } from '../../models/game.models';
 
-// FOCUS FILE — the template/styles below are complete (HTML/CSS isn't this
+// FOCUS FILE — the template (.html) and styles (.css) are complete (HTML/CSS isn't this
 // workshop's teaching focus). Your job is just the class body: wire each
 // method up to AuthService and the Router.
 

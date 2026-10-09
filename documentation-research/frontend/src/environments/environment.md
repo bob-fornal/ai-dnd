@@ -12,7 +12,7 @@ The build-time API base URL for the frontend.
 - Update `environment.prod.ts` whenever the Worker URL changes, and add the matching origin to CORS in [worker index.md](../../../worker/src/index.md) if needed.
 
 ## Related deployment config
-- `frontend/wrangler.toml`: Pages project `ai-dnd`, output `dist/frontend/browser`. Its comment about `NG_APP_API_URL` is **out of date**; the URL comes from this file.
+- `frontend/wrangler.toml`: Pages project `ai-dnd`, output `dist/frontend/browser`. Its comment about `NG_APP_API_URL` is **out of date** ([bugs.md B-11](../../../bugs.md)); the URL comes from this file.
 - `frontend/public/_routes.json`: excludes `/api/*` from the SPA. See [DEPLOYMENT_NOTES §3](../../../docs/DEPLOYMENT_NOTES.md#3-cloudflare-pages-deployment) for Pages support.
 
 ## Connections

@@ -21,7 +21,7 @@ export interface InventoryDialogData {
   sessionId: string;
 }
 
-// NOTE: This component's template/styles were already introduced verbatim back in
+// NOTE: This component's template (.html) and styles (.css) were introduced verbatim in
 // Phase 6 (as supporting scaffolding, so GameConsoleComponent would compile and the
 // Inventory dialog would open). This phase is where you build out its actual logic —
 // the three action handlers below (equip, use, drop) are the focus.

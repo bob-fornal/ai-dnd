@@ -17,11 +17,11 @@
 - **`loadMoreLog`:** fetches older pages and prepends them.
 
 ## Gotchas
-- **Use Item** sends no `itemId`, and the Worker ignores it anyway ([routes/combat](../../../../../worker/src/routes/combat.md)).
-- On death it only shows a message. Input stays enabled and HP stays at 0.
+- **Use Item** sends no `itemId`, and the Worker ignores it anyway ([bugs.md B-04](../../../../../bugs.md), [routes/combat](../../../../../worker/src/routes/combat.md)).
+- On death it only shows a message. Input stays enabled and HP stays at 0 ([bugs.md B-10](../../../../../bugs.md)).
 - Narrative entries live only in memory. A reload shows just the log sidebar and a "resumes" line.
 - The log isn't refreshed after new actions; only "Load more" fetches.
-- If the session has expired in KV, `getSession` returns 404 and the console can't load ([routes/session](../../../../../worker/src/routes/session.md)).
+- If the session has expired in KV, `getSession` returns 404 and the console can't load ([bugs.md B-07](../../../../../bugs.md), [routes/session](../../../../../worker/src/routes/session.md)).
 
 ## Connections
 **Parents (used by):**

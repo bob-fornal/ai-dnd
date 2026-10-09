@@ -18,7 +18,7 @@ Character creation, lookup, and inventory management.
 
 ## Gotchas
 - `activeQuest` on GET is always quest id `1`. It ignores the session's quest ([bugs.md B-06](../../../bugs.md)).
-- The equip query aliases the table in `UPDATE character_inventory ci …`, which SQLite may reject. Check this if equipping errors.
+- The equip query aliases the table in `UPDATE character_inventory ci …`, which SQLite may reject. Check this if equipping errors ([bugs.md B-13](../../../bugs.md)).
 - Equipped state is display-only; combat ignores it ([services/combat.md](../services/combat.md)).
 
 ## Connections

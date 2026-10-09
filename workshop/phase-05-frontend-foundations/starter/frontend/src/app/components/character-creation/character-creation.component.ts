@@ -19,7 +19,7 @@ import type { Race, CharacterClass } from '../../models/game.models';
 interface RaceOption { value: Race; icon: string; bonus: string; }
 interface ClassOption { value: CharacterClass; icon: string; desc: string; hitDie: string; }
 
-// FOCUS FILE — the template/styles below are complete (multi-step
+// FOCUS FILE — the template (.html) and styles (.css) are complete (multi-step
 // mat-stepper form isn't this workshop's teaching focus). Your job is the
 // class body: the ability-roll method selection is already wired via
 // signals, but `createCharacter()` needs to call GameApiService, update

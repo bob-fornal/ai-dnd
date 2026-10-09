@@ -20,7 +20,7 @@ The deterministic combat engine. It resolves a full round (player, then monster)
 | `use_item` | **No mechanical effect.** The monster still attacks |
 
 - The monster attacks only if combat hasn't ended. If player HP would reach 0 or below, combat ends in defeat.
-- Damage dice come from the class (`getPlayerDamageDice`), **not** the equipped weapon. Equipment has no effect on combat.
+- Damage dice come from the class (`getPlayerDamageDice`), **not** the equipped weapon. Equipment has no effect on combat ([bugs.md B-08](../../../bugs.md)).
 
 ## Gotchas
 - `rollLoot` returns nothing when `monster.loot_table_id` is null, and every seeded monster has it null, so loot never drops ([bugs.md B-01](../../../bugs.md)).

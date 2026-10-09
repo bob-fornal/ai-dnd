@@ -6,7 +6,7 @@
 `{ session: SessionData, character: Character | null }`, or 404 if the session isn't in KV.
 
 ## Gotchas
-- `rebuildSession` is imported but **not** used. Once KV expires (7 days without play) this returns 404, so the game console can't resume, even though the other routes can rebuild the session.
+- `rebuildSession` is imported but **not** used. Once KV expires (7 days without play) this returns 404, so the game console can't resume, even though the other routes can rebuild the session ([bugs.md B-07](../../../bugs.md)).
 
 ## Connections
 **Parents (used by):**

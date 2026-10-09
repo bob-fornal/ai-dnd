@@ -2,6 +2,8 @@
 
 This folder is a copy of `../complete/` used to test one idea: **documentation that sits next to the code it describes lowers the number of tokens an agent needs to load before doing a task.** The application code is the same as `complete/`. Only the documentation is organized differently.
 
+**Who these docs are for:** AI/LLM agents. Every markdown file beside the code exists so an agent can load the context around a component (what it does, its rules, what it connects to) in the fewest tokens, without reading unrelated files or the whole PRD. Write for that reader: dense, factual, and linked. Prose for people goes in the shared docs (`PRD.md`, `SETUP.md`, `docs/`).
+
 Follow these rules when reading, writing, or changing anything in this folder.
 
 ---
@@ -19,6 +21,20 @@ Every code file gets a markdown file **beside it, with the same base name**:
 | `worker/migrations/0001_initial_schema.sql` | `worker/migrations/0001_initial_schema.md` |
 
 - Document source code only: `.ts`, `.sql`, `.scss`, and `.html` files that carry logic or structure.
+
+### Angular components are one unit
+
+Angular can split a component across several files. **Treat all of them as one component with one doc**, named after the component, not after each file:
+
+| Component files | One doc |
+|---|---|
+| `inventory.component.ts` + `.html` + `.scss`/`.css` (+ `.spec.ts`) | `inventory.component.md` |
+
+- The doc covers the class (`.ts`), the template (`.html`), and the styles (`.scss`/`.css`). Add a short **Files** line listing which parts exist, for example `Files: .ts, .html, .scss`.
+- When you change any one of those files, the component doc is the doc to update.
+- When you read a component, open its doc first, then only the part you need (template, styles, or class) rather than all three.
+- Components in this folder currently use inline `template` and `styles` in the `.ts` file. If one gets split out later, keep the single doc.
+- The same rule applies to any other code split by concern (for example a service and its `.spec.ts`): one doc per logical unit.
 - Do not document generated or local-state folders (`node_modules/`, `dist/`, `.angular/`, `.wrangler/`).
 - Small config files (`tsconfig*.json`, `angular.json`, `package.json`) don't need their own doc. Cover them in the doc of the code that depends on them, or in [SETUP.md](SETUP.md) if they matter for setup.
 - Trivial files (for example `main.ts`, `environment.ts`) can share a doc with their closest parent if a separate file would only repeat it.
@@ -90,7 +106,9 @@ The top-level documents remain the reference for concerns that cut across compon
 | [PRD.md](PRD.md) | Product requirements, data model, API spec, prompt design |
 | [SETUP.md](SETUP.md) | Local development and deployment steps |
 | [docs/DEPLOYMENT_NOTES.md](docs/DEPLOYMENT_NOTES.md) | Production issues and their fixes |
+| [bugs.md](bugs.md) | Known bugs, each with an ID (`B-01`…), location, cause, and affected docs |
 
+- **Bugs:** record each defect once in `bugs.md` and refer to it from component docs by ID, for example `([bugs.md B-02](../../../bugs.md))`. Don't copy the details into the component doc. Fixing a bug means deleting its entry and the references to it. A newly found bug gets the next free ID.
 - Keep these accurate. When a code change affects a requirement, an API shape, a setup step, or a deployment behavior, update the matching section in the same change.
 - New cross-cutting documentation goes in `docs/`, in short single-topic files, with a link from `code.md`.
 - Component docs may link to a specific heading in these files (for example `../../PRD.md#43-combat-system`) instead of copying the content.
@@ -111,7 +129,8 @@ Don't read the whole PRD by default. If you had to, because a component doc was 
 
 A change in this folder is complete when:
 
-- [ ] Every new or changed code file has an up-to-date doc beside it.
+- [ ] Every new or changed code file has an up-to-date doc beside it (one doc per Angular component, whatever its file split).
+- [ ] `bugs.md` reflects bugs fixed or found, and component docs reference them by ID.
 - [ ] Parent and child links are correct on both ends of every changed import.
 - [ ] `code.md` lists every doc, with no broken links.
 - [ ] `PRD.md`, `SETUP.md`, and `docs/` reflect any cross-cutting change.

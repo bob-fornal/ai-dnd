@@ -26,7 +26,7 @@ interface DisplayEntry {
   timestamp: Date;
 }
 
-// FOCUS FILE — the template/styles below are complete (it's a lot of markup,
+// FOCUS FILE — the template (.html) and styles (.css) are complete (it's a lot of markup,
 // and layout isn't this workshop's teaching focus). The signal fields that
 // read from CharacterStateService (charSvc.inCombat(), charSvc.combatState(),
 // charSvc.canLevelUp(), charSvc.inventory()) are already wired — that's the

@@ -24,7 +24,7 @@ By the end of this phase you will be able to:
 
 ### 1. The state service is doing the reactive work — the console just reads it
 
-Almost every conditional and binding in `game-console.component.ts`'s template reads directly from `charSvc` (`charSvc.inCombat()`, `charSvc.combatState()`, `charSvc.canLevelUp()`, `charSvc.inventory().length`) — the `CharacterStateService` you built in Phase 5. The component's *own* signals (`entries`, `suggestedActions`, `loading`, `logEntries`) are console-local UI state — the narrative scrollback and the log panel don't belong on the shared character state, because nothing else in the app needs to read them. Notice what this buys you: when `combatAction()` calls `charSvc.setCombatState(...)`, the combat header, the level-up panel, and the character sheet sidebar all update in the same tick, with zero wiring between those three pieces — they're not talking to each other, they're all just reading the same signal.
+Almost every conditional and binding in `game-console.component.html` reads directly from `charSvc` (`charSvc.inCombat()`, `charSvc.combatState()`, `charSvc.canLevelUp()`, `charSvc.inventory().length`) — the `CharacterStateService` you built in Phase 5. The component's *own* signals (`entries`, `suggestedActions`, `loading`, `logEntries`) are console-local UI state — the narrative scrollback and the log panel don't belong on the shared character state, because nothing else in the app needs to read them. Notice what this buys you: when `combatAction()` calls `charSvc.setCombatState(...)`, the combat header, the level-up panel, and the character sheet sidebar all update in the same tick, with zero wiring between those three pieces — they're not talking to each other, they're all just reading the same signal.
 
 ### 2. Frontend-first UI shell — a deliberate teaching choice, not a workaround
 
@@ -36,19 +36,19 @@ By the end of this phase, clicking **Inventory** opens a fully working dialog, a
 
 ### 4. Building out the theme (PRD.md section 10)
 
-Phase 1 left `styles.scss` as a bare Material-core-plus-reset placeholder. This phase is where it becomes the actual dark-fantasy look: a custom `mat.define-theme()` (dark, violet primary, amber tertiary), Google Fonts (Cinzel for titles/UI chrome, Crimson Text for narrative prose), and a set of CSS custom properties (`--bg-deep`, `--gold`, `--purple-light`, `--narrative-font`, etc.) that every component in this phase already references by name in its `styles: [...]` block. That's why the components render but look unstyled/default-Material until you finish the `styles.scss` TODOs — the class names and variables are already wired up, waiting for definitions.
+Phase 1 left `styles.scss` as a bare Material-core-plus-reset placeholder. This phase is where it becomes the actual dark-fantasy look: a custom `mat.define-theme()` (dark, violet primary, amber tertiary), Google Fonts (Cinzel for titles/UI chrome, Crimson Text for narrative prose), and a set of CSS custom properties (`--bg-deep`, `--gold`, `--purple-light`, `--narrative-font`, etc.) that every component in this phase already references by name in its `.component.css` stylesheet. That's why the components render but look unstyled/default-Material until you finish the `styles.scss` TODOs — the class names and variables are already wired up, waiting for definitions.
 
 ---
 
 ## Step-by-Step
 
-1. Open `starter/frontend/src/app/components/game-console/game-console.component.ts`. The template, styles, field declarations, and constructor injections are complete — read through `ngOnInit` and each method's `TODO` comment before writing anything, since several methods call each other (`sendQuickAction` → `sendAction`, `combatAction`/`levelUp` → `updateCampaignSlot`).
+1. Open `starter/frontend/src/app/components/game-console/game-console.component.ts`. The template (`.html`), styles (`.css`), spec (`.spec.ts`), field declarations, and constructor injections are complete — read through `ngOnInit` and each method's `TODO` comment before writing anything, since several methods call each other (`sendQuickAction` → `sendAction`, `combatAction`/`levelUp` → `updateCampaignSlot`).
 2. Implement `ngOnInit()`: read the `sessionId` route param (already done for you), check `history.state` for a start narrative from character creation, call `GameApiService.getSession()`, then `getInventory()`, then `loadLog()`.
 3. Implement the private helpers first — `pushEntry()`, `scrollBottom()`, `loadLog()` — since `sendAction()`, `combatAction()`, and `levelUp()` all call `pushEntry()`.
 4. Implement `ngAfterViewChecked()` (the scroll-to-bottom trigger), then `sendAction()`, `sendQuickAction()`, `combatAction()`, `levelUp()`, `loadMoreLog()`, and `enemyHpPercent()`.
 5. Implement `openInventory()` — open `InventoryComponent` (imported already) via `MatDialog`, passing an `InventoryDialogData`.
 6. Implement `updateCampaignSlot()` using `AuthService`, same pattern as Phase 5's character creation.
-7. Open `starter/frontend/src/app/components/character-sheet/character-sheet.component.ts` — read it over, but there's nothing to implement here. It's a pure display component: every computed value it needs (`hpPercent`, `xpPercent`, `xpToNext`, `modifiers`) already lives on `CharacterStateService` from Phase 5, so this file is template-only.
+7. Open `starter/frontend/src/app/components/character-sheet/character-sheet.component.ts` — read it over, but there's nothing to implement here. It's a pure display component: every computed value it needs (`hpPercent`, `xpPercent`, `xpToNext`, `modifiers`) already lives on `CharacterStateService` from Phase 5, so the class is a few lines and the real content is in `character-sheet.component.html`.
 8. Confirm `starter/frontend/src/app/components/inventory/inventory.component.ts` is present (copied verbatim, no changes needed).
 9. Open `starter/frontend/src/styles.scss` and work through its numbered `TODO`s — Google Fonts import, `mat.define-theme()`, CSS custom properties, global look, the `.narrative-block` parchment panel, `.hp-bar`/`.hp-fill` states, `.in-combat-border`, and Material component overrides.
 10. Confirm `app.routes.ts` already has the `game/:sessionId` route (provided complete this phase — don't edit it).
