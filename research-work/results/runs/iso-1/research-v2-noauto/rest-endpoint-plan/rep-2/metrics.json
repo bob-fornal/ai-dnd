@@ -1,0 +1,56 @@
+{
+  "inputTokens": 67324,
+  "outputTokens": 1230,
+  "cacheReadTokens": 56348,
+  "cacheWriteTokens": 10970,
+  "reasoningTokens": 23,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 5.10066,
+  "apiDurationMs": 12104,
+  "mainInputTokens": 67324,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 694
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 638
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2117,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "The docs literally use this exact feature as the worked example. Here's the file list:\n\n## Worker\n1. **`worker/src/types/index.ts`** — add `RestBody { sessionId, characterId }` request type (+ a rest-cost constant if desired).\n2. **`worker/src/routes/rest.ts`** (new) — `restRoutes = new Hono<{ Bindings: Env }>()`; validate body, `getCharacter`, check `gold >= cost`, then `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` using the whitelisted-field helper at `services/character.ts:94`. Optionally call `askDM` for narration + `appendHistory`/`saveSession`/`adventure_log` insert, mirroring `routes/action.ts`.\n3. **`worker/src/index.ts:41-48`** — mount `app.route('/api/rest', restRoutes)`. If the frontend origin changes, CORS list is at `:19-35`.\n4. **`worker/src/services/character.ts`** — put any shared gold/HP logic here (not in the route) if reused elsewhere.\n5. **`worker/migrations/000N_*.sql`** (new, only if schema changes needed — e.g. tracking rest cooldown) — never edit `0001_initial_schema.sql`.\n\n## Frontend\n6. **`frontend/src/app/models/game.models.ts`** — add a response interface mirroring the Worker's rest response (updated character, gold spent, etc.).\n7. **`frontend/src/app/services/game-api.service.ts`** — add `rest(sessionId, characterId)` method POSTing to `${API_BASE}/api/rest`.\n8. **`frontend/src/app/components/game-console/game-console.component.ts` + `.html`** — add a \"Rest at the Inn\" button/handler that calls `GameApiService.rest(...)`, then `CharacterStateService.setCharacter(res.updatedCharacter)`, and pushes a narrative/system log entry.\n9. **`frontend/src/app/components/game-console/game-console.component.spec.ts`** — add tests using `GameApiService` as a Jasmine spy.\n\n## Docs (same change, per AUTHORING.md)\n- `.md` doc beside every new/changed file (`worker/src/routes/rest.md`, etc.), plus `code.md` entry and symbol-index rebuild.\n- `docs/PRD.md` §9 API spec, and `AGENTS.md` routing table if this becomes a new feature area.\n\n**Rule to preserve:** HP/gold math lives in the Worker (`hp = max_hp`, `gold -= cost`); the AI only narrates.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

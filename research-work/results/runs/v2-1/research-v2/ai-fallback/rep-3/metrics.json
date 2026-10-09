@@ -1,0 +1,54 @@
+{
+  "inputTokens": 177472,
+  "outputTokens": 1465,
+  "cacheReadTokens": 161481,
+  "cacheWriteTokens": 15977,
+  "reasoningTokens": 322,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 8.69167,
+  "apiDurationMs": 20513,
+  "mainInputTokens": 177472,
+  "mainRequests": 7,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "view": 5,
+    "glob": 1
+  },
+  "failedToolCalls": 2,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2483
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 680,
+  "codeTokensRead": 2483,
+  "otherToolTokens": 21,
+  "filesModified": [],
+  "answer": "All in `worker/src/services/ai-dm.ts`:\n\n**Model fallback chain (`askDM`, line 81):** Primary call uses `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format). If that `try` block throws (streaming response, exception, etc.), it's caught and retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. If the fallback model also throws, `askDM` immediately returns `fallbackNarrative(playerAction)` — it never reaches JSON parsing.\n\n**Invalid JSON handling (`parseAIResponse`):** Whatever raw text comes back (from either model) is passed to `parseAIResponse(rawText, playerAction)`, which:\n1. Returns `fallbackNarrative` if `raw` is empty/non-string.\n2. Strips ```` ```json ```` fences, then regex-extracts the first `{…}` block if the text isn't already JSON — returning `fallbackNarrative` if no `{…}` is found (logs a `console.warn`).\n3. Wraps `JSON.parse(cleaned)` in a try/catch — on parse failure, returns `fallbackNarrative`.\n4. On success, fills in missing/invalid fields with safe defaults (e.g. `null` deltas, default `suggestedActions`, empty `diceRolls`).\n\n**`fallbackNarrative(playerAction)`** is the single graceful-degradation function: it synthesizes a generic narrative string plus a fully-populated, valid `AIDMResponse` with null/empty game-state fields, so the API contract is always satisfied even when both models or JSON parsing fail.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "inputTokens": 205603,
+  "outputTokens": 1946,
+  "cacheReadTokens": 191488,
+  "cacheWriteTokens": 14099,
+  "reasoningTokens": 296,
+  "modelRequests": 8,
+  "premiumRequests": 1,
+  "aiCredits": 9.30371,
+  "apiDurationMs": 22374,
+  "mainInputTokens": 205603,
+  "mainRequests": 8,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 9,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 5,
+    "glob": 1
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1128
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 638
+    },
+    {
+      "path": "worker/src/routes/shop.md",
+      "kind": "doc",
+      "tokens": 399
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1037,
+  "codeTokensRead": 1128,
+  "otherToolTokens": 255,
+  "filesModified": [],
+  "answer": "**Gold received:** 14 gp. Longsword `value = 15` (seed.sql:6). Sell logic in `worker/src/routes/shop.ts` (`POST /api/shop/transaction`, sell branch): `salePrice = Math.floor(item.value * 0.5) * quantity` → `floor(7.5) * 2 = 14`.\n\n**Checks, in order:**\n1. Body validation — `characterId/shopId/action/itemId/quantity` present (400 if missing).\n2. `getCharacter(DB, characterId)` — 404 if not found.\n3. Item lookup `SELECT * FROM items WHERE id = ?` — 404 if not found.\n4. Sell-specific: `SELECT * FROM character_inventory WHERE character_id=? AND item_id=?` and verify `inv.quantity >= quantity` — 400 \"You do not have enough of this item to sell\" if not.\n\n**Inventory row effect:** run as one `DB.batch` — gold is added (`UPDATE characters SET gold = gold + 14`), and since `inv.quantity === quantity` (selling exactly the 2 owned) the row is removed via `DELETE FROM character_inventory WHERE character_id=? AND item_id=?`; if they owned more than 2, it would instead `UPDATE … SET quantity = quantity - 2`. Note: shop stock is not restocked, and equipped status isn't checked (per `worker/src/routes/shop.md`).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

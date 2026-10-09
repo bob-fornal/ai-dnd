@@ -1,0 +1,57 @@
+{
+  "inputTokens": 114488,
+  "outputTokens": 807,
+  "cacheReadTokens": 103699,
+  "cacheWriteTokens": 10779,
+  "reasoningTokens": 54,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 5.57773,
+  "apiDurationMs": 10495,
+  "mainInputTokens": 114488,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1048
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 440
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 398
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1446,
+  "codeTokensRead": 440,
+  "otherToolTokens": 25,
+  "filesModified": [],
+  "answer": "**Allowed origins** (`worker/src/index.ts`, `cors()` call, lines ~20–31): the `origin` function allows exactly `http://localhost:4200`, any `*.pages.dev` subdomain, and any `*.workers.dev` subdomain. Everything else returns `null` (blocked).\n\n**To add a new custom domain**: edit the `origin` callback inside `app.use('*', cors({...}))` in `worker/src/index.ts` (the `if (...)` condition), adding an exact match or `.endsWith(...)` check for your domain — array entries can't be used since Hono matches those as exact strings only (wildcards require the function form). See `docs/DEPLOYMENT_NOTES.md#4-cors` for more detail.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

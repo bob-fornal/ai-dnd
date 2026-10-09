@@ -1,0 +1,51 @@
+{
+  "inputTokens": 66261,
+  "outputTokens": 387,
+  "cacheReadTokens": 56331,
+  "cacheWriteTokens": 9924,
+  "reasoningTokens": 13,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 3.99582,
+  "apiDurationMs": 6437,
+  "mainInputTokens": 66261,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 829
+    },
+    {
+      "path": "docs/flows/character-creation.md",
+      "kind": "doc",
+      "tokens": 748
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1577,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "A Fighter starts with: **Longsword, Shield, Potion of Healing, and Torches** (item IDs 2, 15, 17, 23 — note code comments mislabel ID 23 as \"Rations\", a known bug B-09).\n\nDefined in `worker/src/services/character.ts:65` in the `CLASS_STARTING_ITEMS` map (used by `createCharacter` at `:59`); item names resolve from the `items` rows in `worker/src/db/seed.sql`. Documented in `docs/flows/character-creation.md`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

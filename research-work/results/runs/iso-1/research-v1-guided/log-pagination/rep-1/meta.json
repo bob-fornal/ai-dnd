@@ -1,0 +1,54 @@
+{
+  "arm": {
+    "id": "research-v1-guided",
+    "dir": "../research-documentation-v1",
+    "description": "v1 component docs, told to follow AGENTS.md's context-gathering steps.",
+    "preamble": "Before answering, read AGENTS.md and follow its 'How to gather context for a task' steps: start from code.md, then the relevant component docs, then only the code you need.",
+    "docsVersion": "v1"
+  },
+  "task": {
+    "id": "log-pagination",
+    "area": "full-stack",
+    "heldOut": true,
+    "prompt": "How does the adventure log sidebar load older entries? Describe the endpoint, its paging parameters and limits, the sort order, and how the UI decides there is nothing more to load.",
+    "expect": [
+      [
+        "/api/log",
+        "log.ts"
+      ],
+      [
+        "limit"
+      ],
+      [
+        "50"
+      ],
+      [
+        "created_at"
+      ],
+      [
+        "loadMoreLog"
+      ],
+      [
+        "total"
+      ]
+    ]
+  },
+  "rep": 1,
+  "prompt": "Before answering, read AGENTS.md and follow its 'How to gather context for a task' steps: start from code.md, then the relevant component docs, then only the code you need.\n\nHow does the adventure log sidebar load older entries? Describe the endpoint, its paging parameters and limits, the sort order, and how the UI decides there is nothing more to load.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\iso-1\\research-documentation-v1",
+  "isolated": true,
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-custom-instructions",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color",
+    "--disallow-temp-dir"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T16:45:32.477Z"
+}

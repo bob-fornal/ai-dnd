@@ -1,0 +1,63 @@
+{
+  "inputTokens": 93279,
+  "outputTokens": 1095,
+  "cacheReadTokens": 81256,
+  "cacheWriteTokens": 12015,
+  "reasoningTokens": 97,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 5.72547,
+  "apiDurationMs": 13122,
+  "mainInputTokens": 93279,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1048
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.ts",
+      "kind": "code",
+      "tokens": 623
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 593
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 443
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 2084,
+  "codeTokensRead": 623,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Login** (no server auth): `AuthService.login()` in `frontend/src/app/services/auth.service.ts:16` takes a name-only username, checks `localStorage` key `ai_dnd_user_<lowercase name>` — if found, loads that `UserProfile`; otherwise creates a fresh `{username, campaigns: []}` and persists it to both that per-user key and the active-session key `ai_dnd_user`. There's no password/server call; `isLoggedIn()` (`:12`) is just `profile() !== null`, enforced client-side by `auth.guard.ts`.\n\n**Campaigns are stored client-side only**, as `CampaignSlot[]` inside the `UserProfile` in `localStorage` (keys `ai_dnd_user` and `ai_dnd_user_<name>`). Each slot holds a `sessionId`/`characterId` pointing to server data (Workers KV session + D1 character), set via `addCampaign()` (`:36`, called from character creation) and `updateCampaign()` (`:44`, called from the game console).\n\n**Deleting a campaign slot**: `removeCampaign(slotId)` (`auth.service.ts:54`) only filters the slot out of the local `campaigns` array and re-persists — it does **not** call the Worker. The server-side character in D1 (`characters`, `character_inventory`, `adventure_log`) and the KV session (`session:<sessionId>`) are untouched and remain until the KV TTL (`SESSION_TTL_SECONDS = 604800`, 7 days) expires; D1 rows persist indefinitely with no delete path. Deleting the slot just orphans the server data — it's unreachable from the UI afterward.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "authGuard"
+    ]
+  }
+}

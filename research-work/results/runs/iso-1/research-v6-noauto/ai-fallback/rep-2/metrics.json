@@ -1,0 +1,61 @@
+{
+  "inputTokens": 143378,
+  "outputTokens": 1148,
+  "cacheReadTokens": 130117,
+  "cacheWriteTokens": 13249,
+  "reasoningTokens": 70,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 7.06499,
+  "apiDurationMs": 13867,
+  "mainInputTokens": 143378,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 3,
+    "powershell": 1,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1496
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1041
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 721
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1762,
+  "codeTokensRead": 1496,
+  "otherToolTokens": 27,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`, `askDM` (line 81) calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast` with `response_format: { type: 'json_object' }`. On throw/exception it falls back to `@cf/mistral/mistral-7b-instruct-v0.2-lora`; if that also throws, it returns `fallbackNarrative(playerAction)` directly.\n\nIf a model call succeeds but returns text, the raw text goes to `parseAIResponse(raw, playerAction)`, which:\n- Strips ```json fences, extracts the first `{...}` block if needed.\n- If no JSON object is found, or `JSON.parse` throws, it calls `fallbackNarrative(playerAction)`.\n- If parsing succeeds but fields are missing/invalid, it fills defaults per-field (e.g. default narrative text, empty arrays, nulls) rather than failing.\n\n`fallbackNarrative` returns a canned `AIDMResponse`: generic narrative text (`\"You attempt to {action}...\"`), all `gameStateChanges` fields null/false/empty, default `suggestedActions` (`Look around`, `Proceed carefully`, `Listen for sounds`, `Rest a moment`), and empty `diceRolls`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

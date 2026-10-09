@@ -1,0 +1,47 @@
+{
+  "inputTokens": 45882,
+  "outputTokens": 616,
+  "cacheReadTokens": 36066,
+  "cacheWriteTokens": 9812,
+  "reasoningTokens": 14,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 3.79112,
+  "apiDurationMs": 6996,
+  "mainInputTokens": 45882,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "powershell": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 614
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 614,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## KV expiry resume path\n\n**Frontend:** `login.component.ts:51-52` `resumeCampaign(slot)` → navigates to `/game/<sessionId>` → `game-console.component.ts:69-104 ngOnInit` calls `GameApiService.getSession` (`game-api.service.ts:62`) → `GET /api/session/:id`.\n\n**Worker:** `worker/src/routes/session.ts:9-14` handler calls `loadSession` (`services/session.ts:12`). KV key `session:<sessionId>` expired (TTL `SESSION_TTL_SECONDS = 604800`, 7 days) → miss → returns **404 \"Session not found or expired\"**.\n\n**Result: the game cannot continue.** `routes/session.ts` imports `rebuildSession` (`services/session.ts:58`, which rebuilds history from the last 20 `adventure_log` rows) but never calls it — this is bug **B-07**. `game-console.component.ts` just shows \"Could not load session\" and stays empty; D1 character/inventory/log data still exists but is unreachable via this route.\n\nInterestingly, `action`/`combat`/`levelup`/`quest` routes *do* call `rebuildSession` and would recover (with location reset to \"Unknown — session rebuilt from log\", quest reset, combat lost), but they're never reached because the console fails earlier at the `getSession` step. Fix: have `routes/session.ts` fall back to `rebuildSession` using the character's `session_id`/`characterId` when KV lookup misses.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

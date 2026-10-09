@@ -1,0 +1,97 @@
+{
+  "totalPremiumRequestCost": 1,
+  "totalUserRequests": 1,
+  "totalNanoAiu": 4918770000,
+  "tokenDetails": {
+    "input": {
+      "tokenCount": 8
+    },
+    "cache_read": {
+      "tokenCount": 82671
+    },
+    "cache_write": {
+      "tokenCount": 10727
+    },
+    "output": {
+      "tokenCount": 582
+    }
+  },
+  "totalApiDurationMs": 8138,
+  "sessionStartTime": "2026-10-09T21:55:58.543Z",
+  "codeChanges": {
+    "linesAdded": 0,
+    "linesRemoved": 0,
+    "filesModifiedCount": 0,
+    "filesModified": []
+  },
+  "modelMetrics": {
+    "claude-sonnet-5": {
+      "requests": {
+        "count": 4,
+        "cost": 1
+      },
+      "usage": {
+        "inputTokens": 93406,
+        "outputTokens": 582,
+        "cacheReadTokens": 82671,
+        "cacheWriteTokens": 10727,
+        "reasoningTokens": 17
+      },
+      "cacheExpiresAt": "2026-10-09T22:01:12.896Z",
+      "totalNanoAiu": 4918770000,
+      "tokenDetails": {
+        "input": {
+          "tokenCount": 8
+        },
+        "cache_read": {
+          "tokenCount": 82671
+        },
+        "cache_write": {
+          "tokenCount": 10727
+        },
+        "output": {
+          "tokenCount": 582
+        }
+      }
+    }
+  },
+  "agentMetrics": {
+    "main": {
+      "totalApiDurationMs": 8138,
+      "totalNanoAiu": 4918770000,
+      "modelMetrics": {
+        "claude-sonnet-5": {
+          "requests": {
+            "count": 4,
+            "cost": 1
+          },
+          "usage": {
+            "inputTokens": 93406,
+            "outputTokens": 582,
+            "cacheReadTokens": 82671,
+            "cacheWriteTokens": 10727,
+            "reasoningTokens": 17
+          },
+          "totalNanoAiu": 4918770000,
+          "tokenDetails": {
+            "input": {
+              "tokenCount": 8
+            },
+            "cache_read": {
+              "tokenCount": 82671
+            },
+            "cache_write": {
+              "tokenCount": 10727
+            },
+            "output": {
+              "tokenCount": 582
+            }
+          }
+        }
+      }
+    }
+  },
+  "currentModel": "claude-sonnet-5",
+  "lastCallInputTokens": 24415,
+  "lastCallOutputTokens": 256
+}

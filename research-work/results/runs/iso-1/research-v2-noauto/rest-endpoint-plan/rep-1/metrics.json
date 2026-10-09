@@ -1,0 +1,71 @@
+{
+  "inputTokens": 71285,
+  "outputTokens": 1478,
+  "cacheReadTokens": 56356,
+  "cacheWriteTokens": 14923,
+  "reasoningTokens": 19,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 6.33707,
+  "apiDurationMs": 14099,
+  "mainInputTokens": 71285,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "view": 6
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 741
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 711
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 694
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 638
+    },
+    {
+      "path": "frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 537
+    }
+  ],
+  "docFilesRead": 6,
+  "codeFilesRead": 0,
+  "docTokensRead": 4106,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "The `add-endpoint.md` doc literally uses \"rest at the inn\" as its worked example. Here's the full file list:\n\n**Worker**\n1. `worker/src/types/index.ts` — add `RestBody { sessionId, characterId }` (and a cost constant if desired, alongside `XP_THRESHOLDS`/`STANDARD_ARRAY` etc.)\n2. `worker/src/routes/rest.ts` (new) — `restRoutes = new Hono<{ Bindings: Env }>()`; validate body, `getCharacter`, check `gold` ≥ cost, then `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` via `services/character.ts:94` (whitelisted fields only); optionally `askDM` narration + `appendHistory`/`saveSession` + `adventure_log` insert, following `routes/action.ts` as template.\n3. `worker/src/index.ts:41-48` — mount `app.route('/api/rest', restRoutes)`; if a new frontend origin is needed, update the CORS function at `:19-35`.\n4. `worker/src/services/character.ts` (or a new service) — if the gold/HP logic is shared, put it here rather than in the route.\n5. `worker/migrations/000N_*.sql` (new) — only if schema changes (e.g., adding an inn cost/location table); never edit `0001_initial_schema.sql`.\n\n**Frontend**\n6. `frontend/src/app/models/game.models.ts` — response interface mirroring the new Worker type (e.g. `RestResponse`).\n7. `frontend/src/app/services/game-api.service.ts` — new `rest(sessionId, characterId)` method posting to `${API_BASE}/api/rest`.\n8. `frontend/src/app/components/game-console/game-console.component.ts` + `.html` — \"Rest\" button/handler calling the API, then `CharacterStateService.setCharacter(res.updatedCharacter)` and pushing a log entry.\n9. `frontend/src/app/components/game-console/game-console.component.spec.ts` — tests with `GameApiService` as a Jasmine spy.\n\n**Docs** (per AUTHORING.md §3): add/update a `rest.md` beside the new route, update `game-api.service.md`, `game.models.md`, `code.md` doc index + symbol index, `PRD.md` §9, and the `AGENTS.md` routing table.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

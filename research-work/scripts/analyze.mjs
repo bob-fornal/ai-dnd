@@ -51,6 +51,7 @@ for (const runRoot of runRoots) for (const armDir of readdirSync(runRoot)) {
         toolset: m.toolset,
         modelRequests: m.modelRequests, aiCredits: m.aiCredits,
         toolCalls: m.toolCalls, failedToolCalls: m.failedToolCalls,
+        multiReadCalls: m.multiReadCalls ?? 0,
         docFilesRead: m.docFilesRead, codeFilesRead: m.codeFilesRead,
         docTokensRead: m.docTokensRead, codeTokensRead: m.codeTokensRead,
         readTokens: m.docTokensRead + m.codeTokensRead,
@@ -79,6 +80,7 @@ const METRICS = [
   ['docFilesRead', 'Doc files read'],
   ['codeFilesRead', 'Code files read'],
   ['toolCalls', 'Tool calls'],
+  ['multiReadCalls', 'tools/read.mjs calls (v6+)'],
   ['mainRequests', 'Main-agent model requests (round trips)'],
   ['modelRequests', 'Model requests (all agents)'],
   ['aiCredits', 'AI credits'],
@@ -97,6 +99,23 @@ md += `## Overall (median of per-run values across all tasks)\n\n| Metric | ${ar
 for (const [key, name] of METRICS) {
   const b = med((r) => r.arm === baseline, key);
   md += `| ${name} | ${arms.map((a) => { const v = med((r) => r.arm === a, key); return a === baseline ? fmt(v, key) : `${fmt(v, key)} (${delta(v, b)})`; }).join(' | ')} |\n`;
+}
+
+// Sum of per-task medians: steadier than one median over all runs, and split by original vs held-out tasks.
+{
+  const sums = (a, key, pick) => tasks.filter(pick).reduce((s, t) => s + (med((r) => r.arm === a && r.task === t, key) || 0), 0);
+  const isOrig = (t) => !HELD_OUT.has(t);
+  const isHeld = (t) => HELD_OUT.has(t);
+  const k = (v) => `${Math.round(v / 1000).toLocaleString('en-US')}K`;
+  const base = sums(baseline, 'inputTokens', () => true);
+  md += `\n## Sum of per-task medians\n\nEach cell adds the median of every task in the group. Held-out tasks: ${[...HELD_OUT].join(', ') || 'none'}.\n\n`;
+  md += `| Arm | Input, original | Input, held out | Input, all | vs \`${baseline}\` | Round trips (orig / held) | AI credits |\n|---|---|---|---|---|---|---|\n`;
+  for (const a of arms) {
+    const all = sums(a, 'inputTokens', () => true);
+    const covered = tasks.filter((t) => rows.some((r) => r.arm === a && r.task === t)).length;
+    const label = covered < tasks.length ? `${a} ⚠ partial (${covered}/${tasks.length} tasks)` : a;
+    md += `| ${label} | ${k(sums(a, 'inputTokens', isOrig))} | ${k(sums(a, 'inputTokens', isHeld))} | ${k(all)} | ${a === baseline ? '—' : delta(all, base)} | ${sums(a, 'mainRequests', isOrig)} / ${sums(a, 'mainRequests', isHeld)} | ${sums(a, 'aiCredits', () => true).toFixed(1)} |\n`;
+  }
 }
 
 for (const key of ['inputTokens', 'mainRequests', 'readTokens', 'score']) {

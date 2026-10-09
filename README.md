@@ -46,7 +46,7 @@ Cloudflare Worker (Hono router)
 
 ```
 ai-dnd/
-├── bugs.md                   Known bugs (B-01…) in complete/, research-documentation-v1/ and -v2/, and workshop/
+├── bugs.md                   Known bugs (B-01…) in complete/, research-documentation-v1/ to -v6/, and workshop/
 ├── complete/                 The finished, runnable application
 │   ├── PRD.md                Product requirements, data model, API spec, prompt design
 │   ├── SETUP.md              Local dev + deployment guide
@@ -57,7 +57,11 @@ ai-dnd/
 │
 ├── research-documentation-v1/  v1: copy of complete/ with component docs beside the code (code.md index)
 ├── research-documentation-v2/  v2: auto-loaded AGENTS.md routing table, flow docs, symbol index
-├── research-docs/            Write-ups of the documentation research (v2 design and rationale)
+├── research-documentation-v3/  v3: v2 plus root-relative paths and named value sources (fixes from v2 measurement)
+├── research-documentation-v4/  v4: v3 with component docs moved to docs/code/ (mirrored), linking back to the code
+├── research-documentation-v5/  v5: v4 plus routing-table rows for every Worker route area (log, quests)
+├── research-documentation-v6/  v6: v4 plus tools/read.mjs (one call reads a routing row, line ranges, symbols)
+├── research-docs/            Write-ups of the documentation research (v2 design, v3 fixes, v4 layout test, v5 routing coverage, v6 multi-read tool, results)
 ├── research-work/            Copilot CLI harness comparing token usage of the doc styles
 │
 └── workshop/                 The 4-hour workshop
@@ -138,7 +142,9 @@ If it works, the pattern applies beyond this game: any codebase that leans on AI
 
 [`research-work/`](research-work/README.md) runs the same read-only questions against `complete/` and `research-documentation-v1/` with the Copilot CLI. It records total input and output tokens, AI credits, which docs and code files the agent read, and a keyword score for each answer, then summarizes the medians for each folder.
 
-The first results showed that cost is driven by the number of model round trips, not by document size. [`research-docs/research-documentation-v2.md`](research-docs/research-documentation-v2.md) describes the resulting v2 design in [`research-documentation-v2/`](research-documentation-v2/): an auto-loaded `AGENTS.md` routing table, flow docs, and a generated symbol index.
+The first results showed that cost is driven by the number of model round trips, not by document size. [`research-docs/research-documentation-v2.md`](research-docs/research-documentation-v2.md) describes the resulting v2 design in [`research-documentation-v2/`](research-documentation-v2/): an auto-loaded `AGENTS.md` routing table, flow docs, and a generated symbol index. Measuring v2 exposed a harness flaw and two doc gaps; [`research-docs/research-documentation-v3.md`](research-docs/research-documentation-v3.md) covers the v3 fixes and the isolated re-run of every arm. [`research-docs/research-documentation-v4.md`](research-docs/research-documentation-v4.md) tests moving component docs out of the source tree into `docs/code/`.
+
+**Current result** (`iso-1`, 330 isolated runs, same answer quality): an auto-loaded `AGENTS.md` routing table plus flow docs cut input tokens by **46–50%** and AI credits by about **30%** against the original document-type docs (v3 and v4 vs `complete`). Whether component docs sit beside the code or in `docs/code/` makes no measurable difference. Giving every route area a routing row (v5) fixed the one task where the docs lost to the baseline. Details: [v3 §5](research-docs/research-documentation-v3.md), [v4 §4](research-docs/research-documentation-v4.md), [v5 §5](research-docs/research-documentation-v5.md), and [v6 §5](research-docs/research-documentation-v6.md). A multi-file read tool (v6) was adopted by agents but saved no round trips: once docs are routed, missing facts, not read batching, drive the remaining cost.
 
 ---
 

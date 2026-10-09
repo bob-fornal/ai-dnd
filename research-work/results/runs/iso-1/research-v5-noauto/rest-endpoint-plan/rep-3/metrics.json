@@ -1,0 +1,56 @@
+{
+  "inputTokens": 68241,
+  "outputTokens": 1161,
+  "cacheReadTokens": 56801,
+  "cacheWriteTokens": 11434,
+  "reasoningTokens": 15,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 5.15672,
+  "apiDurationMs": 11651,
+  "mainInputTokens": 68241,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1048
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 697
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 642
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2387,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "The docs already use \"rest at the inn\" as the worked example for this exact scenario. Here's the complete file list:\n\n## Worker\n\n| # | File | Change |\n|---|------|--------|\n| 1 | `worker/src/types/index.ts` | Add `RestBody { sessionId, characterId }` type; add a cost constant (e.g. `INN_REST_COST`) |\n| 2 | `worker/src/routes/rest.ts` (new) | `export const restRoutes = new Hono<{ Bindings: Env }>()`; validate body, `getCharacter`, check `gold >= cost`, then `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` via `services/character.ts:94` (whitelisted fields only); optionally `askDM` for narration + `appendHistory`/`saveSession` + `adventure_log` insert, following the pattern in `routes/action.ts` |\n| 3 | `worker/src/index.ts:41-48` | Mount route: `app.route('/api/rest', restRoutes)` |\n| 4 | `worker/src/services/character.ts` | Only if HP/gold logic needs to be shared beyond the route itself |\n| 5 | `worker/migrations/000N_*.sql` (new) | Only if schema changes are needed (e.g. inn location/cost data) — never edit `0001` |\n\n## Frontend\n\n| # | File | Change |\n|---|------|--------|\n| 6 | `frontend/src/app/models/game.models.ts` | Response interface mirroring the Worker's rest response type |\n| 7 | `frontend/src/app/services/game-api.service.ts` | New method `rest(sessionId, characterId)` → `POST ${API_BASE}/api/rest` |\n| 8 | `frontend/src/app/components/game-console/game-console.component.ts` + `.html` | New \"Rest at the Inn\" button/handler: calls the API, then `CharacterStateService.setCharacter(res.updatedCharacter)`, pushes a system/narrative log entry |\n| 9 | `frontend/src/app/components/game-console/game-console.component.spec.ts` | Tests with `GameApiService` mocked as a Jasmine spy |\n\n**Rules:** gold/HP math stays in the Worker (never computed client-side); CORS origins live in `worker/src/index.ts:19-35` if a new frontend origin is added; Angular files stay split `.ts/.html/.css/.spec.ts` (no inline templates).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

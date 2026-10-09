@@ -1,0 +1,52 @@
+{
+  "inputTokens": 91801,
+  "outputTokens": 698,
+  "cacheReadTokens": 81423,
+  "cacheWriteTokens": 10370,
+  "reasoningTokens": 48,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 4.92056,
+  "apiDurationMs": 9251,
+  "mainInputTokens": 91801,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 2,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 385
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 385,
+  "codeTokensRead": 565,
+  "otherToolTokens": 25,
+  "filesModified": [],
+  "answer": "Currently allowed origins: exactly `http://localhost:4200`, plus any `*.pages.dev` or `*.workers.dev` subdomain.\n\n**Location:** `worker/src/index.ts`, in the `cors({ origin: (origin) => {...} })` callback (~lines 20-30).\n\n**To add a custom domain:** add a new condition inside that callback, e.g.:\n```js\norigin === 'https://your-custom-domain.com' ||\n```\n(or `origin.endsWith('.your-custom-domain.com')` for subdomains), returning `origin` when matched. Since Hono's array-based origin matching only supports exact strings (no wildcards), you must use this function form — per `worker/src/index.md` and `docs/DEPLOYMENT_NOTES.md` §4 (CORS).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

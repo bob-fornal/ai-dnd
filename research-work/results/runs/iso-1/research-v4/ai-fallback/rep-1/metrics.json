@@ -1,0 +1,53 @@
+{
+  "inputTokens": 99564,
+  "outputTokens": 995,
+  "cacheReadTokens": 85366,
+  "cacheWriteTokens": 14190,
+  "reasoningTokens": 65,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 6.25142,
+  "apiDurationMs": 11190,
+  "mainInputTokens": 99564,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2474
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 696
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 696,
+  "codeTokensRead": 2474,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`:\n\n- **`askDM(ai, char, session, action, combatContext?)`** calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast` first (`json_object` format, temp 0.85, 1024 tokens). If that `ai.run` call throws, it's caught and retried with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. If the mistral call also throws, `askDM` immediately returns `fallbackNarrative(playerAction)` — a hardcoded `AIDMResponse` (generic narrative, no stat deltas, 4 stock `suggestedActions`, empty `diceRolls`).\n- If either model succeeds, the raw text goes to **`parseAIResponse(raw, playerAction)`**, which:\n  - Returns `fallbackNarrative` immediately if `raw` isn't a non-empty string.\n  - Strips ```` ```json ```` fences, then if the result doesn't start with `{`, regex-extracts the first `{...}` block; if none found, returns `fallbackNarrative`.\n  - Runs `JSON.parse`; on a thrown parse error (invalid JSON), returns `fallbackNarrative`.\n  - On successful parse, fills missing/invalid fields with safe defaults (e.g., `hpDelta ?? null`, `suggestedActions` falls back to 4 canned phrases, `diceRolls` defaults to `[]`, capped at 8).\n\nSo any model failure or malformed JSON ultimately bottoms out in `fallbackNarrative`, a generic \"you attempt to {action}...\" response with no mechanical changes.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

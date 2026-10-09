@@ -1,0 +1,68 @@
+{
+  "inputTokens": 74943,
+  "outputTokens": 934,
+  "cacheReadTokens": 61722,
+  "cacheWriteTokens": 13215,
+  "reasoningTokens": 190,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 5.47339,
+  "apiDurationMs": 11977,
+  "mainInputTokens": 74943,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "powershell": 1,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "frontend/src/app/services/auth.service.ts",
+      "kind": "code",
+      "tokens": 623
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 614
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 529
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 462
+    },
+    {
+      "path": "docs/code/frontend/src/app/app.routes.md",
+      "kind": "doc",
+      "tokens": 294
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 1,
+  "docTokensRead": 1899,
+  "codeTokensRead": 623,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Login** (`AuthService.login()`, `frontend/src/app/services/auth.service.ts:16`): no password — just a username. It looks up `ai_dnd_user_<lowercase name>` in `localStorage`; if found it restores that `UserProfile`, otherwise creates an empty one with `campaigns: []`. The active profile is mirrored to `ai_dnd_user`. `authGuard` only checks `isLoggedIn()` (profile non-null) to gate routes.\n\n**Campaigns** are `CampaignSlot`s inside that `UserProfile`, stored **only in browser `localStorage`** (keys `ai_dnd_user` / `ai_dnd_user_<name>`). Each slot just holds pointers — `sessionId` (Workers KV `session:<sessionId>`) and `characterId` (D1 `characters` row) — not the actual game data.\n\n**Deleting a campaign slot** → `AuthService.removeCampaign(slotId)` (`auth.service.ts:54`) simply filters the slot out of `p.campaigns` and re-persists the profile to `localStorage`. **Nothing server-side is touched**: the D1 `characters`/`character_inventory`/`adventure_log` rows and the KV `session:<sessionId>` blob (7‑day TTL, `SESSION_TTL_SECONDS` in `worker/src/services/session.ts:4`) remain exactly as they were — the character just becomes unreachable from the UI since no slot points to it anymore.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

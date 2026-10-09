@@ -1,0 +1,54 @@
+{
+  "arm": {
+    "id": "research-v4-noauto",
+    "dir": "../research-documentation-v4",
+    "description": "v4 docs with auto-load disabled; the prompt points at AGENTS.md instead.",
+    "preamble": "Before answering, read AGENTS.md and follow it.",
+    "docsVersion": "v4"
+  },
+  "task": {
+    "id": "shop-sell",
+    "area": "worker",
+    "heldOut": true,
+    "prompt": "If a player sells two Longswords to Aldric's Armory, how much gold do they receive, which checks run first, and what happens to their inventory row?",
+    "expect": [
+      [
+        "shop.ts",
+        "/api/shop/transaction"
+      ],
+      [
+        "0.5",
+        "half"
+      ],
+      [
+        "14"
+      ],
+      [
+        "quantity"
+      ],
+      [
+        "DELETE",
+        "delete",
+        "removed"
+      ]
+    ]
+  },
+  "rep": 3,
+  "prompt": "Before answering, read AGENTS.md and follow it.\n\nIf a player sells two Longswords to Aldric's Armory, how much gold do they receive, which checks run first, and what happens to their inventory row?\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\iso-1\\research-documentation-v4",
+  "isolated": true,
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-custom-instructions",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color",
+    "--disallow-temp-dir"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T19:02:22.542Z"
+}

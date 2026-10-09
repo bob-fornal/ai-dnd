@@ -1,0 +1,95 @@
+{
+  "inputTokens": 79882,
+  "outputTokens": 1927,
+  "cacheReadTokens": 50457,
+  "cacheWriteTokens": 13377,
+  "reasoningTokens": 17,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 4.92451,
+  "apiDurationMs": 13617,
+  "mainInputTokens": 47604,
+  "mainRequests": 2,
+  "subagentInputTokens": 32278,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 21,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "read_file": 10,
+    "file_search": 5,
+    "grep_search": 5
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 2686
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 2300
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1232
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 693
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 688
+    },
+    {
+      "path": "worker/src/routes/levelup.ts",
+      "kind": "code",
+      "tokens": 600
+    },
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 444
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 412
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 329
+    },
+    {
+      "path": "frontend/src/app/models/game.models.ts",
+      "kind": "code",
+      "tokens": 197
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 7,
+  "docTokensRead": 6218,
+  "codeTokensRead": 3363,
+  "otherToolTokens": 6664,
+  "filesModified": [],
+  "answer": "## Level-Up Flow (end to end)\n\n**1. UI trigger (when it's offered)**\n`CharacterStateService.checkLevelUp()` (`frontend/src/app/services/character-state.service.ts`) sets the `canLevelUp` signal true when `character.level < 10` and `character.xp >= XP_THRESHOLDS[character.level]`. When true:\n- `character-sheet.component.html` shows a \"⬆ Level Up Available!\" banner.\n- `game-console.component.html` shows an ability-choice panel (STR/DEX/CON/INT/WIS/CHA buttons) calling `levelUp(key)` on click.\n\n**2. Endpoint called**\n`GameApiService.levelUp(sessionId, characterId, abilityChoice)` → `POST /api/levelup`, handled by `worker/src/routes/levelup.ts`. It validates input, re-checks `shouldLevelUp(character)` server-side (same XP-threshold logic, capped at level 10), then calls `levelUp()` in `worker/src/services/character.ts`, generates a narrative via `generateLevelUpNarrative` (ai-dm.ts), logs it to `adventure_log`, and appends it to session history.\n\n**3. What changes on the character**\nIn `character.ts levelUp()`:\n- `level` → `character.level + 1`\n- `max_hp` → `max_hp + (roll(hitDie) + CON modifier)`, where `hitDie` comes from `CLASS_HIT_DICE` (e.g. Fighter 10, Wizard 6)\n- `hp` → `min(hp + hpGain, newMaxHp)`\n- chosen ability score (`abilityChoice`) → `+2`\n\nResponse returns `{ narrative, updatedCharacter, abilityImproved, newLevel }`, which the frontend uses to refresh the character state (resetting `canLevelUp`).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

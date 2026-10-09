@@ -1,0 +1,155 @@
+:host {
+  display: block;
+}
+
+.sheet {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.char-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+}
+
+.char-name {
+  font-size: 1.1rem;
+  color: var(--gold);
+  margin: 0;
+}
+
+.char-subtitle {
+  font-size: 0.78rem;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  width: 22px;
+}
+
+.hp-text {
+  font-size: 0.8rem;
+  min-width: 50px;
+  text-align: right;
+}
+
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.qstat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  gap: 0.15rem;
+}
+
+.qstat-val {
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--title-font);
+}
+
+.qstat-lbl {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.xp-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.xp-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.xp-fill {
+  height: 100%;
+  background: var(--purple-light);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.xp-label {
+  font-size: 0.72rem;
+}
+
+.abilities {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.ability-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.4rem 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  gap: 0.1rem;
+  cursor: default;
+}
+
+.ability-key {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.ability-score {
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--title-font);
+}
+
+.ability-mod {
+  font-size: 0.7rem;
+}
+
+.levelup-banner {
+  text-align: center;
+  padding: 0.5rem;
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  font-family: var(--title-font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: rgba(212, 160, 23, 0.1);
+  animation: glow-gold 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes glow-gold {
+  from {
+    box-shadow: 0 0 4px rgba(212, 160, 23, 0.3);
+  }
+  to {
+    box-shadow: 0 0 12px rgba(212, 160, 23, 0.6);
+  }
+}

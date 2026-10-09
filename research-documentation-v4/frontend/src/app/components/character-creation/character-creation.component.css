@@ -1,0 +1,159 @@
+.creation-bg {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 0%, rgba(123, 31, 162, 0.2) 0%, var(--bg-deep) 70%);
+  padding: 2rem 1rem;
+  overflow-y: auto;
+}
+
+.creation-container {
+  width: 100%;
+  max-width: 720px;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  text-align: center;
+  margin: 0 0 2rem;
+  text-shadow: 0 0 30px rgba(212, 160, 23, 0.3);
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 4rem 0;
+}
+.loading-state p {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.dnd-stepper ::ng-deep .mat-step-header .mat-step-icon {
+  background: var(--purple);
+}
+
+.step-content {
+  padding: 1.5rem 0;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.section-label {
+  color: var(--gold);
+  font-family: var(--title-font);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 0.75rem;
+}
+
+.method-grid, .option-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.method-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.option-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+.method-card, .option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+.method-card:hover, .option-card:hover {
+  border-color: var(--purple-light);
+}
+.method-card.selected, .option-card.selected {
+  border-color: var(--gold);
+  background: rgba(212, 160, 23, 0.08);
+}
+.method-card .opt-icon, .method-card .method-icon, .option-card .opt-icon, .option-card .method-icon {
+  font-size: 1.8rem;
+}
+.method-card strong, .option-card strong {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.method-card small, .option-card small {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.method-card .hit-die, .option-card .hit-die {
+  font-size: 0.78rem;
+  font-family: var(--title-font);
+  margin-top: 0.25rem;
+}
+
+.review-step {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.review-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.review-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.review-row:last-child {
+  border-bottom: none;
+}
+.review-row .review-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.review-row strong {
+  color: var(--text);
+}
+
+.creation-flavor {
+  color: var(--text-muted);
+  font-size: 1rem;
+  border-left: 3px solid var(--gold);
+  padding-left: 1rem;
+  margin: 0;
+}
+
+.step-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.create-btn {
+  height: 48px;
+  font-size: 1rem;
+  padding: 0 2rem;
+}
+
+.error-text {
+  color: var(--red-light);
+  font-size: 0.85rem;
+}

@@ -1,0 +1,54 @@
+{
+  "inputTokens": 46093,
+  "outputTokens": 835,
+  "cacheReadTokens": 35672,
+  "cacheWriteTokens": 10417,
+  "reasoningTokens": 75,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 4.15349,
+  "apiDurationMs": 8800,
+  "mainInputTokens": 46093,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 590
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 421
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1011,
+  "codeTokensRead": 0,
+  "otherToolTokens": 22,
+  "filesModified": [],
+  "answer": "This covers login and storage well. The answer is clear already.\n\n**Login:** `AuthService.login(username)` (`frontend/src/app/services/auth.service.ts:16`) — no server auth; it loads/creates `localStorage[\"ai_dnd_user_<lowercase name>\"]`, sets it as the active profile under key `ai_dnd_user`, exposed via the `profile` signal. `isLoggedIn()` (`:12`) just checks `profile() !== null`; `auth.guard.ts` gates routes on it.\n\n**Campaigns:** Stored client-side only, in `UserProfile.campaigns` (an array of `CampaignSlot`) inside those same `localStorage` keys. Each slot holds `sessionId` + `characterId` pointing at server state — the actual game data lives in Workers KV (`session:<sessionId>`, 7-day TTL) and D1 tables `characters`, `character_inventory`, `adventure_log` (permanent). Managed via `addCampaign`/`updateCampaign`/`removeCampaign` (`auth.service.ts:36,44,54`).\n\n**Deleting a slot:** `removeCampaign` (`auth.service.ts:54`) only removes the `CampaignSlot` from the local profile/`localStorage`. It does **not** call any Worker endpoint — the D1 character row, inventory, adventure log, and KV session all remain on the server, just orphaned with no local link to them.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.6,
+    "passed": 3,
+    "total": 5,
+    "missing": [
+      "authGuard",
+      "no password"
+    ]
+  }
+}

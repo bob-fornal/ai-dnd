@@ -1,0 +1,54 @@
+{
+  "inputTokens": 172220,
+  "outputTokens": 1293,
+  "cacheReadTokens": 157703,
+  "cacheWriteTokens": 14503,
+  "reasoningTokens": 161,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 8.07561,
+  "apiDurationMs": 18632,
+  "mainInputTokens": 172220,
+  "mainRequests": 7,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "view": 4,
+    "glob": 2
+  },
+  "failedToolCalls": 2,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1577
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 680,
+  "codeTokensRead": 1577,
+  "otherToolTokens": 62,
+  "filesModified": [],
+  "answer": "**In `worker/src/services/ai-dm.ts`, function `askDM` (line 81):**\n\n1. Calls primary model `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (`json_object` format, temp 0.85, 1024 tokens). If the call throws (or returns a streaming response), it's caught.\n2. On failure, it retries with fallback model `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n3. If *both* model calls throw, `askDM` returns `fallbackNarrative(playerAction)` directly — a hardcoded, generic narrative (e.g. \"You attempt to ... The world shifts around you...\") with null stat deltas, empty item/dice arrays, and generic suggested actions.\n4. If a model does respond, the raw text goes to `parseAIResponse(raw, playerAction)`, which strips markdown code fences, extracts the first `{...}` block if the text isn't already JSON, and `JSON.parse`s it.\n   - If `raw` is empty/non-string, no `{...}` block is found, or `JSON.parse` throws, `parseAIResponse` also returns `fallbackNarrative(playerAction)`.\n   - If parsing succeeds, missing/invalid fields are individually defaulted (e.g. narrative falls back to \"The world holds its breath...\", `suggestedActions` defaults to a 4-item list, arrays capped at 4 suggested actions / 8 dice rolls).\n\nSo both a thrown model error and malformed/non-JSON output converge on the same `fallbackNarrative` safety net, guaranteeing `askDM` always returns a valid `AIDMResponse`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

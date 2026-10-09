@@ -1,0 +1,67 @@
+{
+  "inputTokens": 51175,
+  "outputTokens": 1138,
+  "cacheReadTokens": 36086,
+  "cacheWriteTokens": 15085,
+  "reasoningTokens": 98,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 5.63177,
+  "apiDurationMs": 11421,
+  "mainInputTokens": 51175,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "powershell": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "docs/code/worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 771
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 763
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 709
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 653
+    },
+    {
+      "path": "docs/code/frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 576
+    }
+  ],
+  "docFilesRead": 5,
+  "codeFilesRead": 0,
+  "docTokensRead": 3472,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Worker files\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add `RestBody { sessionId: string; characterId: string }`; add a cost constant (e.g. `INN_REST_COST`) |\n| `worker/src/routes/rest.ts` *(new)* | `export const restRoutes = new Hono<{ Bindings: Env }>()`; `POST /` handler: `getCharacter`, verify `gold >= cost`, `updateCharacter(db, id, { hp: character.max_hp, gold: character.gold - cost })` (whitelisted fields only, `services/character.ts:94`); optionally `askDM`/`appendHistory`/`saveSession` + `adventure_log` insert, mirroring `routes/action.ts` |\n| `worker/src/index.ts` (around `:41-48`) | `app.route('/api/rest', restRoutes)`; CORS origins unaffected unless adding a new frontend origin (`:19-35`) |\n| `worker/src/services/character.ts` | Only if HP/gold math needs a shared helper beyond `updateCharacter` |\n| `worker/migrations/000N_*.sql` *(new)* | Only if new persistent fields are needed (not required for a simple HP/gold update) |\n\n## Frontend files\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add `RestResponse` interface mirroring the Worker response (e.g. `{ updatedCharacter: Character }`) |\n| `frontend/src/app/services/game-api.service.ts` | Add `rest(sessionId, characterId)` → `POST ${API_BASE}/api/rest` |\n| `frontend/src/app/components/game-console/game-console.component.ts` + `.html` | Add \"Rest at the Inn\" button/handler calling `rest()`, then `CharacterStateService.setCharacter(res.updatedCharacter)`; push a system/narrative log entry |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add test with `GameApiService.rest` as a Jasmine spy |\n\n## Docs/rules to keep in sync\n- `docs/code/worker/src/types/index.md`, `docs/code/frontend/src/app/models/game.models.md` (keep mirrors matching)\n- New `docs/code/worker/src/routes/rest.md`\n- `docs/PRD.md` §9 API spec, `code.md` symbol index, `AGENTS.md` routing table\n- Rule: HP math and gold deduction happen in Worker code only; AI narration (if used) must not alter HP/gold.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

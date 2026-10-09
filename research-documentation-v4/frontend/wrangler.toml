@@ -1,0 +1,16 @@
+name = "ai-dnd"
+compatibility_date = "2026-08-25"
+pages_build_output_dir = "dist/frontend/browser"
+
+# ─── Pages Service Binding → Worker ───────────────────────────
+# Uncomment once the Worker is deployed and its name confirmed:
+# [[services]]
+# binding = "API_WORKER"
+# service = "ai-dnd-worker"
+
+# ─── Environment Variables ────────────────────────────────────
+# Set NG_APP_API_URL in Cloudflare Pages dashboard → Settings →
+# Environment Variables to point at the deployed Worker URL,
+# e.g. https://ai-dnd-worker.<your-account>.workers.dev
+# The Angular build reads this at compile time via the API_BASE
+# constant in game-api.service.ts.

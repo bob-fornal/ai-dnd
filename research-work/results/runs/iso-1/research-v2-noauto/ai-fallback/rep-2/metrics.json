@@ -1,0 +1,58 @@
+{
+  "inputTokens": 92010,
+  "outputTokens": 718,
+  "cacheReadTokens": 79679,
+  "cacheWriteTokens": 12323,
+  "reasoningTokens": 63,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 5.39393,
+  "apiDurationMs": 8764,
+  "mainInputTokens": 92010,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1483
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1465,
+  "codeTokensRead": 1483,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`, `askDM` calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format); on throw it retries `@cf/mistral/mistral-7b-instruct-v0.2-lora`; if that also throws, it returns `fallbackNarrative(playerAction)` directly.\n\nOtherwise, raw text goes to `parseAIResponse(raw, playerAction)`, which strips code fences/extracts the first `{…}` block, then `JSON.parse`s it. If input is empty/non-string, no `{…}` found, or `JSON.parse` throws, it also returns `fallbackNarrative(playerAction)`.\n\n`fallbackNarrative` returns a canned `AIDMResponse`: a generic narrative string, all `gameStateChanges` fields null/false/empty, 4 default `suggestedActions`, and empty `diceRolls` — so the game never crashes on bad AI output.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

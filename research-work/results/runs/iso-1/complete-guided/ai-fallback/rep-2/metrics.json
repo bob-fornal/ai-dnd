@@ -1,0 +1,49 @@
+{
+  "inputTokens": 89820,
+  "outputTokens": 1114,
+  "cacheReadTokens": 76300,
+  "cacheWriteTokens": 13512,
+  "reasoningTokens": 14,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 6.0196,
+  "apiDurationMs": 12015,
+  "mainInputTokens": 89820,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3638
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 3638,
+  "otherToolTokens": 140,
+  "filesModified": [],
+  "answer": "All handled in `worker/src/services/ai-dm.ts`:\n\n**Main turn flow — `askDM()`:**\n- Primary model: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (with `response_format: json_object`). On thrown error (or a streaming response, which it explicitly rejects), catches and falls back to `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n- If that also throws, returns `fallbackNarrative(playerAction)` directly — a hardcoded `AIDMResponse` with generic narrative text, null stat deltas, and default suggested actions.\n- Whatever raw text is obtained (from either model) is passed to `parseAIResponse(raw, playerAction)`.\n\n**JSON validation — `parseAIResponse()`:**\n- Rejects empty/non-string input → `fallbackNarrative`.\n- Strips markdown code fences, then if the result doesn't start with `{`, regex-extracts the first `{...}` block; if none found, logs a warning and returns `fallbackNarrative`.\n- Wraps `JSON.parse(cleaned)` in try/catch; any parse error → `fallbackNarrative`.\n- On success, defensively coerces/defaults every field (`narrative`, `gameStateChanges.*`, `suggestedActions`, `diceRolls`) rather than trusting the model's shape.\n\n**Fallback — `fallbackNarrative()`:** returns a fixed in-character narrative referencing the player's action, with no stat changes and generic suggested actions, ensuring the game never breaks even if both models fail.\n\nOther helpers (`generateQuest`, `generateBackstory`, `generateLevelUpNarrative`) each use `@cf/meta/llama-3.3-70b-instruct-fp8-fast` and have their own try/catch with hardcoded fallback content (no shared retry chain to mistral).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

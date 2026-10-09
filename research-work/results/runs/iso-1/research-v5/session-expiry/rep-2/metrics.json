@@ -1,0 +1,46 @@
+{
+  "inputTokens": 45877,
+  "outputTokens": 691,
+  "cacheReadTokens": 36077,
+  "cacheWriteTokens": 9796,
+  "reasoningTokens": 69,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 3.86234,
+  "apiDurationMs": 7199,
+  "mainInputTokens": 45877,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 593
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 593,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**When KV expires, the game cannot be resumed from the UI** (bug B-07), even though all D1 data still exists.\n\n**Frontend:** `login.component.ts:51-52` `resumeCampaign(slot)` → navigates to `/game/<sessionId>` → `game-console.component.ts:69-104 ngOnInit` (no `startNarrative`) calls `GameApiService.getSession` (`game-api.service.ts:62`).\n\n**Worker:** `GET /api/session/:id` in `worker/src/routes/session.ts:9` calls `loadSession` (`:12`). Since the KV key `session:<sessionId>` is gone (TTL `SESSION_TTL_SECONDS = 604800`, i.e. 7 days, `services/session.ts:4,8`), it returns **404 \"Session not found or expired\"** — it imports `rebuildSession` but never calls it.\n\n**Result:** `game-console.component.ts:81-98` fails at step 3, shows \"Could not load session,\" and stays empty.\n\nIronically, other routes (`action`, `combat`, `levelup`, `quest`) already call `rebuildSession` (`services/session.ts:58`), which reconstructs state from the last 20 `adventure_log` rows (location → \"Unknown — session rebuilt from log\", quest reset, combat lost) — but they're never reached because resume dies first in `session.ts`.\n\n**Fix noted in docs:** make `routes/session.ts` fall back to `rebuildSession` using the `characterId` (from the frontend slot or `characters.session_id`).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

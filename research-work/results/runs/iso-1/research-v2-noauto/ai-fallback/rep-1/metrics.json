@@ -1,0 +1,59 @@
+{
+  "inputTokens": 141681,
+  "outputTokens": 1318,
+  "cacheReadTokens": 128738,
+  "cacheWriteTokens": 12931,
+  "reasoningTokens": 83,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 7.12791,
+  "apiDurationMs": 15327,
+  "mainInputTokens": 141681,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 4,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1602
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1465,
+  "codeTokensRead": 1602,
+  "otherToolTokens": 27,
+  "filesModified": [],
+  "answer": "**`worker/src/services/ai-dm.ts`** handles this in `askDM` (line 81):\n\n1. **Primary model**: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format, temp 0.85, 1024 tokens). If the `.run()` call throws, it's caught and logged (`[askDM] llama failed, trying mistral`).\n2. **Fallback model**: `@cf/mistral/mistral-7b-instruct-v0.2-lora` is tried next. If that also throws, `askDM` immediately returns `fallbackNarrative(playerAction)`.\n3. If a model did return text, `parseAIResponse(rawText, playerAction)` is called to validate/parse it:\n   - Returns `fallbackNarrative` if `raw` is empty/non-string.\n   - Strips markdown fences, then extracts the first `{...}` block if the text doesn't start with `{`; if no JSON object is found, returns `fallbackNarrative`.\n   - Calls `JSON.parse`; on a thrown parse error, returns `fallbackNarrative`.\n   - On success, builds a validated `AIDMResponse` by defaulting every missing/invalid field (e.g., `narrative` defaults to \"The world holds its breath...\", `suggestedActions` defaults to a 4-item list, `diceRolls` defaults to `[]`, numeric deltas default to `null`).\n\n`fallbackNarrative(playerAction)` always returns a canned `AIDMResponse`: narrative like \"You attempt to {action}. The world shifts around you...\", all `gameStateChanges` null/false/empty, 4 generic `suggestedActions`, and empty `diceRolls`. This guarantees `askDM` never throws or returns invalid JSON to its caller.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

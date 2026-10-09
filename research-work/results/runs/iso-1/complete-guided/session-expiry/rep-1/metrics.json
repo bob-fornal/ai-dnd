@@ -1,0 +1,62 @@
+{
+  "inputTokens": 216633,
+  "outputTokens": 3224,
+  "cacheReadTokens": 198956,
+  "cacheWriteTokens": 17659,
+  "reasoningTokens": 424,
+  "modelRequests": 9,
+  "premiumRequests": 1,
+  "aiCredits": 11.62147,
+  "apiDurationMs": 33814,
+  "mainInputTokens": 216633,
+  "mainRequests": 9,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 17,
+  "toolCallsByName": {
+    "view": 11,
+    "grep": 6
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/session.ts",
+      "kind": "code",
+      "tokens": 711
+    },
+    {
+      "path": "worker/src/routes/action.ts",
+      "kind": "code",
+      "tokens": 412
+    },
+    {
+      "path": "worker/src/routes/session.ts",
+      "kind": "code",
+      "tokens": 167
+    },
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 37
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 3,
+  "docTokensRead": 37,
+  "codeTokensRead": 1290,
+  "otherToolTokens": 3358,
+  "filesModified": [],
+  "answer": "**What happens:**\n\n1. **Frontend resume** – `game-console.component.ts` `ngOnInit()` reads `sessionId` from the route and calls `GameApiService.getSession()` (`frontend/src/app/services/game-api.service.ts`), hitting `GET /api/session/:id`.\n2. **Worker route** – `worker/src/routes/session.ts` calls `loadSession(SESSION_KV, id)` (`worker/src/services/session.ts`), which does `kv.get('session:'+id)`. Sessions are written with `expirationTtl: SESSION_TTL_SECONDS` (7 days, `worker/src/services/session.ts`). If the KV key has expired, `loadSession` returns `null`, and the route responds **`404 { error: 'Session not found or expired' }`** — it does **not** call `rebuildSession`.\n3. **Frontend error handling** – the `getSession` subscription's `error` callback in `game-console.component.ts` just pushes a system message: `\"⚠ Could not load session. Is the Worker running?\"`. It never calls `rebuildSession`, never loads the character/inventory, and doesn't redirect the player. The console is left in a broken state (no character, no location, no log).\n4. **If the player tries to act anyway** – `sendAction()` posts to `/api/action`, handled by `worker/src/routes/action.ts`, which does call `rebuildSession(DB, characterId, sessionId)` when `loadSession` returns null (same fallback exists in `combat.ts`, `quest.ts`, and `levelup.ts`). `rebuildSession` (`worker/src/services/session.ts`) queries the last 20 `adventure_log` rows from D1 to reconstruct `history`, but resets `location` to `\"Unknown — session rebuilt from log\"` and `activeQuestId` to `null`.\n\n**Conclusion:** The game *can* technically continue because `/api/action`, `/api/combat/resolve`, `/api/quest/generate`, and `/api/levelup` all rebuild session state from D1 on a KV miss. However, the initial resume call (`GET /api/session/:id`) has no such fallback, so the frontend shows a misleading \"Worker not running\" error and fails to populate character/location/inventory — the player must actually submit an action (bypassing the broken load screen) before the session silently self-heals with degraded context (lost location/quest).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "inputTokens": 66379,
+  "outputTokens": 622,
+  "cacheReadTokens": 56510,
+  "cacheWriteTokens": 9863,
+  "reasoningTokens": 37,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.21915,
+  "apiDurationMs": 7986,
+  "mainInputTokens": 66379,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 925
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 642
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1567,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Opening:** `game-console.component.html:9` Inventory button → `openInventory()` in `game-console.component.ts:242` calls `MatDialog.open(InventoryComponent, { data, panelClass: 'inv-dialog-panel', maxHeight: '90vh' })`.\n\n**Data passed:** `InventoryDialogData = { characterId, sessionId }` (`inventory.component.ts:19`), injected via `MAT_DIALOG_DATA`.\n\n**API calls it can make** (via `GameApiService`, `game-api.service.ts`):\n- `getInventory` → `GET /api/character/:id` (`routes/character.ts:72`) — loads inventory on init.\n- `equipItem` (`:96`) → `PATCH /api/character/:id/equip` (`routes/character.ts:93`) — equip/unequip.\n- `dropItem` (`:100`) → `DELETE /api/character/:id/inventory/:itemId` (`routes/character.ts:137`) — used both for \"use potion\" and \"drop\".\n\nNote: potion healing is computed client-side and HP is never persisted (B-05); equip is display-only, combat ignores it (B-08).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

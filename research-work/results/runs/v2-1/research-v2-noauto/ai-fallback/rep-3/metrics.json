@@ -1,0 +1,52 @@
+{
+  "inputTokens": 111902,
+  "outputTokens": 1139,
+  "cacheReadTokens": 101648,
+  "cacheWriteTokens": 10244,
+  "reasoningTokens": 288,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 5.73496,
+  "apiDurationMs": 15117,
+  "mainInputTokens": 111902,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "glob": 1,
+    "view": 3
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1465,
+  "codeTokensRead": 0,
+  "otherToolTokens": 3,
+  "filesModified": [],
+  "answer": "## Answer\n\nPer `worker/src/services/ai-dm.md` (the doc for `worker/src/services/ai-dm.ts`):\n\n- **`askDM(ai, char, session, action, combatContext?)`** (line 81) is the main DM-turn function. It first calls the primary model **`@cf/meta/llama-3.3-70b-instruct-fp8-fast`** (JSON object format, temp 0.85, 1024 tokens).\n- **On failure (throw)**, it retries with the fallback model **`@cf/mistral/mistral-7b-instruct-v0.2-lora`**.\n- **If both models fail**, `askDM` returns **`fallbackNarrative`** (a canned response) instead of propagating an error.\n- For **invalid/malformed JSON** from a model, **`parseAIResponse`** handles it: it strips markdown code fences, extracts the first `{…}` block from the text, and fills in default values for any missing fields of `AIDMResponse` — it also reads from both `choices[0].message.content` (OpenAI-style) and the legacy `response` field.\n- Output is further sanitized: at most 4 `suggestedActions` and 8 `diceRolls` are retained.\n\nNote: `generateQuest`, `generateBackstory`, and `generateLevelUpNarrative` only read the legacy `response` field, so with `llama-3.3` they can silently fall back to canned text or empty strings (tracked as `bugs.md` B-03).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

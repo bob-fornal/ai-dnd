@@ -1,0 +1,52 @@
+{
+  "inputTokens": 47405,
+  "outputTokens": 647,
+  "cacheReadTokens": 36075,
+  "cacheWriteTokens": 11326,
+  "reasoningTokens": 0,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 4.2008,
+  "apiDurationMs": 7079,
+  "mainInputTokens": 47405,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "powershell": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 734
+    },
+    {
+      "path": "docs/code/worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 656
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1390,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Attack round resolution — all math happens in the Worker, not the AI\n\n**Flow:** `game-console.component.ts:144` `combatAction('attack')` → `GameApiService.resolveCombat` (`game-api.service.ts:50`) → `POST /api/combat/resolve` → `worker/src/routes/combat.ts:38` → **`resolveCombatRound`** in `worker/src/services/combat.ts:50` (called from `combat.ts:81` for the attack branch).\n\n**Dice rolling** — `worker/src/services/dice.ts`:\n- `attackRoll:55` — d20 + ability mod + proficiency vs monster AC; nat 20 = crit, nat 1 = miss.\n- Attack mod = DEX (Rogue/Ranger) or STR (others); proficiency = `ceil(level/4)+1`.\n- Damage = class die via `getPlayerDamageDice` (`combat.ts:222`: Fighter/Cleric/Bard 1d8, else 1d6) + mod (INT for Wizard/Bard), min 1, doubled on crit. **Equipment ignored (bug B-08).**\n\n**After resolution**, `routes/combat.ts:51-103` applies HP/XP, rolls loot (`rollLoot`/`grantLoot`), calls `askDM(..., result.contextForDM)` to narrate, saves session state, and logs two `adventure_log` rows.\n\n**AI's role**: only narrates the pre-computed `contextForDM` text summary (`combat.ts:160`) via `askDM`. It never rolls dice, computes damage/AC, or decides hit/miss/crit — all mechanics are deterministic code.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

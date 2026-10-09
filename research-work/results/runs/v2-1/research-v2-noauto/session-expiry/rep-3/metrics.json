@@ -1,0 +1,57 @@
+{
+  "inputTokens": 153178,
+  "outputTokens": 1483,
+  "cacheReadTokens": 128372,
+  "cacheWriteTokens": 24792,
+  "reasoningTokens": 159,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 10.25124,
+  "apiDurationMs": 21737,
+  "mainInputTokens": 153178,
+  "mainRequests": 7,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "view": 6,
+    "glob": 2
+  },
+  "failedToolCalls": 4,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 711
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 590
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2086,
+  "codeTokensRead": 0,
+  "otherToolTokens": 3,
+  "filesModified": [],
+  "answer": "Docs sufficient; answer below.\n\n## Resume flow\n\n1. `login.component.ts:51-52` `resumeCampaign(slot)` → navigates to `/game/<sessionId>` using `sessionId`/`characterId` stored in `localStorage` (`AuthService`, keys `ai_dnd_user`/`ai_dnd_user_<name>`).\n2. `game-console.component.ts:69-104` `ngOnInit` calls `GameApiService.getSession()` (`game-api.service.ts:62`) → `GET /api/session/:id`.\n3. `worker/src/routes/session.ts:9` handles the request via `loadSession` (`worker/src/services/session.ts:12`), reading KV key `session:<sessionId>` (TTL `SESSION_TTL_SECONDS = 604800`, 7 days).\n\n## When KV has expired\n\n- `routes/session.ts:14` returns **HTTP 404 `\"Session not found or expired\"`**. It imports `rebuildSession` but never calls it — this is bug **B-07**.\n- `game-console.component.ts` shows \"Could not load session\" and the console stays empty.\n\n## Can the game continue?\n\n**No, not from this entry point.** Although the character and adventure log still exist permanently in D1 (`characters`, `character_inventory`, `adventure_log`), the resume UI dead-ends at the 404 and never falls back to rebuilding session state. Ironically, the *other* routes (`action`, `combat`, `levelup`, `quest`) **do** call `rebuildSession` (`services/session.ts:58`, replaying the last 20 `adventure_log` rows into history, resetting location to \"Unknown — session rebuilt from log\" and losing quest/combat state) — but those code paths are unreachable because step 3 fails first.\n\n**Documented fix:** have `routes/session.ts` fall back to `rebuildSession` on KV miss (needs `characterId`, obtainable from the frontend slot or a `characters.session_id` lookup).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

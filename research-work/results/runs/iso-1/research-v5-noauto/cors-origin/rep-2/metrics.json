@@ -1,0 +1,58 @@
+{
+  "inputTokens": 138505,
+  "outputTokens": 938,
+  "cacheReadTokens": 127438,
+  "cacheWriteTokens": 11055,
+  "reasoningTokens": 82,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 6.25291,
+  "apiDurationMs": 14406,
+  "mainInputTokens": 138505,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 1,
+    "glob": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1048
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 398
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1446,
+  "codeTokensRead": 565,
+  "otherToolTokens": 30,
+  "filesModified": [],
+  "answer": "Allowed origins (per `worker/src/index.ts`, `app.use('*', cors({...}))`, lines ~20-33):\n\n- `http://localhost:4200` (exact match)\n- any `*.pages.dev` subdomain (`origin.endsWith('.pages.dev')`)\n- any `*.workers.dev` subdomain (`origin.endsWith('.workers.dev')`)\n\nEverything else returns `null` (rejected) via the `origin` callback.\n\n**To add a new custom domain:** edit the `origin` function in `worker/src/index.ts` (inside `cors({...})`), adding a check like `origin === 'https://yourdomain.com'` (or an `.endsWith()` check for a wildcard) to the existing `if` condition before returning `origin`. Array-based config won't work here since Hono only matches array entries as exact strings. See `docs/DEPLOYMENT_NOTES.md §4 (CORS)` for more detail.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

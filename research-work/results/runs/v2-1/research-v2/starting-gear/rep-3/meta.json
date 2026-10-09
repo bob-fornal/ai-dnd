@@ -1,0 +1,49 @@
+{
+  "arm": {
+    "id": "research-v2",
+    "dir": "../research-documentation-v2",
+    "description": "v2 docs: AGENTS.md auto-loaded (routing table, batch reads), flows, symbol index, anchors. No preamble.",
+    "preamble": "",
+    "removeArgs": [
+      "--no-custom-instructions"
+    ],
+    "docsVersion": "v2"
+  },
+  "task": {
+    "id": "starting-gear",
+    "area": "data",
+    "prompt": "What items does a newly created Fighter start with, and where is that defined? Give the item names, not just IDs.",
+    "expect": [
+      [
+        "CLASS_STARTING_ITEMS"
+      ],
+      [
+        "Longsword"
+      ],
+      [
+        "Shield"
+      ],
+      [
+        "Potion of Healing",
+        "Potion"
+      ],
+      [
+        "seed.sql"
+      ]
+    ]
+  },
+  "rep": 3,
+  "prompt": "What items does a newly created Fighter start with, and where is that defined? Give the item names, not just IDs.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T15:22:15.366Z"
+}

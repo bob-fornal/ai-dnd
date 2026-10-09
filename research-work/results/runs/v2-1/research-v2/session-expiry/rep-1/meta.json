@@ -1,0 +1,51 @@
+{
+  "arm": {
+    "id": "research-v2",
+    "dir": "../research-documentation-v2",
+    "description": "v2 docs: AGENTS.md auto-loaded (routing table, batch reads), flows, symbol index, anchors. No preamble.",
+    "preamble": "",
+    "removeArgs": [
+      "--no-custom-instructions"
+    ],
+    "docsVersion": "v2"
+  },
+  "task": {
+    "id": "session-expiry",
+    "area": "worker",
+    "prompt": "What happens when a player resumes a game after the Workers KV session has expired? Trace both the frontend resume path and the Worker routes, and say whether the game can continue.",
+    "expect": [
+      [
+        "rebuildSession"
+      ],
+      [
+        "404"
+      ],
+      [
+        "session.ts"
+      ],
+      [
+        "7 days",
+        "7-day",
+        "TTL",
+        "604800"
+      ],
+      [
+        "getSession"
+      ]
+    ]
+  },
+  "rep": 1,
+  "prompt": "What happens when a player resumes a game after the Workers KV session has expired? Trace both the frontend resume path and the Worker routes, and say whether the game can continue.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T14:53:34.008Z"
+}

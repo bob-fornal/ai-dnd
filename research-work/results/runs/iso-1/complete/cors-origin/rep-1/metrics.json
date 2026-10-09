@@ -1,0 +1,47 @@
+{
+  "inputTokens": 109022,
+  "outputTokens": 1225,
+  "cacheReadTokens": 99114,
+  "cacheWriteTokens": 9898,
+  "reasoningTokens": 110,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 5.68378,
+  "apiDurationMs": 13692,
+  "mainInputTokens": 109022,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "grep": 5,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 177
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 177,
+  "otherToolTokens": 926,
+  "filesModified": [],
+  "answer": "**Allowed origins** (in `worker\\src\\index.ts`, `cors()` middleware, lines 19–34):\n- exact match `http://localhost:4200`\n- any subdomain ending in `.pages.dev`\n- any subdomain ending in `.workers.dev`\n\nAnything else returns `null` and is rejected.\n\n**To add a custom domain:** edit the `origin` function in `worker\\src\\index.ts` (lines 21–28), adding another condition, e.g.:\n```ts\norigin === 'https://yourdomain.com' ||\n```\nor `origin.endsWith('.yourdomain.com')` for subdomains. (Array-style origin lists won't work for wildcard subdomains per the note on line 20/`docs\\DEPLOYMENT_NOTES.md` §4.)",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

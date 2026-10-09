@@ -1,0 +1,68 @@
+{
+  "inputTokens": 91694,
+  "outputTokens": 1115,
+  "cacheReadTokens": 77693,
+  "cacheWriteTokens": 13993,
+  "reasoningTokens": 82,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 6.16871,
+  "apiDurationMs": 12071,
+  "mainInputTokens": 91694,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 2,
+    "powershell": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1041
+    },
+    {
+      "path": "docs/code/worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 771
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 709
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 653
+    },
+    {
+      "path": "docs/code/frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 585
+    }
+  ],
+  "docFilesRead": 5,
+  "codeFilesRead": 0,
+  "docTokensRead": 3759,
+  "codeTokensRead": 0,
+  "otherToolTokens": 23,
+  "filesModified": [],
+  "answer": "`docs/flows/add-endpoint.md` uses this exact feature as its worked example. Files to change:\n\n**Worker**\n1. `worker/src/types/index.ts` — add `RestBody { sessionId, characterId }` interface; optionally a `REST_COST` gold constant.\n2. `worker/src/routes/rest.ts` (new) — `restRoutes = new Hono<{ Bindings: Env }>()`; validate body, `getCharacter`, check `character.gold >= cost`, call `updateCharacter(db, id, { hp: character.max_hp, gold: character.gold - cost })` (whitelisted-field update per `services/character.ts:94`). Optionally `askDM` for narration + `appendHistory`/`saveSession` + `adventure_log` insert, mirroring `routes/action.ts`.\n3. `worker/src/index.ts:41-48` — mount it: `app.route('/api/rest', restRoutes)`.\n4. `worker/src/services/character.ts` — if HP/gold logic is reused elsewhere, put it here, not in the route.\n5. New `worker/migrations/000N_*.sql` only if schema changes (e.g., adding an inn location/cost column) — never edit `0001_initial_schema.sql`.\n\n**Frontend**\n6. `frontend/src/app/models/game.models.ts` — mirror response interface (updated `hp`/`gold`).\n7. `frontend/src/app/services/game-api.service.ts` — add `rest(sessionId, characterId)` → `POST ${API_BASE}/api/rest`.\n8. `frontend/src/app/components/game-console/game-console.component.ts` + `.html` — \"Rest\" button/handler calling the API, then `CharacterStateService.setCharacter(res.updatedCharacter)`; push a system/narrative log entry.\n9. `frontend/src/app/components/game-console/game-console.component.spec.ts` — add tests with `GameApiService` as a Jasmine spy.\n\n**Rule**: HP/gold math stays in the Worker; AI only narrates. CORS origins unaffected (no new frontend origin).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "arm": {
+    "id": "complete-guided",
+    "dir": "../complete",
+    "description": "Baseline told to use its docs.",
+    "preamble": "Before answering, orient yourself with the project documentation in this folder (PRD.md, SETUP.md, docs/), then read only the code you need.",
+    "docsVersion": "baseline"
+  },
+  "task": {
+    "id": "shop-sell",
+    "area": "worker",
+    "heldOut": true,
+    "prompt": "If a player sells two Longswords to Aldric's Armory, how much gold do they receive, which checks run first, and what happens to their inventory row?",
+    "expect": [
+      [
+        "shop.ts",
+        "/api/shop/transaction"
+      ],
+      [
+        "0.5",
+        "half"
+      ],
+      [
+        "14"
+      ],
+      [
+        "quantity"
+      ],
+      [
+        "DELETE",
+        "delete",
+        "removed"
+      ]
+    ]
+  },
+  "rep": 2,
+  "prompt": "Before answering, orient yourself with the project documentation in this folder (PRD.md, SETUP.md, docs/), then read only the code you need.\n\nIf a player sells two Longswords to Aldric's Armory, how much gold do they receive, which checks run first, and what happens to their inventory row?\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-custom-instructions",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T15:44:36.181Z"
+}

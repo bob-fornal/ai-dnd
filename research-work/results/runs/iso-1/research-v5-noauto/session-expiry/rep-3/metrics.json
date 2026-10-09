@@ -1,0 +1,61 @@
+{
+  "inputTokens": 92004,
+  "outputTokens": 1033,
+  "cacheReadTokens": 80359,
+  "cacheWriteTokens": 11637,
+  "reasoningTokens": 102,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 5.55103,
+  "apiDurationMs": 12245,
+  "mainInputTokens": 92004,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1048
+    },
+    {
+      "path": "worker/src/services/session.ts",
+      "kind": "code",
+      "tokens": 711
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 593
+    },
+    {
+      "path": "worker/src/routes/session.ts",
+      "kind": "code",
+      "tokens": 167
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 2,
+  "docTokensRead": 1641,
+  "codeTokensRead": 878,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Confirmed against source. Answer:\n\n**Frontend:** `login.component.ts:51` `resumeCampaign(slot)` navigates to `/game/<sessionId>`. `game-console.component.ts:69-104 ngOnInit` (no `startNarrative`) calls `GameApiService.getSession` (`game-api.service.ts:62`) → `GET /api/session/:id`.\n\n**Worker:** `worker/src/routes/session.ts:9-19` calls `loadSession(c.env.SESSION_KV, id)` (`services/session.ts:12`), which reads KV key `session:<sessionId>`. KV entries have TTL `SESSION_TTL_SECONDS = 604800` (7 days, `services/session.ts:4`), refreshed each `saveSession`. If expired, `loadSession` returns `null`, and the route immediately responds **404 `\"Session not found or expired\"`** (`session.ts:14`) — it imports `rebuildSession` but never invokes it.\n\n**Result:** `game-console.component.ts` shows \"Could not load session\" and stays empty. **The game cannot continue from the UI**, even though the character and `adventure_log` in D1 (permanent storage) are intact. Note `rebuildSession` (`services/session.ts:58`) *is* used by `action`/`combat`/`levelup`/`quest` routes as a fallback (rebuilds last 20 log turns, resets location to \"Unknown — session rebuilt from log\" and clears quest/combat state), but those routes are never reached because resume fails earlier at the `/api/session/:id` call. This is tracked as bug **B-07**.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

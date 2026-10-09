@@ -1,0 +1,51 @@
+{
+  "inputTokens": 49540,
+  "outputTokens": 879,
+  "cacheReadTokens": 37127,
+  "cacheWriteTokens": 12409,
+  "reasoningTokens": 11,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 4.72459,
+  "apiDurationMs": 9028,
+  "mainInputTokens": 49540,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 721
+    },
+    {
+      "path": "worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 612
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1333,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Attack round resolution\n\n**Flow (UI → Worker):**\n1. `frontend/.../game-console.component.ts:144` `combatAction('attack')` → `GameApiService.resolveCombat` (`game-api.service.ts:50`) → `POST /api/combat/resolve`\n2. `worker/src/routes/combat.ts:11` (handler) → `:38` calls `services/combat.ts:50` `resolveCombatRound(char, state, 'attack')` — **all dice/mechanics happen here, in code, not by the AI**\n3. `routes/combat.ts:51` applies HP/XP; `:56-57` loot (currently broken, B-01); `:68` calls `askDM(...)` to narrate; `:80-95` saves round/session state; `:100-103` writes adventure log rows.\n\n**Dice logic (`worker/src/services/combat.ts:81`, using `services/dice.ts`):**\n- Attack roll: `d20 + (DEX for Rogue/Ranger, else STR) + proficiency (ceil(level/4)+1)` vs monster AC, via `attackRoll` in `dice.ts:55` (nat 20 = crit, nat 1 = auto-miss).\n- Damage: class-based die from `getPlayerDamageDice` (`combat.ts:222`: Fighter/Cleric/Bard 1d8, others 1d6) + modifier (INT for Wizard/Bard, else STR/DEX as above), minimum 1, doubled on a crit.\n- Equipped weapons are ignored entirely (bug B-08).\n- Monster death check at `combat.ts:121` grants `monster.xp_reward`.\n\n**AI's role:** The AI (`services/ai-dm.ts` via `askDM`) only narrates the already-resolved outcome, using `contextForDM` (built at `combat.ts:160`), a text log of the round. It does **not** roll dice, decide hit/miss, compute damage, or alter HP/XP — all mechanics are deterministic and server-side, per the project rule \"the Worker owns the rules; the AI only narrates.\"",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

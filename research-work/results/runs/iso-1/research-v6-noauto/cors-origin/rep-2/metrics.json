@@ -1,0 +1,58 @@
+{
+  "inputTokens": 90771,
+  "outputTokens": 574,
+  "cacheReadTokens": 80066,
+  "cacheWriteTokens": 10697,
+  "reasoningTokens": 15,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 4.85117,
+  "apiDurationMs": 8534,
+  "mainInputTokens": 90771,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 2,
+    "powershell": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1041
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 420
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1461,
+  "codeTokensRead": 565,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Allowed origins:** `http://localhost:4200` (exact), any `*.pages.dev`, and any `*.workers.dev` subdomain.\n\n**Where it's enforced:** `worker/src/index.ts`, inside the `cors({ origin: (origin) => {...} })` function passed to `app.use('*', cors({...}))` (lines ~21–29).\n\n**To add a new custom domain:** add a condition in that same `origin` function, e.g. `origin === 'https://your-custom-domain.com'` or `origin.endsWith('.your-custom-domain.com')` before `return origin;`. Note: it's a function, not an array, because Hono's array form only matches exact strings — needed here for wildcard subdomain support (per `docs/DEPLOYMENT_NOTES.md §4`).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

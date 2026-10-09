@@ -1,0 +1,57 @@
+{
+  "inputTokens": 151026,
+  "outputTokens": 1622,
+  "cacheReadTokens": 137259,
+  "cacheWriteTokens": 13755,
+  "reasoningTokens": 143,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 7.80833,
+  "apiDurationMs": 18427,
+  "mainInputTokens": 151026,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 7,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1128
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 638
+    },
+    {
+      "path": "worker/src/routes/shop.md",
+      "kind": "doc",
+      "tokens": 399
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1037,
+  "codeTokensRead": 1128,
+  "otherToolTokens": 241,
+  "filesModified": [],
+  "answer": "Longsword `value = 15` gp, and seed line 121 shows it's stocked (unlimited, `-1`) at shop id 1 (Aldric's Armory).\n\n## Selling 2 Longswords at Aldric's Armory\n\n**Gold received:** `floor(15 × 0.5) × 2 = 7 × 2 = 14 gp` — computed in `shop.ts:84` (`salePrice = Math.floor(item.value * 0.5) * quantity`), item value 15 from `items` table (`seed.sql:6`).\n\n**Checks that run first** (`routes/shop.ts`, `POST /api/shop/transaction`):\n1. Required-fields check (`characterId, shopId, action, itemId, quantity` all present) → 400 if missing.\n2. `getCharacter(DB, characterId)` → 404 if character not found.\n3. Load item by `itemId` from `items` table → 404 if not found.\n4. For `action === 'sell'`: query `character_inventory` for that `character_id`/`item_id` and verify `inv.quantity >= quantity` (2) → 400 \"You do not have enough of this item to sell\" if not.\n   - No check whether the item is equipped, and the shop's own stock isn't restocked.\n\n**Inventory row effect:** one `DB.batch` runs two statements:\n- `UPDATE characters SET gold = gold + 14 ...`\n- Since `inv.quantity === quantity` only deletes the row if selling all owned units; if the player owned exactly 2, the `character_inventory` row is deleted (`DELETE FROM character_inventory WHERE character_id = ? AND item_id = ?`). If they owned more than 2, instead `UPDATE character_inventory SET quantity = quantity - 2 ...` (row stays, decremented).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

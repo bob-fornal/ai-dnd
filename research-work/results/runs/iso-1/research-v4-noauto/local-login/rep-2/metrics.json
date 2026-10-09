@@ -1,0 +1,66 @@
+{
+  "inputTokens": 94461,
+  "outputTokens": 1187,
+  "cacheReadTokens": 81738,
+  "cacheWriteTokens": 12715,
+  "reasoningTokens": 114,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 6.00211,
+  "apiDurationMs": 13475,
+  "mainInputTokens": 94461,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 5
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 925
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.ts",
+      "kind": "code",
+      "tokens": 623
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 593
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 508
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 443
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 1,
+  "docTokensRead": 2469,
+  "codeTokensRead": 623,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Login** — no real auth: `AuthService.login(username)` (`frontend/src/app/services/auth.service.ts:16`) trims the name, looks up `ai_dnd_user_<lowercase name>` in `localStorage`; if found it's loaded, else a fresh `UserProfile` (`{username, campaigns: []}`) is created and persisted. The active profile is also written to `ai_dnd_user`. `isLoggedIn()` just checks `profile() !== null`; `authGuard` gates `/game/*` routes on this.\n\n**Campaigns** — stored entirely client-side in `localStorage`, as `CampaignSlot[]` on the `UserProfile` (keys `ai_dnd_user` for the active profile, `ai_dnd_user_<name>` per user). Each slot holds a `sessionId`/`characterId` pointing at the real data in Cloudflare: Workers KV (`session:<sessionId>`, 7‑day TTL) for session/combat/history, and D1 tables `characters`/`character_inventory`/`adventure_log` for permanent character data. Managed via `addCampaign`/`updateCampaign`/`removeCampaign` (`auth.service.ts:36,44,54`).\n\n**Deleting a campaign slot** — `removeCampaign(slotId)` only filters the slot out of `profile.campaigns` and re-persists to `localStorage`. It never calls the Worker API. The server-side character, inventory, adventure log (D1) and session (KV) are **not deleted** — they remain in the database, just orphaned since nothing in the browser points to them anymore.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

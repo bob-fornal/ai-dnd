@@ -1,0 +1,71 @@
+{
+  "inputTokens": 71637,
+  "outputTokens": 1488,
+  "cacheReadTokens": 56590,
+  "cacheWriteTokens": 15041,
+  "reasoningTokens": 73,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 6.38125,
+  "apiDurationMs": 14120,
+  "mainInputTokens": 71637,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "view": 6
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 925
+    },
+    {
+      "path": "docs/code/worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 757
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 735
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 697
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 642
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 398
+    }
+  ],
+  "docFilesRead": 6,
+  "codeFilesRead": 0,
+  "docTokensRead": 4154,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "The docs already use this exact example (`docs/flows/add-endpoint.md`). Here's the full file list and changes:\n\n**Worker**\n1. `worker/src/types/index.ts` — add `RestBody { sessionId, characterId }` (and an inn cost constant if not hardcoded).\n2. `worker/src/routes/rest.ts` (new) — `restRoutes = new Hono<{Bindings: Env}>()`; validate body, `getCharacter`, check `gold >= cost`, call `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (whitelisted fields only, per `services/character.ts:94`). Optionally call `askDM` for narration + `appendHistory`/`saveSession` + `adventure_log` insert, mirroring `routes/action.ts`.\n3. `worker/src/index.ts:41-48` — mount `app.route('/api/rest', restRoutes)`.\n4. `worker/src/services/character.ts` — if rest logic is reused elsewhere, keep it here (not in the route).\n5. `worker/migrations/000N_*.sql` (new, only if schema changes needed, e.g. an inn cost column) — never edit `0001_initial_schema.sql`.\n\n**Frontend**\n6. `frontend/src/app/models/game.models.ts` — response interface mirroring the new Worker type.\n7. `frontend/src/app/services/game-api.service.ts` — new `rest(sessionId, characterId)` method, `POST ${API_BASE}/api/rest`.\n8. `frontend/src/app/components/game-console/game-console.component.ts` + `.html` — \"Rest at Inn\" button/handler calling the API, then `CharacterStateService.setCharacter(res.updatedCharacter)`, plus a log entry.\n9. `frontend/src/app/components/game-console/game-console.component.spec.ts` (and any other touched component specs) — tests with `GameApiService` as a Jasmine spy.\n\n**Docs (per AUTHORING.md)**: update the doc beside each changed file, `code.md` doc index/symbol index, `docs/PRD.md` §9 API spec, and the AGENTS.md routing table if this becomes its own feature area.\n\n**Rule to preserve**: HP math and gold cost are computed in the Worker (`updateCharacter`), not in Angular — the AI only narrates.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

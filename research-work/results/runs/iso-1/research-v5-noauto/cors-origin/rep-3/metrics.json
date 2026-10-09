@@ -1,0 +1,58 @@
+{
+  "inputTokens": 163211,
+  "outputTokens": 1122,
+  "cacheReadTokens": 151698,
+  "cacheWriteTokens": 11499,
+  "reasoningTokens": 100,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 7.03351,
+  "apiDurationMs": 16552,
+  "mainInputTokens": 163211,
+  "mainRequests": 7,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 2,
+    "glob": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1048
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 398
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1446,
+  "codeTokensRead": 565,
+  "otherToolTokens": 162,
+  "filesModified": [],
+  "answer": "**Allowed origins** (CORS, `worker/src/index.ts`, the `app.use('*', cors({ origin: ... }))` call, lines ~20–30):\n- `http://localhost:4200` (exact match)\n- any `*.pages.dev` subdomain (`origin.endsWith('.pages.dev')`)\n- any `*.workers.dev` subdomain (`origin.endsWith('.workers.dev')`)\n\n**To add a new custom domain:** edit that `origin` function in `worker/src/index.ts` — add another exact-match check (e.g. `origin === 'https://yourdomain.com'`) or an `.endsWith()` check for a wildcard subdomain, inside the existing `if (...)` block (same place as the current three conditions). Hono's `cors()` only matches array entries as exact strings, so wildcard subdomains must stay in this function form. Reference: `docs/DEPLOYMENT_NOTES.md §4 (CORS)`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

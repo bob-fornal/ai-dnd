@@ -1,0 +1,46 @@
+{
+  "inputTokens": 45581,
+  "outputTokens": 717,
+  "cacheReadTokens": 35851,
+  "cacheWriteTokens": 9726,
+  "reasoningTokens": 12,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 3.86632,
+  "apiDurationMs": 7558,
+  "mainInputTokens": 45581,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 652
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 652,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Level-Up Flow\n\n**Offered when:** `xp >= XP_THRESHOLDS[level]` and `level < 10` (thresholds: 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000). Worker computes `shouldLevelUp()` (`worker/src/services/character.ts:159`), returned as `canLevelUp` from `POST /api/action` and `POST /api/combat/resolve`. Frontend shows a banner (`character-sheet.component.html:66`) + ability picker (`game-console.component.html:19-28`).\n\n**Endpoint:** Player picks an ability → `game-console.component.ts:183 levelUp(key)` → `GameApiService.levelUp()` → **`POST /api/levelup`** (`worker/src/routes/levelup.ts:10`), body includes `sessionId`, `characterId`, `abilityChoice` (str/dex/con/int/wis/cha). Rejects if `!shouldLevelUp` (400) or invalid ability.\n\n**Character changes** (`services/character.ts:133 levelUp`):\n- `level += 1`\n- HP gain = `roll(class hit die) + CON modifier`, added to both `max_hp` and current HP (hit dice: Fighter/Ranger d10, Rogue/Cleric/Bard d8, Wizard d6)\n- **+2** to the chosen ability score (no cap at 20; AC unchanged)\n- Worker logs a `[Level Up]` system message + DM history turn, generates flavor narrative (usually fallback text — known bug B-03)\n- Frontend then calls `setCharacter`, `setCanLevelUp(false)`, shows system message\n\nOnly one level processed per call — a character with enough XP for two levels must call `/api/levelup` twice.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

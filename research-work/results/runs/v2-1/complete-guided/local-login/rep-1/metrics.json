@@ -1,0 +1,75 @@
+{
+  "inputTokens": 201180,
+  "outputTokens": 2172,
+  "cacheReadTokens": 184016,
+  "cacheWriteTokens": 17148,
+  "reasoningTokens": 299,
+  "modelRequests": 8,
+  "premiumRequests": 1,
+  "aiCredits": 10.14252,
+  "apiDurationMs": 25385,
+  "mainInputTokens": 201180,
+  "mainRequests": 8,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 14,
+  "toolCallsByName": {
+    "view": 11,
+    "grep": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/routes/character.ts",
+      "kind": "code",
+      "tokens": 1500
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 804
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.ts",
+      "kind": "code",
+      "tokens": 623
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "frontend/src/app/components/login/login.component.ts",
+      "kind": "code",
+      "tokens": 480
+    },
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 37
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 4,
+  "docTokensRead": 841,
+  "codeTokensRead": 3168,
+  "otherToolTokens": 732,
+  "filesModified": [],
+  "answer": "Enough to answer confidently.\n\n**Login:** Entirely client-side, no server auth. `frontend/src/app/services/auth.service.ts` — `AuthService.login(username)` looks up `localStorage` key `ai_dnd_user_<username.toLowerCase()>`; if found it restores that `UserProfile`, otherwise creates a fresh `{ username, campaigns: [] }` and persists it (also mirrored to key `ai_dnd_user`). `LoginComponent.login()` (`login.component.ts`) calls this, then routes to `/characters` if the profile has no campaigns, or shows the campaign-slot list if it does.\n\n**Campaigns storage:** Stored only in browser `localStorage`, as `UserProfile.campaigns: CampaignSlot[]` (see `frontend/src/app/models/game.models.ts`). Each `CampaignSlot` holds `slotId`, `characterId`, `sessionId`, character meta, and `lastPlayed`. No server-side campaign table exists — the Worker (`worker/src`) only has D1 tables for characters/inventory/quests and a KV `SESSION_KV` session blob (see `worker/src/routes/character.ts` + `worker/src/routes/session.ts`).\n\n**Deleting a slot:** `LoginComponent.deleteCampaign()` calls `AuthService.removeCampaign(slotId)`, which just filters `p.campaigns` in the local `UserProfile` and re-persists to `localStorage` — there is no API call to the Worker. The server-side character row in D1 and the KV session created by `/api/character/create` (`character.ts`) are **never deleted**; they remain orphaned indefinitely after a campaign slot is removed from the UI.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.6,
+    "passed": 3,
+    "total": 5,
+    "missing": [
+      "authGuard",
+      "no password"
+    ]
+  }
+}

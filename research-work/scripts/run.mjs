@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 // Runs every task against every arm with Copilot CLI and stores raw output plus parsed metrics.
 //
-//   node scripts/run.mjs [--dry-run] [--tasks a,b] [--arms x,y] [--repeats N] [--label name]
+//   node scripts/run.mjs [--dry-run] [--tasks a,b] [--arms x,y] [--repeats N] [--label name] [--no-isolate]
 //
-import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync, createWriteStream, readdirSync } from 'node:fs';
+// By default each arm folder is copied into its own isolated workspace (outside this repository, with its
+// own `git init`) so relative paths in docs resolve against the arm's root and no repository-level
+// instructions leak in. See README "Isolation".
+//
+import { spawn, execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, writeFileSync, createWriteStream, readdirSync, cpSync } from 'node:fs';
 import path from 'node:path';
 import { WORK_DIR, loadJson, parseRun, grade } from './lib.mjs';
 
@@ -21,6 +25,24 @@ const repeats = Number(opt('repeats') ?? config.repeats);
 const dryRun = flag('dry-run');
 const label = opt('label') ?? new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 const runRoot = path.join(WORK_DIR, 'results', 'runs', label);
+const isolate = !flag('no-isolate') && config.isolate !== false;
+const workspaceRoot = path.resolve(WORK_DIR, config.workspaceRoot ?? '../../ai-dnd-research-workspaces', label);
+const EXCLUDE_DIRS = new Set(['node_modules', 'dist', '.angular', '.wrangler', '.git']);
+
+// One pristine copy per arm folder per label (arms sharing a folder share it). Created once; reused on resume.
+const workspaces = new Map();
+function workspaceFor(arm) {
+  const source = path.resolve(WORK_DIR, arm.dir);
+  if (!isolate) return source;
+  if (workspaces.has(source)) return workspaces.get(source);
+  const dest = path.join(workspaceRoot, path.basename(source));
+  if (!dryRun && !existsSync(dest)) {
+    cpSync(source, dest, { recursive: true, filter: (src) => !EXCLUDE_DIRS.has(path.basename(src)) });
+    execFileSync('git', ['init', '-q'], { cwd: dest });
+  }
+  workspaces.set(source, dest);
+  return dest;
+}
 
 // Launch Copilot through node + npm-loader.js on Windows so prompts need no shell quoting.
 function copilotCommand() {
@@ -43,7 +65,7 @@ function buildPrompt(arm, task) {
 }
 
 function runOnce({ arm, task, rep, outDir }) {
-  const armDir = path.resolve(WORK_DIR, arm.dir);
+  const armDir = workspaceFor(arm);
   const eventsFile = path.join(outDir, 'events.jsonl');
   const usageFile = path.join(outDir, 'usage.json');
   const prompt = buildPrompt(arm, task);
@@ -63,7 +85,7 @@ function runOnce({ arm, task, rep, outDir }) {
   }
 
   mkdirSync(outDir, { recursive: true });
-  writeFileSync(path.join(outDir, 'meta.json'), JSON.stringify({ arm, task, rep, prompt, copilotArgs: armCopilotArgs(arm), model: config.model, reasoningEffort: config.reasoningEffort, startedAt: new Date().toISOString() }, null, 2));
+  writeFileSync(path.join(outDir, 'meta.json'), JSON.stringify({ arm, task, rep, prompt, workspaceDir: armDir, isolated: isolate, copilotArgs: armCopilotArgs(arm), model: config.model, reasoningEffort: config.reasoningEffort, startedAt: new Date().toISOString() }, null, 2));
   return new Promise((resolve) => {
     const child = spawn(cmd, [...pre, ...cliArgs], { cwd: armDir, windowsHide: true });
     child.stdout.pipe(createWriteStream(eventsFile));
@@ -83,13 +105,16 @@ function runOnce({ arm, task, rep, outDir }) {
 const shuffle = (xs) => xs.map((x) => [Math.random(), x]).sort((a, b) => a[0] - b[0]).map(([, x]) => x);
 const sleep = (s) => new Promise((r) => setTimeout(r, s * 1000));
 
-// Preflight: warn about differences between the arm folders that can skew results.
+// Preflight: arm folders must exist. Isolated workspaces leave out node_modules for every arm (parity).
 for (const arm of arms) {
   const dir = path.resolve(WORK_DIR, arm.dir);
   if (!existsSync(dir)) { console.error(`Arm "${arm.id}" folder not found: ${dir}`); process.exit(1); }
-  const nm = ['', 'frontend', 'worker'].filter((sub) => existsSync(path.join(dir, sub, 'node_modules')));
-  if (nm.length) console.warn(`note: ${arm.id} has node_modules in: ${nm.map((s) => s || '.').join(', ')}`);
+  if (!isolate) {
+    const nm = ['', 'frontend', 'worker'].filter((sub) => existsSync(path.join(dir, sub, 'node_modules')));
+    if (nm.length) console.warn(`note: ${arm.id} has node_modules in: ${nm.map((s) => s || '.').join(', ')}`);
+  }
 }
+if (isolate) console.log(`Isolated workspaces: ${workspaceRoot}`);
 
 const total = tasks.length * arms.length * repeats;
 console.log(`${dryRun ? 'Dry run' : 'Running'}: ${tasks.length} tasks x ${arms.length} arms x ${repeats} repeats = ${total} Copilot runs (model ${config.model}).`);

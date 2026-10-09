@@ -1,0 +1,65 @@
+{
+  "inputTokens": 62045,
+  "outputTokens": 1172,
+  "cacheReadTokens": 43268,
+  "cacheWriteTokens": 10279,
+  "reasoningTokens": 15,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 3.79885,
+  "apiDurationMs": 9036,
+  "mainInputTokens": 44498,
+  "mainRequests": 2,
+  "subagentInputTokens": 17547,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 17,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "read_file": 6,
+    "grep_search": 6,
+    "file_search": 4
+  },
+  "failedToolCalls": 2,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1232
+    },
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 750
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 603
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 423
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 2405,
+  "codeTokensRead": 603,
+  "otherToolTokens": 4601,
+  "filesModified": [],
+  "answer": "**Currently allowed origins** (CORS config in `worker/src/index.ts`, inside `app.use('*', cors({ origin: (origin) => {...} }))`):\n- `http://localhost:4200` (exact match)\n- any subdomain ending in `.pages.dev`\n- any subdomain ending in `.workers.dev`\n\n**Where to add a new custom domain:**\nFile: `worker\\src\\index.ts`, in the `origin` function passed to `cors()` (around line 20). Add a new condition, e.g.:\n```ts\norigin === 'https://your-custom-domain.com' ||\n```\nor an `.endsWith('.your-custom-domain.com')` check for subdomains, inside the same `if (...)` block before `return origin;`.\n\nNote: Hono's `cors()` treats array entries as literal strings only — wildcards require this function form, as documented in `docs\\DEPLOYMENT_NOTES.md` (§4 CORS) and `worker\\src\\index.md`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

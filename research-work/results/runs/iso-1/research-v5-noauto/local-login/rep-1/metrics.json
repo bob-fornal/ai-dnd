@@ -1,0 +1,63 @@
+{
+  "inputTokens": 68496,
+  "outputTokens": 1167,
+  "cacheReadTokens": 56735,
+  "cacheWriteTokens": 11755,
+  "reasoningTokens": 119,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 5.24165,
+  "apiDurationMs": 12753,
+  "mainInputTokens": 68496,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1048
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 593
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 508
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 443
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 0,
+  "docTokensRead": 2592,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "This gives a clear picture. I have the answer.\n\n## Login\nPurely client-side, no server auth. `AuthService.login(username)` (`frontend/src/app/services/auth.service.ts:16`) loads `localStorage[\"ai_dnd_user_<lowercase name>\"]` or creates an empty `UserProfile`, then stores it as the active profile under key `ai_dnd_user`. `isLoggedIn()` (`:12`) just checks `profile() !== null`. There's no password/credential check against the Worker — \"logging in\" only unlocks the local campaign list.\n\n## Where campaigns are stored\n- **Browser (`localStorage`)**: `CampaignSlot`s live inside the `UserProfile`, keyed by `ai_dnd_user`/`ai_dnd_user_<name>`. Each slot holds a `sessionId` + `characterId` pointer (plus a `location` snapshot set once at creation, never updated) — managed by `addCampaign`/`updateCampaign`/`removeCampaign` (`auth.service.ts:36,44,54`).\n- **Workers KV**: `session:<sessionId>` (`worker/src/services/session.ts:8`) — location, quest summary, combat state, last 20 history turns, TTL 7 days (`SESSION_TTL_SECONDS = 604800`).\n- **D1**: `characters`, `character_inventory`, `adventure_log` tables — permanent, server-authoritative data.\n\n## Deleting a campaign slot\n`AuthService.removeCampaign` (`auth.service.ts:54`) **only removes the local slot** from `localStorage`. It does **not** call any Worker endpoint to delete the character, inventory, KV session, or adventure log. The D1 character row, inventory, and log rows all remain on the server indefinitely — just orphaned, since nothing in the browser points to them anymore (noted explicitly in the doc's \"Rules & gotchas\").",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "authGuard"
+    ]
+  }
+}

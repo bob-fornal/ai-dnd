@@ -1,0 +1,55 @@
+{
+  "inputTokens": 143926,
+  "outputTokens": 1165,
+  "cacheReadTokens": 131240,
+  "cacheWriteTokens": 12674,
+  "reasoningTokens": 59,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 6.9607,
+  "apiDurationMs": 16852,
+  "mainInputTokens": 143926,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 1,
+    "glob": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1490
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 680,
+  "codeTokensRead": 1490,
+  "otherToolTokens": 35,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`, `askDM` (line 81) handles model/JSON failures:\n\n1. **Primary model**: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format, temp 0.85, 1024 tokens). On throw (including streaming response), caught and logged.\n2. **Fallback model**: `@cf/mistral/mistral-7b-instruct-v0.2-lora`. If this also throws, returns `fallbackNarrative(playerAction)` directly.\n3. If a model call succeeds, raw text goes to `parseAIResponse(rawText, playerAction)`, which:\n   - Returns `fallbackNarrative` immediately if `raw` isn't a non-empty string.\n   - Strips ```json fences, then if text doesn't start with `{`, regex-extracts the first `{...}` block; if none found, returns `fallbackNarrative`.\n   - `JSON.parse`s the cleaned text; on parse error (`catch {}`), returns `fallbackNarrative`.\n   - On success, fills defaults for any missing/invalid fields (e.g. default narrative text, default `suggestedActions` like `['Look around', 'Search the area', ...]`, empty arrays for `diceRolls`/`itemsAdded`).\n\n`fallbackNarrative` (helper) builds a generic `AIDMResponse` with canned narrative text (`\"You attempt to {action}...\"`), null game-state deltas, and default suggested actions — used for every failure path above.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

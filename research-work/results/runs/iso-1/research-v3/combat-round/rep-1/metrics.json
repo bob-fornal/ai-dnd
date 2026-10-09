@@ -1,0 +1,51 @@
+{
+  "inputTokens": 46694,
+  "outputTokens": 775,
+  "cacheReadTokens": 35690,
+  "cacheWriteTokens": 11000,
+  "reasoningTokens": 15,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 4.2396,
+  "apiDurationMs": 8204,
+  "mainInputTokens": 46694,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 721
+    },
+    {
+      "path": "worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 612
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1333,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Attack round resolution\n\n**Flow:** `game-console.component.ts:144 combatAction('attack')` → `GameApiService.resolveCombat` → `POST /api/combat/resolve` (`worker/src/routes/combat.ts:11`) → `routes/combat.ts:38` calls `resolveCombatRound` in `worker/src/services/combat.ts:50`.\n\n**Dice rolls (all in `worker/src/services/dice.ts` via `services/combat.ts:81`):**\n- Attack roll: `attackRoll` (`dice.ts:55`) = d20 + (DEX if Rogue/Ranger, else STR) + proficiency `ceil(level/4)+1` vs monster AC. Nat 20 = crit, nat 1 = miss.\n- Damage: class die via `getPlayerDamageDice` (`combat.ts:222` — Fighter/Cleric/Bard 1d8, others 1d6) + modifier (INT for Wizard/Bard), minimum 1, doubled on crit.\n- Monster then attacks back (if still alive) using its own roll, unless combat ended.\n\n**Code owns:** every die roll, hit/miss/crit determination, damage math, HP changes, monster death (XP = `monster.xp_reward`, `combat.ts:121`), player death (`:152`), and builds `contextForDM` (`:160`) — a text log of what happened.\n\n**AI's job:** only narrates the pre-resolved `contextForDM` via `askDM` (`routes/combat.ts:68`); it never rolls dice or decides outcomes.\n\n**Known bug:** equipped weapons are ignored — damage always comes from class die, not the weapon (B-08).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

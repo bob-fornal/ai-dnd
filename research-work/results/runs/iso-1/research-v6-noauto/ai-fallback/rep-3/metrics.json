@@ -1,0 +1,61 @@
+{
+  "inputTokens": 118001,
+  "outputTokens": 1004,
+  "cacheReadTokens": 104875,
+  "cacheWriteTokens": 13116,
+  "reasoningTokens": 93,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 6.3825,
+  "apiDurationMs": 12778,
+  "mainInputTokens": 118001,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 2,
+    "powershell": 1,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1493
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1041
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 721
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1762,
+  "codeTokensRead": 1493,
+  "otherToolTokens": 27,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`, `askDM` (line 81) calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast` first. If that `ai.run()` throws, the `catch` retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`; if that also throws, it immediately returns `fallbackNarrative(playerAction)`.\n\nOn success, the raw text goes to `parseAIResponse(raw, playerAction)`: it strips markdown fences, extracts the first `{...}` block, and runs `JSON.parse`. If the text is empty/non-string, no `{...}` block is found, or `JSON.parse` throws, it also returns `fallbackNarrative(playerAction)`.\n\n`fallbackNarrative` builds a canned `AIDMResponse`: a generic narrative string (`\"You attempt to {action}. The world shifts around you...\"`), null/empty `gameStateChanges`, default `suggestedActions` (`['Look around', 'Proceed carefully', 'Listen for sounds', 'Rest a moment']`), and empty `diceRolls` — so the game always gets a valid, mechanically-neutral response even when both models fail or return malformed JSON.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

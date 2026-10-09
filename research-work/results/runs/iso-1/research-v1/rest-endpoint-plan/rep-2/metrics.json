@@ -1,0 +1,97 @@
+{
+  "inputTokens": 415899,
+  "outputTokens": 5547,
+  "cacheReadTokens": 377539,
+  "cacheWriteTokens": 38334,
+  "reasoningTokens": 1913,
+  "modelRequests": 13,
+  "premiumRequests": 1,
+  "aiCredits": 22.68648,
+  "apiDurationMs": 57943,
+  "mainInputTokens": 415899,
+  "mainRequests": 13,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 27,
+  "toolCallsByName": {
+    "view": 25,
+    "grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3638
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 2322
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 1465
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 1180
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 1179
+    },
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1128
+    },
+    {
+      "path": "worker/src/routes/action.ts",
+      "kind": "code",
+      "tokens": 1070
+    },
+    {
+      "path": "worker/migrations/0001_initial_schema.sql",
+      "kind": "code",
+      "tokens": 1026
+    },
+    {
+      "path": "frontend/src/app/models/game.models.ts",
+      "kind": "code",
+      "tokens": 824
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 647
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 11,
+  "docTokensRead": 0,
+  "codeTokensRead": 15044,
+  "otherToolTokens": 380,
+  "filesModified": [],
+  "answer": "## Files to change\n\n**Worker (mirror the `shop.ts` pattern — deterministic endpoint, not AI-narrated, so HP/gold math is exact):**\n\n1. **`worker/src/types/index.ts`** — add `InnRestBody { sessionId, characterId, innId? }` interface, and a cost constant/field (e.g. `INN_REST_COST = 10` or add `cost_per_rest` to an inn-type row).\n\n2. **`worker/migrations/000X_add_inns.sql`** (new) — add an `inns` table (`id, name, location, cost_per_rest`) if inn pricing should vary by location, similar to `shops`/`shop_inventory`. (Optional — can skip and hardcode a flat/formula cost instead.)\n\n3. **`worker/src/routes/inn.ts`** (new) — Hono route, e.g. `POST /api/inn/rest`: load character via `getCharacter`, compute cost (flat value or e.g. `5 * missing HP`), check `character.gold >= cost`, then `updateCharacter(db, id, { hp: character.max_hp, gold: character.gold - cost })`, return updated character. Pattern copied from `shopRoutes.post('/transaction')`.\n\n4. **`worker/src/index.ts`** — import `innRoutes` and register `app.route('/api/inn', innRoutes)`.\n\n5. **`worker/src/services/character.ts`** — no change needed (`updateCharacter` already supports `hp`/`gold`); optionally add a `restAtInn()` helper for reuse.\n\n**Angular frontend:**\n\n6. **`frontend/src/app/services/game-api.service.ts`** — add `restAtInn(body: { sessionId, characterId, innId? }): Observable<{ success: boolean; updatedCharacter: Character }>` posting to `${API_BASE}/api/inn/rest` (mirrors `shopTransaction`).\n\n7. **`frontend/src/app/models/game.models.ts`** — no new model required (reuses `Character`); add `InnRestResponse` type if desired.\n\n8. **`frontend/src/app/components/game-console/game-console.component.ts`** — add `restAtInn()` method calling `api.restAtInn(...)`, then `charSvc.setCharacter(res.updatedCharacter)` and `pushEntry('system', ...)`.\n\n9. **`frontend/src/app/components/game-console/game-console.component.html`** — add a \"Rest at the Inn\" button (disable when `charSvc.character()?.gold < cost` or HP already full) wired to `restAtInn()`.\n\n10. **`frontend/src/app/services/character-state.service.ts`** — no change needed (`setCharacter`/`hpPercent` already derive from `hp`/`max_hp`).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

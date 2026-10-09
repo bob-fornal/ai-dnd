@@ -1,0 +1,65 @@
+{
+  "inputTokens": 185599,
+  "outputTokens": 1662,
+  "cacheReadTokens": 173399,
+  "cacheWriteTokens": 12184,
+  "reasoningTokens": 165,
+  "modelRequests": 8,
+  "premiumRequests": 1,
+  "aiCredits": 8.17918,
+  "apiDurationMs": 26984,
+  "mainInputTokens": 185599,
+  "mainRequests": 8,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "glob": 2,
+    "view": 5,
+    "grep": 1
+  },
+  "failedToolCalls": 2,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 537
+    },
+    {
+      "path": "worker/migrations/0001_initial_schema.md",
+      "kind": "doc",
+      "tokens": 503
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 421
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 0,
+  "docTokensRead": 2246,
+  "codeTokensRead": 0,
+  "otherToolTokens": 18,
+  "filesModified": [],
+  "answer": "Confirmed: `characters` persists in D1 indefinitely, keyed by `session_id`, and nothing in the schema cascades a delete from a localStorage campaign slot removal.\n\n## Login\n- `frontend/src/app/services/auth.service.ts` — no password; `login(username)` loads `localStorage[\"ai_dnd_user_<lowercase name>\"]`, or creates an empty `UserProfile` if none exists, then sets it as the active profile under key `ai_dnd_user`.\n- `logout()` just clears the active-profile signal/key; the per-user copy stays in storage.\n- `AuthService.profile` is a signal; `isLoggedIn()` is simply `profile() !== null`. `auth.guard.ts` reads this to gate routes.\n\n## Where campaigns are stored\n- **Not** in D1 — campaigns live only in the browser, inside each `UserProfile.campaigns` array under `localStorage[\"ai_dnd_user_<name>\"]` (type `CampaignSlot`, `game.models.ts:133`).\n- A `CampaignSlot` is just a pointer: it records `session_id`/character id and a `location` string (set once at creation, never updated) that let the frontend reconnect to a Worker session.\n- The actual game data (character stats, inventory, log) lives server-side in Cloudflare D1, in the `characters`, `character_inventory`, and `adventure_log` tables (`worker/migrations/0001_initial_schema.sql`), keyed by `session_id`.\n\n## Deleting a campaign slot\n- `AuthService.removeCampaign()` (`auth.service.ts:54`) only removes the `CampaignSlot` entry from the local profile and re-persists it to `localStorage`.\n- It does **not** call any Worker endpoint to delete the character. The server-side row in D1's `characters` table (and its inventory/log rows) is left behind indefinitely — the docs flag this explicitly as a known gotcha (\"D1 data stays, but nothing points to it\").",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "authGuard"
+    ]
+  }
+}

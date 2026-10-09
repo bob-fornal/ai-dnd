@@ -1,0 +1,81 @@
+{
+  "inputTokens": 83224,
+  "outputTokens": 1748,
+  "cacheReadTokens": 64794,
+  "cacheWriteTokens": 18424,
+  "reasoningTokens": 147,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 7.65108,
+  "apiDurationMs": 16030,
+  "mainInputTokens": 83224,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "view": 8
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 867
+    },
+    {
+      "path": "worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 741
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 711
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 694
+    },
+    {
+      "path": "worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 679
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 638
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 481
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 385
+    }
+  ],
+  "docFilesRead": 8,
+  "codeFilesRead": 0,
+  "docTokensRead": 5196,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "This is literally the documented example feature. Full file list:\n\n## Worker\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add `RestBody { sessionId, characterId }`; optional `REST_COST` constant |\n| `worker/src/routes/rest.ts` (new) | `restRoutes = new Hono<{Bindings: Env}>()`; validate body, `getCharacter`, check `gold >= cost`, `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (via `services/character.ts:94`, whitelisted fields only). Optionally `askDM` narration + `appendHistory`/`saveSession` + `adventure_log` insert, following `routes/action.ts` |\n| `worker/src/index.ts:41-48` | Mount `app.route('/api/rest', restRoutes)` |\n| `worker/src/services/character.ts` | No change needed — reuse existing `updateCharacter` (hp/gold already whitelisted) |\n| `worker/migrations/000N_*.sql` (new, if cost/location needs persisting) | Only if adding new schema (e.g. an \"inn\" location/cost table); don't edit `0001_initial_schema.sql` |\n\n## Frontend\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Response interface mirroring the Worker's rest response (e.g. `{ character, goldSpent }`) |\n| `frontend/src/app/services/game-api.service.ts` | New `rest(sessionId, characterId)` method → `POST /api/rest` |\n| `frontend/src/app/components/game-console/game-console.component.ts` + `.html` | \"Rest at the Inn\" button/handler calling `rest()`, then `CharacterStateService.setCharacter(res.updatedCharacter)`, push narrative entry |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Spy-based test for the new handler |\n\n## Docs/other (same change)\n`worker/src/routes/rest.md` (new), `worker/src/index.md`, `docs/flows/add-endpoint.md`/new `rest.md` flow doc, `code.md` symbol index rebuild, `docs/PRD.md` §9 API spec, `AGENTS.md` routing table.\n\n**Rule:** cost/HP math stays in the Worker (`updateCharacter`); AI only narrates.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

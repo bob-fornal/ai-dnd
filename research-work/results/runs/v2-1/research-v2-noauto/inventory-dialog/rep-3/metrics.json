@@ -1,0 +1,52 @@
+{
+  "inputTokens": 87772,
+  "outputTokens": 669,
+  "cacheReadTokens": 77812,
+  "cacheWriteTokens": 9952,
+  "reasoningTokens": 40,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 4.71484,
+  "apiDurationMs": 9386,
+  "mainInputTokens": 87772,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "glob": 1,
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 638
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1423,
+  "codeTokensRead": 0,
+  "otherToolTokens": 3,
+  "filesModified": [],
+  "answer": "**Opening the dialog:** `game-console.component.ts:237` `openInventory()` calls `MatDialog.open(InventoryComponent, { data, panelClass: 'inv-dialog-panel', maxHeight: '90vh' })`, triggered from the Inventory button at `game-console.component.html:9`.\n\n**Data passed:** `InventoryDialogData = { characterId, sessionId }` (`inventory.component.ts:19`), injected via `MAT_DIALOG_DATA`.\n\n**API calls it can make:**\n- `getInventory` → `GET /api/character/:id` (`game-api.service.ts:90`, `routes/character.ts:72`) — loads inventory on init.\n- `equipItem` → `PATCH /api/character/:id/equip` (`game-api.service.ts:96`, `routes/character.ts:93`) — equip/unequip.\n- `dropItem` → `DELETE /api/character/:id/inventory/:itemId` (`game-api.service.ts:100`, `routes/character.ts:137`) — used both for \"use potion\" and \"drop item\".\n\nNote: potion heal dice are rolled client-side and HP is only updated locally, never persisted (per docs, bug B-05).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "inputTokens": 146714,
+  "outputTokens": 1216,
+  "cacheReadTokens": 131976,
+  "cacheWriteTokens": 14726,
+  "reasoningTokens": 54,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 7.53942,
+  "apiDurationMs": 13926,
+  "mainInputTokens": 146714,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 4,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2476
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1048
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 696
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1744,
+  "codeTokensRead": 2476,
+  "otherToolTokens": 27,
+  "filesModified": [],
+  "answer": "Per `worker/src/services/ai-dm.ts`:\n\n- **Primary model**: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. If `ai.run()` throws, caught in `askDM`'s try/catch.\n- **Fallback model**: `@cf/mistral/mistral-7b-instruct-v0.2-lora`. If that also throws, `askDM` returns `fallbackNarrative(playerAction)` directly (no further retries).\n- If a model call succeeds but returns text, it's passed to `parseAIResponse(rawText, playerAction)`, which:\n  - Returns `fallbackNarrative` if `raw` is empty/non-string.\n  - Strips ```` ```json ```` fences, then regex-extracts the first `{...}` block if the text doesn't start with `{`; if no match, logs `console.warn('[parseAIResponse] no JSON object found...')` and returns `fallbackNarrative`.\n  - Wraps `JSON.parse(cleaned)` in try/catch — on parse error, returns `fallbackNarrative`.\n  - On success, fills missing/invalid fields with safe defaults (e.g. `narrative` falls back to `'The world holds its breath...'`, `suggestedActions` to a 4-item default list, `diceRolls`/`itemsAdded`/`itemsRemoved` to `[]`).\n\n`fallbackNarrative(playerAction)` is the single shared \"safe\" `AIDMResponse` generator used for every failure path (model error, empty text, no JSON found, or invalid JSON).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

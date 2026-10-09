@@ -1,0 +1,40 @@
+{
+  "inputTokens": 86428,
+  "outputTokens": 1367,
+  "cacheReadTokens": 76667,
+  "cacheWriteTokens": 9753,
+  "reasoningTokens": 82,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 5.34019,
+  "apiDurationMs": 13874,
+  "mainInputTokens": 86428,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "grep": 5
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [],
+  "docFilesRead": 0,
+  "codeFilesRead": 0,
+  "docTokensRead": 0,
+  "codeTokensRead": 0,
+  "otherToolTokens": 937,
+  "filesModified": [],
+  "answer": "Allowed origins are set in **`worker/src/index.ts`**, inside the Hono `cors()` middleware call (`app.use('*', cors({ origin: (origin) => {...} }))`, lines 19–30). Currently it allows:\n\n- `http://localhost:4200` (exact match)\n- any origin ending in `.pages.dev`\n- any origin ending in `.workers.dev`\n\nAnything else returns `null` (rejected). This logic is documented in `docs\\DEPLOYMENT_NOTES.md` (lines ~88–104) as the fix for Hono's array-based `origin` only doing literal string matches.\n\n**To add a new custom domain**, edit the `origin` function in `worker/src/index.ts` (line 21 area) and extend the condition at line 23–26, e.g.:\n```ts\norigin === 'http://localhost:4200' ||\norigin === 'https://your-custom-domain.com' ||   // add this\norigin.endsWith('.pages.dev') ||\norigin.endsWith('.workers.dev')\n```\nNo other file needs changes for CORS; this is the single source of truth for allowed origins.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

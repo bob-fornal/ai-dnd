@@ -1,0 +1,62 @@
+{
+  "inputTokens": 177517,
+  "outputTokens": 1793,
+  "cacheReadTokens": 162015,
+  "cacheWriteTokens": 15488,
+  "reasoningTokens": 110,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 8.9081,
+  "apiDurationMs": 21159,
+  "mainInputTokens": 177517,
+  "mainRequests": 7,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 7,
+  "toolCallsByName": {
+    "view": 4,
+    "grep": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 2323
+    },
+    {
+      "path": "worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 538
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 393
+    },
+    {
+      "path": "worker/src/routes/levelup.md",
+      "kind": "doc",
+      "tokens": 357
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 3218,
+  "codeTokensRead": 393,
+  "otherToolTokens": 1115,
+  "filesModified": [],
+  "answer": "## Level-up flow\n\n**1. UI trigger (`canLevelUp`):** `CharacterStateService` keeps a `canLevelUp` signal. It's set after `getSession`/`sendAction`/`resolveCombat` responses include `res.canLevelUp` (server-computed via `shouldLevelUp`), e.g. `game-console.component.ts:128,155`. When true:\n- `game-console.component.html` (line 19-24) shows a \"Level Up\" panel with ability buttons, calling `levelUp(key)`.\n- `character-sheet.component.html` (line 66-68) shows a read-only \"Level Up Available!\" banner (picker lives only in game-console).\n\n**2. Endpoint call:** `game-console.component.ts levelUp(ability)` calls `GameApiService.levelUp(sessionId, characterId, abilityChoice)` → `POST /api/levelup` (`worker/src/routes/levelup.ts`).\n\n**3. Server logic (`routes/levelup.ts` + `services/character.ts`):**\n- Validates the ability key and re-checks `shouldLevelUp(character)` (`xp >= XP_THRESHOLDS[level]`, capped at level 10).\n- `levelUp(db, character, ability)`: `level += 1`, HP gain `roll(hitDie) + CON modifier` (added to max/current HP), `+2` to the chosen ability score (no cap at 20, AC untouched).\n- Generates flavor narrative (usually the fallback text), logs a `system` `[Level Up] …` entry, saves session.\n- Response: `{ narrative, updatedCharacter, abilityImproved, newLevel }`.\n\n**4. Client update:** on success, `charSvc.setCharacter(res.updatedCharacter)` refreshes the character signal, `setCanLevelUp(false)` hides the panel, a chat entry \"⬆ Level N! …\" is pushed, and `updateCampaignSlot(newLevel)` syncs the saved-campaign list. One call levels up by exactly one level; multiple pending levels require repeated calls.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

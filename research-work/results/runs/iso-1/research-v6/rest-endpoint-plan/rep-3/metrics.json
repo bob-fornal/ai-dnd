@@ -1,0 +1,53 @@
+{
+  "inputTokens": 122728,
+  "outputTokens": 1570,
+  "cacheReadTokens": 105443,
+  "cacheWriteTokens": 17275,
+  "reasoningTokens": 217,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 7.99961,
+  "apiDurationMs": 16875,
+  "mainInputTokens": 122728,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "powershell": 2,
+    "view": 2
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "../../../../../Users/BOB~1.FOR/AppData/Local/Temp/1791582669324-copilot-tool-output-50584-3e681380-9ae4-45ea-b238-936e798a5244.txt",
+      "kind": "other",
+      "tokens": 4211
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 134
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 134,
+  "codeTokensRead": 0,
+  "otherToolTokens": 4211,
+  "filesModified": [],
+  "answer": "The repo's docs literally use \"rest at the inn\" as the worked example (`docs/flows/add-endpoint.md`). Here's the file list:\n\n**Worker**\n1. `worker/src/types/index.ts` — add `RestBody { sessionId, characterId }` (and a gold-cost constant, e.g. `REST_COST`).\n2. `worker/src/routes/rest.ts` (new) — `export const restRoutes = new Hono<{ Bindings: Env }>()`; validate body, `getCharacter`, check `gold >= cost`, call `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (service in `services/character.ts:94`, whitelisted fields only). Optionally narrate via `askDM`, `appendHistory`/`saveSession`, insert into `adventure_log`, mirroring `routes/action.ts`.\n3. `worker/src/index.ts:41-48` — mount it: `app.route('/api/rest', restRoutes)`.\n4. `worker/src/services/character.ts` — only if HP/gold logic needs a shared helper beyond `updateCharacter`.\n5. No schema migration needed (reuses existing `hp`, `gold` columns); CORS unaffected (no new origin).\n\n**Frontend**\n6. `frontend/src/app/models/game.models.ts` — response interface mirroring the Worker type.\n7. `frontend/src/app/services/game-api.service.ts` — new `rest(sessionId, characterId)` method posting to `${API_BASE}/api/rest`.\n8. `frontend/src/app/components/game-console/game-console.component.ts` + `.html` — \"Rest at inn\" button/handler; call `rest()`, then `CharacterStateService.setCharacter(res.updatedCharacter)`, push a log entry.\n9. `frontend/src/app/components/game-console/game-console.component.spec.ts` — tests with `GameApiService` spy.\n\n**Docs** (per `AUTHORING.md`): add `docs/code/worker/src/routes/rest.md`, update `docs/code/worker/src/index.md`, `docs/flows/inventory.md` or a new `docs/flows/rest.md`, `code.md` symbol index, and the `AGENTS.md` routing table.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

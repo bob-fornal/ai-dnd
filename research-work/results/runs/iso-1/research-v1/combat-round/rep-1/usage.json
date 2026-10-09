@@ -1,0 +1,161 @@
+{
+  "totalPremiumRequestCost": 1,
+  "totalUserRequests": 1,
+  "totalNanoAiu": 4985410000,
+  "tokenDetails": {
+    "input": {
+      "tokenCount": 11777
+    },
+    "cache_read": {
+      "tokenCount": 46390
+    },
+    "cache_write": {
+      "tokenCount": 13535
+    },
+    "output": {
+      "tokenCount": 1404
+    }
+  },
+  "totalApiDurationMs": 12355,
+  "sessionStartTime": "2026-10-09T16:11:10.500Z",
+  "codeChanges": {
+    "linesAdded": 0,
+    "linesRemoved": 0,
+    "filesModifiedCount": 0,
+    "filesModified": []
+  },
+  "modelMetrics": {
+    "claude-sonnet-5": {
+      "requests": {
+        "count": 2,
+        "cost": 1
+      },
+      "usage": {
+        "inputTokens": 47782,
+        "outputTokens": 916,
+        "cacheReadTokens": 34243,
+        "cacheWriteTokens": 13535,
+        "reasoningTokens": 19
+      },
+      "cacheExpiresAt": "2026-10-09T16:16:27.018Z",
+      "totalNanoAiu": 4985410000,
+      "tokenDetails": {
+        "input": {
+          "tokenCount": 4
+        },
+        "cache_read": {
+          "tokenCount": 34243
+        },
+        "cache_write": {
+          "tokenCount": 13535
+        },
+        "output": {
+          "tokenCount": 916
+        }
+      }
+    },
+    "copilot-search-a": {
+      "requests": {
+        "count": 3,
+        "cost": 0
+      },
+      "usage": {
+        "inputTokens": 23920,
+        "outputTokens": 488,
+        "cacheReadTokens": 12147,
+        "cacheWriteTokens": 0,
+        "reasoningTokens": 0
+      },
+      "totalNanoAiu": 0,
+      "tokenDetails": {
+        "input": {
+          "tokenCount": 11773
+        },
+        "cache_read": {
+          "tokenCount": 12147
+        },
+        "cache_write": {
+          "tokenCount": 0
+        },
+        "output": {
+          "tokenCount": 488
+        }
+      }
+    }
+  },
+  "agentMetrics": {
+    "main": {
+      "totalApiDurationMs": 10215,
+      "totalNanoAiu": 4985410000,
+      "modelMetrics": {
+        "claude-sonnet-5": {
+          "requests": {
+            "count": 2,
+            "cost": 1
+          },
+          "usage": {
+            "inputTokens": 47782,
+            "outputTokens": 916,
+            "cacheReadTokens": 34243,
+            "cacheWriteTokens": 13535,
+            "reasoningTokens": 19
+          },
+          "totalNanoAiu": 4985410000,
+          "tokenDetails": {
+            "input": {
+              "tokenCount": 4
+            },
+            "cache_read": {
+              "tokenCount": 34243
+            },
+            "cache_write": {
+              "tokenCount": 13535
+            },
+            "output": {
+              "tokenCount": 916
+            }
+          }
+        }
+      }
+    },
+    "toolu_01KDcFsWhn2hrzCDFbFAiUpw": {
+      "agentName": "search-subagent",
+      "agentDisplayName": "Search Subagent",
+      "totalApiDurationMs": 2140,
+      "totalNanoAiu": 0,
+      "modelMetrics": {
+        "copilot-search-a": {
+          "requests": {
+            "count": 3,
+            "cost": 0
+          },
+          "usage": {
+            "inputTokens": 23920,
+            "outputTokens": 488,
+            "cacheReadTokens": 12147,
+            "cacheWriteTokens": 0,
+            "reasoningTokens": 0
+          },
+          "totalNanoAiu": 0,
+          "tokenDetails": {
+            "input": {
+              "tokenCount": 11773
+            },
+            "cache_read": {
+              "tokenCount": 12147
+            },
+            "cache_write": {
+              "tokenCount": 0
+            },
+            "output": {
+              "tokenCount": 488
+            }
+          }
+        }
+      }
+    }
+  },
+  "currentModel": "claude-sonnet-5",
+  "lastCallInputTokens": 27223,
+  "lastCallOutputTokens": 624
+}

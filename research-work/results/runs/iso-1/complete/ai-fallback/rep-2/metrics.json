@@ -1,0 +1,52 @@
+{
+  "inputTokens": 64396,
+  "outputTokens": 1209,
+  "cacheReadTokens": 43580,
+  "cacheWriteTokens": 12105,
+  "reasoningTokens": 14,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 4.45543,
+  "apiDurationMs": 10390,
+  "mainInputTokens": 46328,
+  "mainRequests": 2,
+  "subagentInputTokens": 18068,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 11,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 4,
+    "grep_search": 5,
+    "read_file": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3673
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 3673,
+  "otherToolTokens": 5708,
+  "filesModified": [],
+  "answer": "**File:** `worker/src/services/ai-dm.ts`\n\n**Model cascade:**\n1. Primary: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (forces `response_format: json_object`)\n2. Fallback on failure: `@cf/mistral/mistral-7b-instruct-v0.2-lora`\n\n**Functions & error handling:**\n- `askDM()` — calls llama; on thrown error (e.g., streaming response, API failure) catches it, logs, and retries with mistral. If mistral also throws, calls `fallbackNarrative(playerAction)` and returns immediately.\n- `parseAIResponse(raw, playerAction)` — handles cases where the model *returns* but the text isn't valid JSON: strips markdown fences, extracts the first `{...}` block via regex if the string doesn't start with `{`, then `JSON.parse`s it. If raw is empty/non-string, no JSON block is found, or `JSON.parse` throws, it returns `fallbackNarrative(playerAction)`.\n- `fallbackNarrative()` — produces a canned `AIDMResponse` so the game continues despite failure (exact fallback text truncated in output but confirmed to exist).\n- Similar try/catch-with-hardcoded-fallback patterns exist in `generateQuest()` (fallback quest \"Blood on the Road\"), `generateBackstory()` (fallback backstory string), and `generateLevelUpNarrative()` (fallback level-up sentence) — each catches errors and returns a static default instead of propagating.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

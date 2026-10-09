@@ -1,0 +1,52 @@
+{
+  "inputTokens": 70742,
+  "outputTokens": 687,
+  "cacheReadTokens": 58369,
+  "cacheWriteTokens": 12367,
+  "reasoningTokens": 51,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.94733,
+  "apiDurationMs": 7742,
+  "mainInputTokens": 70742,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 2,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 1781
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 385
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 2166,
+  "codeTokensRead": 0,
+  "otherToolTokens": 25,
+  "filesModified": [],
+  "answer": "**Allowed origins** (CORS, `worker/src/index.ts`, inside `app.use('*', cors({ origin: (origin) => {...} }))`):\n- Exact match: `http://localhost:4200`\n- Any origin ending in `.pages.dev`\n- Any origin ending in `.workers.dev`\n\nAnything else → function returns `null` (rejected).\n\n**Where to add a new custom domain**: edit that `origin` function in `worker/src/index.ts` (the CORS middleware config), adding a new exact-match condition (e.g. `origin === 'https://yourdomain.com'`) since Hono's array-based CORS only matches literal strings, not wildcards. Documented in `docs/DEPLOYMENT_NOTES.md` §4 (\"CORS\") and `worker/src/index.md`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

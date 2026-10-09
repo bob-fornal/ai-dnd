@@ -1,0 +1,56 @@
+{
+  "inputTokens": 88418,
+  "outputTokens": 1137,
+  "cacheReadTokens": 77216,
+  "cacheWriteTokens": 11194,
+  "reasoningTokens": 29,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 5.48142,
+  "apiDurationMs": 13196,
+  "mainInputTokens": 88418,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 721
+    },
+    {
+      "path": "worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 612
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2118,
+  "codeTokensRead": 0,
+  "otherToolTokens": 22,
+  "filesModified": [],
+  "answer": "Docs give a complete, consistent answer; no need to open source unless verifying a detail. This is sufficient.\n\n## Attack resolution flow\n\n**Trigger:** `game-console.component.ts:144` `combatAction('attack')` → `GameApiService.resolveCombat` (`game-api.service.ts:50`) → `POST /api/combat/resolve`.\n\n**Worker:** `worker/src/routes/combat.ts:11` (handler) loads character/session, then calls `resolveCombatRound` at `routes/combat.ts:38` → `worker/src/services/combat.ts:50`.\n\n**Dice rolling** happens entirely in `resolveCombatRound` (`services/combat.ts:81` for the attack), via `attackRoll` in `worker/src/services/dice.ts:55`:\n- Attack roll: d20 + (DEX if Rogue/Ranger, else STR) + proficiency `ceil(level/4)+1` vs monster AC. Nat 20 = crit, nat 1 = miss.\n- Damage: class die (`getPlayerDamageDice`, `combat.ts:222`; 1d8 for Fighter/Cleric/Bard, else 1d6) + ability mod (INT for Wizard/Bard), minimum 1, doubled on crit. Equipment is ignored (bug B-08).\n- If the monster survives, it then attacks back (same `resolveCombatRound` call).\n\n**Caller responsibilities** (`routes/combat.ts`): applies HP deltas/clamping and XP (`:51`), rolls/grants loot on victory (`:56-57`; currently broken per B-01), calls `askDM(...)` (`:68`) to narrate using `result.contextForDM`, updates/clears combat state and saves session (`:80-95`), writes two `adventure_log` rows (`:100-103`).\n\n**AI's role:** The AI (`askDM`, see `ai-dm.ts`) only narrates the already-resolved `contextForDM` text — it does not roll dice, compute damage, or decide outcomes. All mechanics (hit/miss, damage, HP, XP, death/victory) are deterministic code in `services/combat.ts` and `services/dice.ts`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

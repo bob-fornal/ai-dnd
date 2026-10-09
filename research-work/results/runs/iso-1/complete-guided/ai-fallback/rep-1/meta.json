@@ -1,0 +1,49 @@
+{
+  "arm": {
+    "id": "complete-guided",
+    "dir": "../complete",
+    "description": "Baseline told to use its docs.",
+    "preamble": "Before answering, orient yourself with the project documentation in this folder (PRD.md, SETUP.md, docs/), then read only the code you need.",
+    "docsVersion": "baseline"
+  },
+  "task": {
+    "id": "ai-fallback",
+    "area": "worker",
+    "prompt": "How does the AI Dungeon Master handle a model failure or a response that is not valid JSON? Name the models and functions involved.",
+    "expect": [
+      [
+        "parseAIResponse"
+      ],
+      [
+        "fallbackNarrative"
+      ],
+      [
+        "mistral"
+      ],
+      [
+        "llama-3.3"
+      ],
+      [
+        "choices"
+      ]
+    ]
+  },
+  "rep": 1,
+  "prompt": "Before answering, orient yourself with the project documentation in this folder (PRD.md, SETUP.md, docs/), then read only the code you need.\n\nHow does the AI Dungeon Master handle a model failure or a response that is not valid JSON? Name the models and functions involved.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\iso-1\\complete",
+  "isolated": true,
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-custom-instructions",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color",
+    "--disallow-temp-dir"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T16:29:46.943Z"
+}

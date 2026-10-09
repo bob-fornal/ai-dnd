@@ -1,0 +1,53 @@
+{
+  "inputTokens": 66811,
+  "outputTokens": 923,
+  "cacheReadTokens": 56735,
+  "cacheWriteTokens": 10070,
+  "reasoningTokens": 19,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.5764,
+  "apiDurationMs": 9542,
+  "mainInputTokens": 66811,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 1,
+    "powershell": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1041
+    },
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 672
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1713,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Level-up flow\n\n**When offered:** Worker computes `shouldLevelUp(character)` (`services/character.ts:159`): `xp >= XP_THRESHOLDS[level]` (0,300,900,2700,6500,14000,23000,34000,48000,64000; max level 10) and `level < 10`. Returned as `canLevelUp` from `POST /api/action` (`routes/action.ts:99`) and `POST /api/combat/resolve` (`routes/combat.ts:109`). Frontend shows a banner (`character-sheet.component.html:66`) + ability picker (`game-console.component.html:19-28`), and a system message after combat (`game-console.component.ts:172`).\n\n**Call chain:**\n1. Player clicks ability → `game-console.component.ts:183` `levelUp(key)` → `GameApiService.levelUp(sessionId, characterId, abilityChoice)` (`game-api.service.ts:74`)\n2. `POST /api/levelup` (`worker/src/routes/levelup.ts:10`) — validates `abilityChoice` ∈ str/dex/con/int/wis/cha, 400 if `!shouldLevelUp`\n3. `services/character.ts:133` `levelUp(character, abilityChoice)` mutates the character\n\n**What changes on the character:**\n- `level` += 1\n- HP gain = `roll(class hit die) + CON mod`, added to both `max_hp` and current `hp`\n- Chosen ability score **+2** (no cap at 20)\n- AC unchanged\n- Hit dice by class: Fighter/Ranger d10, Rogue/Cleric/Bard d8, Wizard d6 (`CLASS_HIT_DICE`)\n\nResponse includes flavor text from `generateLevelUpNarrative`, a `system` log row `[Level Up] …`, and a DM history turn (`routes/levelup.ts:39-50`). Frontend then calls `setCharacter`, `setCanLevelUp(false)`, shows a system message, updates campaign slot level (`game-console.component.ts:187-194`). One level per call — a character with enough XP for two levels needs two separate calls.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

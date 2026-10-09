@@ -1,0 +1,46 @@
+{
+  "inputTokens": 45215,
+  "outputTokens": 809,
+  "cacheReadTokens": 35670,
+  "cacheWriteTokens": 9541,
+  "reasoningTokens": 14,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 3.90845,
+  "apiDurationMs": 7870,
+  "mainInputTokens": 45215,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 649
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 649,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Level-Up Flow\n\n**Trigger:** XP thresholds in `XP_THRESHOLDS` (`worker/src/types/index.ts:175`) — 300/900/2700/6500/14000/23000/34000/48000/64000, max level 10. Worker's `shouldLevelUp(character)` (`services/character.ts:159`) checks `xp >= XP_THRESHOLDS[level] && level < 10`, returned as `canLevelUp` by `POST /api/action` and `POST /api/combat/resolve` (`routes/action.ts:99`, `routes/combat.ts:109`). Frontend also pre-computes it (`character-state.service.ts:52,76`) but the server value wins (`game-console.component.ts:128,155`).\n\n**UI:** Banner on character sheet (`character-sheet.component.html:66`) + ability picker in console sidebar (`game-console.component.html:19-28`); a system message prompts it after combat.\n\n**Call:** `levelUp(key)` (`game-console.component.ts:183`) → `GameApiService.levelUp(sessionId, characterId, abilityChoice)` (`game-api.service.ts:74`) → **`POST /api/levelup`** (`worker/src/routes/levelup.ts:10`). `abilityChoice` must be str/dex/con/int/wis/cha; 400s if `!shouldLevelUp`.\n\n**Character changes** (`services/character.ts:133` `levelUp`):\n- Level +1\n- HP gain = `roll(class hit die) + CON mod`, added to both `max_hp` and current HP (hit dice: Fighter/Ranger d10, Rogue/Cleric/Bard d8, Wizard d6)\n- Chosen ability score +2 (uncapped, AC unchanged)\n\nResponse also includes flavor text (`generateLevelUpNarrative`), a `system` log `[Level Up] …`, and a DM history turn. Frontend then does `setCharacter`, `setCanLevelUp(false)`, shows a message, updates campaign slot level. Only one level per call.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

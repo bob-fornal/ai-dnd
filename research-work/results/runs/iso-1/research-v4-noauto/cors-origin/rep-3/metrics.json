@@ -1,0 +1,57 @@
+{
+  "inputTokens": 137718,
+  "outputTokens": 995,
+  "cacheReadTokens": 126721,
+  "cacheWriteTokens": 10985,
+  "reasoningTokens": 74,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 6.27807,
+  "apiDurationMs": 12919,
+  "mainInputTokens": 137718,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 925
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 398
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1323,
+  "codeTokensRead": 565,
+  "otherToolTokens": 50,
+  "filesModified": [],
+  "answer": "Allowed origins (CORS allowlist in `worker/src/index.ts`, inside the `origin` callback passed to `cors(...)`, ~lines 20–30):\n- `http://localhost:4200` (exact match)\n- any subdomain of `.pages.dev`\n- any subdomain of `.workers.dev`\n\nAny other origin returns `null` and is rejected.\n\nTo add a new custom domain: edit that same `origin` function in `worker/src/index.ts`, adding another `origin === '...'` or `origin.endsWith('...')` check inside the `if (...)` condition (per `docs/code/worker/src/index.md` and `DEPLOYMENT_NOTES.md §4`). Note Hono's `cors()` array form only does exact-string matches, so wildcard subdomains must stay in this function form.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

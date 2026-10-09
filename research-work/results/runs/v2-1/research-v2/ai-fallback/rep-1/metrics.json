@@ -1,0 +1,54 @@
+{
+  "inputTokens": 128299,
+  "outputTokens": 1219,
+  "cacheReadTokens": 112253,
+  "cacheWriteTokens": 16036,
+  "reasoningTokens": 152,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 7.47506,
+  "apiDurationMs": 15210,
+  "mainInputTokens": 128299,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 1
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2525
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 680,
+  "codeTokensRead": 2525,
+  "otherToolTokens": 135,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`, `askDM` has a two-tier model cascade with a final hardcoded fallback:\n\n1. **Primary model**: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (JSON-forced, temp 0.85). If the call throws (or returns a `ReadableStream`, which is treated as an error), it's caught.\n2. **Fallback model**: `@cf/mistral/mistral-7b-instruct-v0.2-lora` is tried next. If that also throws, `askDM` immediately returns `fallbackNarrative(playerAction)`.\n3. Whichever model succeeds, the raw text goes to `parseAIResponse(rawText, playerAction)`, which:\n   - Returns `fallbackNarrative` if `raw` is empty/non-string.\n   - Strips ```` ```json ```` fences, then regex-extracts the first `{...}` block if the text isn't already JSON; if no `{...}` block exists, logs a warning and returns `fallbackNarrative`.\n   - Calls `JSON.parse`; on a thrown parse error, returns `fallbackNarrative` (via a bare `catch`).\n   - On success, fills in missing/invalid fields with safe defaults (e.g. `null` deltas, default `suggestedActions` like `['Look around', 'Search the area', ...]`, empty `diceRolls`).\n\n`fallbackNarrative(playerAction)` builds a canned `AIDMResponse`: generic narrative text referencing the player's action, all state deltas `null`/empty, and default suggested actions — ensuring the game never crashes even when both models fail or return invalid JSON.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

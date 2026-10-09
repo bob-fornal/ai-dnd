@@ -1,0 +1,62 @@
+{
+  "inputTokens": 232079,
+  "outputTokens": 1621,
+  "cacheReadTokens": 216502,
+  "cacheWriteTokens": 15559,
+  "reasoningTokens": 98,
+  "modelRequests": 9,
+  "premiumRequests": 1,
+  "aiCredits": 9.84439,
+  "apiDurationMs": 21065,
+  "mainInputTokens": 232079,
+  "mainRequests": 9,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "view": 4,
+    "grep": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 2323
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 789
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 622
+    },
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.md",
+      "kind": "doc",
+      "tokens": 483
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 0,
+  "docTokensRead": 4217,
+  "codeTokensRead": 0,
+  "otherToolTokens": 542,
+  "filesModified": [],
+  "answer": "I have enough context. Answer below (docs read per AGENTS.md: code.md → component docs → connections, no raw source needed).\n\n**Opened:** `frontend/src/app/components/game-console/game-console.component.ts`, via `openInventory()` using Angular Material's `MatDialog.open()` (left sidebar \"Inventory\" button). Note: it doesn't display centered (bugs.md B-14).\n\n**Data passed:** an `InventoryDialogData` object (`{ characterId, sessionId }`) injected into `InventoryComponent` via `MAT_DIALOG_DATA`.\n\n**API calls the dialog can make** (all through `game-api.service.ts`, hitting `worker/src/routes/character.ts`):\n- `getInventory(characterId)` → `GET /api/character/:id` (loaded on open, written to local signal + `CharacterStateService`)\n- `equipItem(characterId, itemId, equipped)` → `PATCH /api/character/:id/equip` (equip/unequip weapon or armor)\n- `dropItem(characterId, itemId)` → `DELETE /api/character/:id/inventory/:itemId` (drop, or \"use\" a potion to consume one unit)\n\nNote: \"Use Potion\" healing is computed client-side and never persisted (bugs.md B-05) — the Worker doesn't see the heal roll.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

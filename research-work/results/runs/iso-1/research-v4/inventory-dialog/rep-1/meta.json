@@ -1,0 +1,54 @@
+{
+  "arm": {
+    "id": "research-v4",
+    "dir": "../research-documentation-v4",
+    "description": "v4 = v3 content with component docs moved to docs/code/ (mirrored paths) and Code: links back to the source. AGENTS.md auto-loaded, no preamble.",
+    "preamble": "",
+    "removeArgs": [
+      "--no-custom-instructions"
+    ],
+    "docsVersion": "v4"
+  },
+  "task": {
+    "id": "inventory-dialog",
+    "area": "frontend",
+    "prompt": "Where is the inventory dialog opened, what data is passed to it, and which API calls can it make?",
+    "expect": [
+      [
+        "openInventory"
+      ],
+      [
+        "InventoryDialogData"
+      ],
+      [
+        "MatDialog"
+      ],
+      [
+        "equipItem"
+      ],
+      [
+        "dropItem"
+      ],
+      [
+        "getInventory"
+      ]
+    ]
+  },
+  "rep": 1,
+  "prompt": "Where is the inventory dialog opened, what data is passed to it, and which API calls can it make?\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\iso-1\\research-documentation-v4",
+  "isolated": true,
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color",
+    "--disallow-temp-dir"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T18:40:02.827Z"
+}

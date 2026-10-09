@@ -1,0 +1,49 @@
+{
+  "arm": {
+    "id": "research-v3-noauto",
+    "dir": "../research-documentation-v3",
+    "description": "v3 docs with auto-load disabled; the prompt points at AGENTS.md instead.",
+    "preamble": "Before answering, read AGENTS.md and follow it.",
+    "docsVersion": "v3"
+  },
+  "task": {
+    "id": "ai-fallback",
+    "area": "worker",
+    "prompt": "How does the AI Dungeon Master handle a model failure or a response that is not valid JSON? Name the models and functions involved.",
+    "expect": [
+      [
+        "parseAIResponse"
+      ],
+      [
+        "fallbackNarrative"
+      ],
+      [
+        "mistral"
+      ],
+      [
+        "llama-3.3"
+      ],
+      [
+        "choices"
+      ]
+    ]
+  },
+  "rep": 3,
+  "prompt": "Before answering, read AGENTS.md and follow it.\n\nHow does the AI Dungeon Master handle a model failure or a response that is not valid JSON? Name the models and functions involved.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\iso-1\\research-documentation-v3",
+  "isolated": true,
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-custom-instructions",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color",
+    "--disallow-temp-dir"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T18:10:21.952Z"
+}

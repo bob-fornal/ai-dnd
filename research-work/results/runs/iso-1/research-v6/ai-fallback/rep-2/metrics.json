@@ -1,0 +1,54 @@
+{
+  "inputTokens": 96585,
+  "outputTokens": 965,
+  "cacheReadTokens": 83827,
+  "cacheWriteTokens": 12750,
+  "reasoningTokens": 51,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 5.83064,
+  "apiDurationMs": 11771,
+  "mainInputTokens": 96585,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "powershell": 1,
+    "grep": 1,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1421
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 721
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 721,
+  "codeTokensRead": 1421,
+  "otherToolTokens": 7,
+  "filesModified": [],
+  "answer": "**File:** `worker/src/services/ai-dm.ts`\n\n**Models:** primary `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format, temp 0.85, 1024 tokens); fallback `@cf/mistral/mistral-7b-instruct-v0.2-lora` (same prompts, 1024 tokens).\n\n**Flow in `askDM`:**\n1. Calls llama-3.3. If the call throws (or returns a `ReadableStream`, which it rejects as an error), it catches the error and retries with mistral-7b.\n2. If mistral also throws, `askDM` returns `fallbackNarrative(playerAction)` directly — a canned `AIDMResponse` with no dice rolls/state changes.\n3. On success from either model, raw text (`choices[0].message.content` or legacy `.response` field) goes to `parseAIResponse(rawText, playerAction)`.\n\n**`parseAIResponse`** handles invalid JSON:\n- Empty/non-string input → `fallbackNarrative`.\n- Strips ```json fences, extracts the first `{...}` block if text doesn't start with `{`; if no `{...}` found → `fallbackNarrative`.\n- Wraps `JSON.parse` in try/catch; any parse exception → `fallbackNarrative`.\n- On successful parse, fills missing/invalid fields with safe defaults (default narrative sentence, default suggested actions, empty dice rolls, null deltas).\n\n`fallbackNarrative` is the single shared safety net used for both \"model unavailable\" and \"model returned unparseable JSON\" cases, returning generic narrative text plus neutral default `AIDMResponse` values.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "inputTokens": 69645,
+  "outputTokens": 1269,
+  "cacheReadTokens": 45160,
+  "cacheWriteTokens": 12279,
+  "reasoningTokens": 30,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 4.35509,
+  "apiDurationMs": 10155,
+  "mainInputTokens": 46510,
+  "mainRequests": 2,
+  "subagentInputTokens": 23135,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 17,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "read_file": 3,
+    "file_search": 3,
+    "grep_search": 10
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3015
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1232
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 673
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1905,
+  "codeTokensRead": 3015,
+  "otherToolTokens": 7373,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`:\n\n- **`askDM()`** calls primary model **`@cf/meta/llama-3.3-70b-instruct-fp8-fast`** (temp 0.85, `response_format: json_object`). If that call throws, it catches the error and retries with fallback model **`@cf/mistral/mistral-7b-instruct-v0.2-lora`**. If both fail, it returns **`fallbackNarrative(playerAction)`**.\n- **`parseAIResponse(raw, playerAction)`** handles non-JSON output: strips markdown fences, regex-extracts the first `{...}` block if text isn't pure JSON, and runs `JSON.parse`. If raw is empty/non-string, no `{}` match is found, or `JSON.parse` throws, it also returns `fallbackNarrative(playerAction)`, filling safe default values for all `AIDMResponse` fields.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

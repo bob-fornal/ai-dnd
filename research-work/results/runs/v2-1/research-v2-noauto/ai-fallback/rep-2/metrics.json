@@ -1,0 +1,59 @@
+{
+  "inputTokens": 157828,
+  "outputTokens": 1244,
+  "cacheReadTokens": 144778,
+  "cacheWriteTokens": 13036,
+  "reasoningTokens": 166,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 7.40136,
+  "apiDurationMs": 20427,
+  "mainInputTokens": 157828,
+  "mainRequests": 7,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "view": 5,
+    "glob": 1
+  },
+  "failedToolCalls": 2,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1493
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1465,
+  "codeTokensRead": 1493,
+  "otherToolTokens": 21,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`, within `askDM` (uses `@cf/meta/llama-3.3-70b-instruct-fp8-fast` as primary model):\n\n1. **Model failure**: `askDM` calls llama-3.3-70b first. If that `ai.run()` throws, the catch block retries with the fallback model `@cf/mistral/mistral-7b-instruct-v0.2-lora`. If that also throws, `askDM` immediately returns `fallbackNarrative(playerAction)` — a hardcoded `AIDMResponse` with generic narrative text, no HP/XP/gold/item changes, and 4 default `suggestedActions`.\n\n2. **Invalid JSON**: raw text from whichever model succeeded is passed to `parseAIResponse(rawText, playerAction)`, which: strips markdown code fences, extracts the first `{...}` block if the text doesn't start with `{`, then `JSON.parse`s it. If the string is empty/non-string, no `{...}` block is found, or `JSON.parse` throws, it also returns `fallbackNarrative(playerAction)`. On successful parse, missing fields get defaults (e.g., `narrative` defaults to a stock sentence, `diceRolls`/`itemsAdded`/`itemsRemoved` default to `[]`, `suggestedActions` defaults to a 4-item list).\n\nSo both failure paths converge on the same `fallbackNarrative` helper, guaranteeing `askDM` always returns a valid `AIDMResponse`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

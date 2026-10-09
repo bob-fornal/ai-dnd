@@ -1,0 +1,65 @@
+{
+  "inputTokens": 66253,
+  "outputTokens": 1052,
+  "cacheReadTokens": 45982,
+  "cacheWriteTokens": 9736,
+  "reasoningTokens": 14,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 3.561,
+  "apiDurationMs": 8047,
+  "mainInputTokens": 43950,
+  "mainRequests": 2,
+  "subagentInputTokens": 22303,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 17,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "read_file": 4,
+    "file_search": 5,
+    "grep_search": 7
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 2686
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1232
+    },
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 750
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 603
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 4668,
+  "codeTokensRead": 603,
+  "otherToolTokens": 3712,
+  "filesModified": [],
+  "answer": "**Allowed origins:** `http://localhost:4200`, any `*.pages.dev`, and any `*.workers.dev` subdomain.\n\n**Where configured:** `worker\\src\\index.ts` — in the `cors()` middleware call, inside the `origin` callback function (passed to `app.use('*', cors({...}))`).\n\n**To add a new custom domain:** Edit that `origin` function and add a check (e.g. `origin === 'https://your-custom-domain.com'` or an `.endsWith('.your-domain.com')` check) to the `if` condition before `return origin;`. Note: Hono's `cors()` treats plain string-array entries as exact-match only — wildcards require this function form, which is why it's implemented this way (see `docs\\DEPLOYMENT_NOTES.md` §4 \"CORS\").",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

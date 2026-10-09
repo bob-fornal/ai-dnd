@@ -1,0 +1,121 @@
+note: research-v2 has node_modules in: frontend, worker
+note: research-v2-noauto has node_modules in: frontend, worker
+Running: 11 tasks x 2 arms x 3 repeats = 66 Copilot runs (model claude-sonnet-5).
+Output: C:\Projects\PERSONAL\ai-dnd\research-work\results\runs\v2-1
+
+[1/66] research-v2-noauto / combat-round / rep 1 ... in 132387 out 1323 docs 3 code 0 score 5/5
+[2/66] research-v2 / combat-round / rep 1 ... in 49549 out 829 docs 2 code 0 score 5/5
+[3/66] research-v2 / rest-endpoint-plan / rep 1 ... in 136940 out 2457 docs 8 code 0 score 6/6
+[4/66] research-v2-noauto / rest-endpoint-plan / rep 1 ... in 115349 out 1630 docs 7 code 0 score 6/6
+[5/66] research-v2-noauto / session-expiry / rep 1 ... in 111355 out 1161 docs 2 code 0 score 5/5
+[6/66] research-v2 / session-expiry / rep 1 ... in 168841 out 1486 docs 1 code 0 score 5/5
+[7/66] research-v2-noauto / inventory-dialog / rep 1 ... in 87891 out 679 docs 2 code 0 score 6/6
+[8/66] research-v2 / inventory-dialog / rep 1 ... in 119739 out 923 docs 1 code 0 score 6/6
+[9/66] research-v2-noauto / ai-fallback / rep 1 ... in 134078 out 1133 docs 2 code 0 score 4/5
+[10/66] research-v2 / ai-fallback / rep 1 ... in 128299 out 1219 docs 1 code 1 score 4/5
+[11/66] research-v2 / starting-gear / rep 1 ... in 97009 out 712 docs 2 code 0 score 5/5
+[12/66] research-v2-noauto / starting-gear / rep 1 ... in 87945 out 469 docs 2 code 0 score 3/5
+[13/66] research-v2 / cors-origin / rep 1 ... in 172531 out 1438 docs 2 code 0 score 5/5
+[14/66] research-v2-noauto / cors-origin / rep 1 ... in 180157 out 1270 docs 2 code 0 score 5/5
+[15/66] research-v2 / level-up-flow / rep 1 ... in 119723 out 1377 docs 1 code 0 score 6/6
+[16/66] research-v2-noauto / level-up-flow / rep 1 ... in 217570 out 2571 docs 3 code 7 score 5/6
+[17/66] research-v2-noauto / log-pagination / rep 1 ... in 285867 out 2274 docs 3 code 1 score 6/6
+[18/66] research-v2 / log-pagination / rep 1 ... in 154317 out 1857 docs 2 code 2 score 6/6
+[19/66] research-v2-noauto / local-login / rep 1 ... in 185599 out 1662 docs 4 code 0 score 4/5
+[20/66] research-v2 / local-login / rep 1 ... in 102671 out 1858 docs 2 code 5 score 4/5
+[21/66] research-v2 / shop-sell / rep 1 ... in 235563 out 1957 docs 2 code 1 score 5/5
+[22/66] research-v2-noauto / shop-sell / rep 1 ... in 266327 out 1783 docs 3 code 1 score 5/5
+[23/66] research-v2 / combat-round / rep 2 ... in 49539 out 737 docs 2 code 0 score 5/5
+[24/66] research-v2-noauto / combat-round / rep 2 ... in 89323 out 1210 docs 3 code 0 score 5/5
+[25/66] research-v2-noauto / rest-endpoint-plan / rep 2 ... in 89399 out 1309 docs 3 code 0 score 6/6
+[26/66] research-v2 / rest-endpoint-plan / rep 2 ... in 163696 out 2892 docs 9 code 0 score 6/6
+[27/66] research-v2 / session-expiry / rep 2 ... in 146421 out 1312 docs 1 code 2 score 5/5
+[28/66] research-v2-noauto / session-expiry / rep 2 ... in 87673 out 847 docs 2 code 0 score 5/5
+[29/66] research-v2-noauto / inventory-dialog / rep 2 ... in 87822 out 729 docs 2 code 0 score 6/6
+[30/66] research-v2 / inventory-dialog / rep 2 ... in 146022 out 1308 docs 2 code 0 score 6/6
+[31/66] research-v2-noauto / ai-fallback / rep 2 ... in 157828 out 1244 docs 2 code 1 score 4/5
+[32/66] research-v2 / ai-fallback / rep 2 ... in 172220 out 1293 docs 1 code 1 score 4/5
+[33/66] research-v2-noauto / starting-gear / rep 2 ... in 88062 out 535 docs 2 code 0 score 3/5
+[34/66] research-v2 / starting-gear / rep 2 ... in 97390 out 769 docs 2 code 0 score 5/5
+[35/66] research-v2-noauto / cors-origin / rep 2 ... in 113566 out 957 docs 2 code 0 score 5/5
+[36/66] research-v2 / cors-origin / rep 2 ... in 170082 out 1031 docs 1 code 1 score 5/5
+[37/66] research-v2 / level-up-flow / rep 2 ... in 143980 out 1380 docs 1 code 0 score 6/6
+[38/66] research-v2-noauto / level-up-flow / rep 2 ... in 109707 out 1177 docs 2 code 0 score 6/6
+[39/66] research-v2 / log-pagination / rep 2 ... in 199062 out 1369 docs 2 code 2 score 6/6
+[40/66] research-v2-noauto / log-pagination / rep 2 ... in 246290 out 1725 docs 4 code 0 score 6/6
+[41/66] research-v2-noauto / local-login / rep 2 ... in 208455 out 1673 docs 2 code 1 score 4/5
+[42/66] research-v2 / local-login / rep 2 ... in 173109 out 1767 docs 2 code 1 score 5/5
+[43/66] research-v2-noauto / shop-sell / rep 2 ... in 334842 out 2608 docs 4 code 1 score 5/5
+[44/66] research-v2 / shop-sell / rep 2 ... in 221637 out 1912 docs 2 code 1 score 5/5
+[45/66] research-v2 / combat-round / rep 3 ... in 49540 out 879 docs 2 code 0 score 5/5
+[46/66] research-v2-noauto / combat-round / rep 3 ... in 159541 out 1672 docs 4 code 0 score 5/5
+[47/66] research-v2 / rest-endpoint-plan / rep 3 ... in 164385 out 2636 docs 8 code 0 score 6/6
+[48/66] research-v2-noauto / rest-endpoint-plan / rep 3 ... in 111324 out 1505 docs 3 code 0 score 6/6
+[49/66] research-v2-noauto / session-expiry / rep 3 ... in 153178 out 1483 docs 3 code 0 score 5/5
+[50/66] research-v2 / session-expiry / rep 3 ... in 70816 out 953 docs 1 code 0 score 5/5
+[51/66] research-v2-noauto / inventory-dialog / rep 3 ... in 87772 out 669 docs 2 code 0 score 6/6
+[52/66] research-v2 / inventory-dialog / rep 3 ... in 145912 out 1171 docs 2 code 0 score 6/6
+[53/66] research-v2-noauto / ai-fallback / rep 3 ... in 111902 out 1139 docs 2 code 0 score 5/5
+[54/66] research-v2 / ai-fallback / rep 3 ... in 177472 out 1465 docs 1 code 1 score 4/5
+[55/66] research-v2-noauto / starting-gear / rep 3 ... in 88993 out 979 docs 3 code 0 score 5/5
+[56/66] research-v2 / starting-gear / rep 3 ... in 48265 out 301 docs 1 code 0 score 3/5
+[57/66] research-v2 / cors-origin / rep 3 ... in 223177 out 1569 docs 2 code 0 score 5/5
+[58/66] research-v2-noauto / cors-origin / rep 3 ... in 183649 out 1150 docs 2 code 1 score 5/5
+[59/66] research-v2-noauto / level-up-flow / rep 3 ... in 87787 out 1049 docs 2 code 0 score 6/6
+[60/66] research-v2 / level-up-flow / rep 3 ... in 48080 out 748 docs 1 code 0 score 6/6
+[61/66] research-v2 / log-pagination / rep 3 ... in 89178 out 1782 docs 3 code 1 score 6/6
+[62/66] research-v2-noauto / log-pagination / rep 3 ... in 305679 out 2508 docs 4 code 2 score 6/6
+[63/66] research-v2-noauto / local-login / rep 3 ... in 113838 out 1275 docs 4 code 0 score 4/5
+[64/66] research-v2 / local-login / rep 3 ... in 202540 out 1989 docs 3 code 1 score 3/5
+[65/66] research-v2 / shop-sell / rep 3 ... in 291901 out 2431 docs 2 code 1 score 5/5
+[66/66] research-v2-noauto / shop-sell / rep 3 ... in 302339 out 2409 docs 4 code 1 score 5/5
+
+Done. Summarize with:
+  node scripts/analyze.mjs results/runs/v2-1
+=== part 2 ===
+note: complete has node_modules in: ., frontend, worker
+note: complete-guided has node_modules in: ., frontend, worker
+note: research-v1 has node_modules in: frontend, worker
+note: research-v1-guided has node_modules in: frontend, worker
+Running: 3 tasks x 4 arms x 3 repeats = 36 Copilot runs (model claude-sonnet-5).
+Output: C:\Projects\PERSONAL\ai-dnd\research-work\results\runs\v2-1
+
+[1/36] complete / log-pagination / rep 1 ... in 69435 out 1801 docs 0 code 3 score 6/6
+[2/36] research-v1-guided / log-pagination / rep 1 ... in 284152 out 1950 docs 3 code 1 score 6/6
+[3/36] research-v1 / log-pagination / rep 1 ... in 116808 out 2409 docs 1 code 1 score 6/6
+[4/36] complete-guided / log-pagination / rep 1 ... in 64409 out 1835 docs 0 code 2 score 6/6
+[5/36] complete / local-login / rep 1 ... in 115053 out 2263 docs 1 code 8 score 4/5
+[6/36] complete-guided / local-login / rep 1 ... in 201180 out 2172 docs 2 code 4 score 3/5
+[7/36] research-v1 / local-login / rep 1 ... in 74656 out 2004 docs 3 code 3 score 4/5
+[8/36] research-v1-guided / local-login / rep 1 ... in 127685 out 1110 docs 4 code 1 score 4/5
+[9/36] complete-guided / shop-sell / rep 1 ... in 209186 out 1616 docs 0 code 2 score 5/5
+[10/36] research-v1 / shop-sell / rep 1 ... in 226671 out 2653 docs 5 code 5 score 5/5
+[11/36] complete / shop-sell / rep 1 ... in 62579 out 1507 docs 0 code 3 score 5/5
+[12/36] research-v1-guided / shop-sell / rep 1 ... in 297768 out 1959 docs 3 code 2 score 5/5
+[13/36] research-v1-guided / log-pagination / rep 2 ... in 300186 out 1936 docs 4 code 2 score 6/6
+[14/36] complete / log-pagination / rep 2 ... in 115048 out 2051 docs 0 code 2 score 6/6
+[15/36] complete-guided / log-pagination / rep 2 ... in 182014 out 1660 docs 0 code 1 score 6/6
+[16/36] research-v1 / log-pagination / rep 2 ... in 59985 out 1519 docs 1 code 2 score 6/6
+[17/36] complete-guided / local-login / rep 2 ... in 217390 out 3047 docs 1 code 2 score 5/5
+[18/36] research-v1 / local-login / rep 2 ... in 129856 out 2645 docs 3 code 6 score 5/5
+[19/36] research-v1-guided / local-login / rep 2 ... in 151403 out 1400 docs 5 code 2 score 4/5
+[20/36] complete / local-login / rep 2 ... in 206544 out 2991 docs 2 code 6 score 4/5
+[21/36] complete / shop-sell / rep 2 ... in 63336 out 1387 docs 0 code 2 score 5/5
+[22/36] complete-guided / shop-sell / rep 2 ... in 184520 out 1892 docs 0 code 2 score 5/5
+[23/36] research-v1 / shop-sell / rep 2 ... in 67031 out 1351 docs 2 code 1 score 5/5
+[24/36] research-v1-guided / shop-sell / rep 2 ... in 394397 out 2380 docs 4 code 2 score 5/5
+[25/36] research-v1-guided / log-pagination / rep 3 ... in 265779 out 1635 docs 4 code 1 score 6/6
+[26/36] complete / log-pagination / rep 3 ... in 141633 out 2600 docs 1 code 2 score 6/6
+[27/36] research-v1 / log-pagination / rep 3 ... in 75271 out 2226 docs 3 code 2 score 6/6
+[28/36] complete-guided / log-pagination / rep 3 ... in 111577 out 1627 docs 0 code 4 score 6/6
+[29/36] research-v1-guided / local-login / rep 3 ... in 226230 out 1406 docs 4 code 1 score 4/5
+[30/36] complete / local-login / rep 3 ... in 227555 out 3183 docs 2 code 4 score 4/5
+[31/36] complete-guided / local-login / rep 3 ... in 273540 out 3413 docs 2 code 7 score 4/5
+[32/36] research-v1 / local-login / rep 3 ... in 184280 out 2394 docs 4 code 6 score 3/5
+[33/36] research-v1 / shop-sell / rep 3 ... in 76536 out 1582 docs 2 code 2 score 5/5
+[34/36] research-v1-guided / shop-sell / rep 3 ... in 251164 out 1974 docs 4 code 1 score 5/5
+[35/36] complete-guided / shop-sell / rep 3 ... in 242548 out 2494 docs 1 code 2 score 5/5
+[36/36] complete / shop-sell / rep 3 ... in 129338 out 2179 docs 1 code 2 score 5/5
+
+Done. Summarize with:
+  node scripts/analyze.mjs results/runs/v2-1

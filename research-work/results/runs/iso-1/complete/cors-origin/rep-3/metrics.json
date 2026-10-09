@@ -1,0 +1,47 @@
+{
+  "inputTokens": 105298,
+  "outputTokens": 818,
+  "cacheReadTokens": 97013,
+  "cacheWriteTokens": 8275,
+  "reasoningTokens": 40,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 4.82901,
+  "apiDurationMs": 10406,
+  "mainInputTokens": 105298,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "grep": 3,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 386
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 386,
+  "otherToolTokens": 96,
+  "filesModified": [],
+  "answer": "**Allowed origins:** `http://localhost:4200`, and any subdomain ending in `.pages.dev` or `.workers.dev`.\n\n**Location:** `worker\\src\\index.ts`, lines 19–32 — the `cors()` middleware's `origin` callback function (checks `origin === 'http://localhost:4200'` or `origin.endsWith('.pages.dev'/'.workers.dev')`).\n\n**To add a custom domain:** add another condition inside that same `origin` callback, e.g.:\n```ts\norigin === 'https://yourcustomdomain.com' ||\n```\nright alongside the existing `localhost:4200` check, before the `return origin;` line.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

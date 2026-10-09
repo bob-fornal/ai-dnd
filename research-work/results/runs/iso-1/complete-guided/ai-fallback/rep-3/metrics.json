@@ -1,0 +1,49 @@
+{
+  "inputTokens": 111477,
+  "outputTokens": 1208,
+  "cacheReadTokens": 97618,
+  "cacheWriteTokens": 13849,
+  "reasoningTokens": 13,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 6.62461,
+  "apiDurationMs": 14062,
+  "mainInputTokens": 111477,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 4,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3638
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 3638,
+  "otherToolTokens": 273,
+  "filesModified": [],
+  "answer": "All in `worker\\src\\services\\ai-dm.ts`.\n\n**Primary flow — `askDM()`:**\n1. Calls primary model **`@cf/meta/llama-3.3-70b-instruct-fp8-fast`** with `response_format: { type: 'json_object' }`.\n2. If that call throws, catches it and retries with fallback model **`@cf/mistral/mistral-7b-instruct-v0.2-lora`**.\n3. If the fallback also throws, returns `fallbackNarrative(playerAction)` directly (a hardcoded, generic narrative response — no AI call).\n4. Whatever raw text is obtained (from either model) is passed to **`parseAIResponse(rawText, playerAction)`**, which:\n   - Returns `fallbackNarrative()` if `raw` is empty/non-string.\n   - Strips markdown code fences, then extracts the first `{...}` block if the text doesn't start with `{`.\n   - If no JSON object can be found, logs a warning and returns `fallbackNarrative()`.\n   - Attempts `JSON.parse(cleaned)`; on throw (invalid JSON), returns `fallbackNarrative()` via the `catch` block.\n   - On success, defensively coerces/defaults each field (`narrative`, `gameStateChanges.*`, `suggestedActions`, `diceRolls`) rather than trusting the model's shape.\n\n**`fallbackNarrative(playerAction)`** is the single safety net: a hardcoded `AIDMResponse` with a generic atmospheric narrative, null game-state changes, default suggested actions, and no dice rolls — used for network/model failure, empty response, and JSON parse failure alike.\n\nOther generator functions (`generateQuest`, `generateBackstory`, `generateLevelUpNarrative`) each wrap their own `ai.run(...)` + `JSON.parse` (where applicable) in try/catch and return their own hardcoded fallback values (e.g. \"Blood on the Road\" quest, generic backstory/level-up text) on any failure.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

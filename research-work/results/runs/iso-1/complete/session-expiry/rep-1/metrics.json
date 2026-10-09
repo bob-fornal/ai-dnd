@@ -1,0 +1,77 @@
+{
+  "inputTokens": 217733,
+  "outputTokens": 3783,
+  "cacheReadTokens": 189273,
+  "cacheWriteTokens": 16451,
+  "reasoningTokens": 834,
+  "modelRequests": 11,
+  "premiumRequests": 1,
+  "aiCredits": 10.16435,
+  "apiDurationMs": 37183,
+  "mainInputTokens": 184505,
+  "mainRequests": 7,
+  "subagentInputTokens": 33228,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 34,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 11,
+    "grep_search": 13,
+    "read_file": 4,
+    "grep": 3,
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "worker/src/routes/action.ts",
+      "kind": "code",
+      "tokens": 1070
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 793
+    },
+    {
+      "path": "worker/src/services/session.ts",
+      "kind": "code",
+      "tokens": 747
+    },
+    {
+      "path": "worker/wrangler.toml",
+      "kind": "code",
+      "tokens": 273
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 233
+    },
+    {
+      "path": "worker/src/routes/session.ts",
+      "kind": "code",
+      "tokens": 203
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 6,
+  "docTokensRead": 0,
+  "codeTokensRead": 3319,
+  "otherToolTokens": 9238,
+  "filesModified": [],
+  "answer": "## What happens on resume after KV session expiry\n\n**Frontend (`game-console.component.ts`, `ngOnInit`)**\nOn load it calls `this.api.getSession(this.sessionId)` → `GET /api/session/:id`. On success it sets `this.characterId` and `this.charSvc.setCharacter(...)`. On any error, it only does:\n```js\nerror: () => this.pushEntry('system', '⚠ Could not load session. Is the Worker running?')\n```\nIt does **not** distinguish a 404 from a network failure, doesn't retry, doesn't start a new game, and doesn't navigate away. Critically, `this.characterId` is never set in this path.\n\n**Worker route (`worker/src/routes/session.ts`, `GET /api/session/:id`)**\nCalls `loadSession(c.env.SESSION_KV, id)` (`worker/src/services/session.ts`), which does `kv.get(sessionKey(id), 'json')`. KV TTL is `SESSION_TTL_SECONDS = 7 * 24 * 60 * 60` (7 days), set via `expirationTtl` in `saveSession`. If expired, `kv.get` returns `null`, and the route immediately returns:\n```js\nc.json({ error: 'Session not found or expired' }, 404)\n```\n**It does not call `rebuildSession`** — that fallback exists in `services/session.ts` but is only wired into `worker/src/routes/action.ts` (`POST /api/action`), not `routes/session.ts`.\n\n**Result:** the character sheet never loads client-side (`characterId` stays `''`). If the player then types an action, `sendAction()` posts to `POST /api/action` with an empty `characterId`; the Worker's guard `if (!sessionId || !characterId || !action?.trim())` returns `400 { error: 'sessionId, characterId, and action are required' }`.\n\n## Can the game continue?\n**No, not through the normal resume flow.** The Worker has server-side recovery logic (`rebuildSession` reconstructs a minimal session from the D1 `adventure_log`), but it's only invoked by `/api/action`/`/api/combat`, not by the `GET /api/session/:id` route the frontend calls on page load. Since that initial call 404s and the frontend swallows the error without recovering `characterId`, the player is left with a broken console and no clean path to continue (short of manually re-navigating, which isn't exposed anywhere).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

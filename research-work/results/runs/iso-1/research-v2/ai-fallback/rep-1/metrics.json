@@ -1,0 +1,53 @@
+{
+  "inputTokens": 71123,
+  "outputTokens": 853,
+  "cacheReadTokens": 58905,
+  "cacheWriteTokens": 12212,
+  "reasoningTokens": 52,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 5.0853,
+  "apiDurationMs": 10399,
+  "mainInputTokens": 71123,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1483
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 680,
+  "codeTokensRead": 1483,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## How model failure / invalid JSON is handled\n\nIn **`worker/src/services/ai-dm.ts`**, `askDM()` (line 81):\n\n1. Calls primary model **`@cf/meta/llama-3.3-70b-instruct-fp8-fast`** (json_object format, temp 0.85, max_tokens 1024). If this `ai.run()` call throws (or returns a `ReadableStream`, which is explicitly rejected), it's caught.\n2. On failure it retries with fallback model **`@cf/mistral/mistral-7b-instruct-v0.2-lora`**. If that also throws, `askDM` immediately returns `fallbackNarrative(playerAction)` — no parsing attempted.\n3. Whichever raw text succeeds, it's passed to `parseAIResponse(raw, playerAction)`, which:\n   - Returns `fallbackNarrative` if `raw` is empty/non-string.\n   - Strips ```json fences, then extracts the first `{...}` block if the text doesn't already start with `{`; if no `{...}` match is found, returns `fallbackNarrative`.\n   - Calls `JSON.parse(cleaned)`; on a thrown parse error (`catch`), returns `fallbackNarrative`.\n   - On success, still defensively fills defaults for any missing/invalid fields (e.g. default narrative text, default `suggestedActions`, empty arrays for dice rolls/items).\n4. `fallbackNarrative(playerAction)` builds a canned `AIDMResponse` (\"You attempt to {action}. The world shifts around you…\") with null stat deltas and generic suggested actions/no dice rolls, so the game can always proceed even when both models fail.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

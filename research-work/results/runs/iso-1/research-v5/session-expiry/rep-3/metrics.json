@@ -1,0 +1,56 @@
+{
+  "inputTokens": 70534,
+  "outputTokens": 1070,
+  "cacheReadTokens": 59565,
+  "cacheWriteTokens": 10963,
+  "reasoningTokens": 15,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 5.00325,
+  "apiDurationMs": 11423,
+  "mainInputTokens": 70534,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 593
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 393
+    },
+    {
+      "path": "worker/src/routes/session.ts",
+      "kind": "code",
+      "tokens": 167
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 2,
+  "docTokensRead": 593,
+  "codeTokensRead": 560,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Confirmed; the doc matches current code exactly.\n\n## Summary\n\n**Storage:** session state lives in Workers KV at `session:<sessionId>` (`worker/src/services/session.ts:8`), TTL `SESSION_TTL_SECONDS = 604800` (7 days, `:4`), refreshed on every `saveSession` (`:17-29`). Character/inventory/log persist permanently in D1.\n\n**Resume path:**\n1. `login.component.ts:51-52` `resumeCampaign(slot)` → navigates to `/game/<sessionId>`.\n2. `game-console.component.ts` `ngOnInit` (no `startNarrative` state) calls `GameApiService.getSession` → `GET /api/session/:id` (`game-api.service.ts:62`).\n3. `worker/src/routes/session.ts:9-20` handles it: calls `loadSession(KV, id)`; if the KV key expired/missing, it returns **404 `{ error: 'Session not found or expired' }`**.\n\n**What happens on expiry:**\n- `routes/session.ts` imports `rebuildSession` but never calls it — it only ever uses it... actually it never calls it at all (dead import, bug B-07).\n- The Angular subscribe `error` callback fires in `game-console.component.ts`, pushing `'⚠ Could not load session. Is the Worker running?'` and leaving the console empty — no character, no inventory, no log.\n- **Verdict: the game cannot continue from the UI once KV expires**, even though the character and `adventure_log` still exist in D1. The player is stuck, despite other routes (`action`, `combat`, `levelup`, `quest`) having working fallback logic via `rebuildSession` (`services/session.ts:58`, rebuilds location/history from the last 20 `adventure_log` rows) — that logic is just never reached because the initial `GET /api/session/:id` fails first.\n\n**Fix noted in docs:** have `routes/session.ts` fall back to `rebuildSession` on a KV miss (needs `characterId`, obtainable from the frontend slot or `characters.session_id`).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

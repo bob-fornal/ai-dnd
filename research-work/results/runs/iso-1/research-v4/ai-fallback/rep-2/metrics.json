@@ -1,0 +1,52 @@
+{
+  "inputTokens": 156275,
+  "outputTokens": 1383,
+  "cacheReadTokens": 141529,
+  "cacheWriteTokens": 14734,
+  "reasoningTokens": 115,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 7.89948,
+  "apiDurationMs": 16614,
+  "mainInputTokens": 156275,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2497
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 696
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 696,
+  "codeTokensRead": 2497,
+  "otherToolTokens": 54,
+  "filesModified": [],
+  "answer": "**File:** `worker/src/services/ai-dm.ts`\n\n**Flow:**\n1. `askDM()` calls primary model `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format). If it throws (or returns a `ReadableStream`), it catches the error and retries with fallback model `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n2. If **both** model calls throw, `askDM` immediately returns `fallbackNarrative(playerAction)` — no parsing attempted.\n3. Otherwise the raw text (from `choices[0].message.content` or legacy `response` field) is passed to `parseAIResponse(raw, playerAction)`, which:\n   - Returns `fallbackNarrative` if `raw` is empty/non-string.\n   - Strips markdown code fences and extracts the first `{...}` block; if no `{...}` is found, returns `fallbackNarrative`.\n   - Calls `JSON.parse(cleaned)`; if that throws, the `catch` block returns `fallbackNarrative(playerAction)`.\n   - If parsing succeeds but fields are missing/wrong type, it fills safe defaults (e.g. `null` deltas, default `suggestedActions` like `'Look around'`, empty `diceRolls`) rather than failing.\n\n`fallbackNarrative(playerAction)` returns a canned `AIDMResponse`: a generic narrative string referencing the player's action, no stat changes, default suggested actions (`Look around`, `Proceed carefully`, `Listen for sounds`, `Rest a moment`), and empty dice rolls — so the game always continues even when the AI fails.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

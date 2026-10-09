@@ -1,0 +1,87 @@
+{
+  "inputTokens": 71195,
+  "outputTokens": 1368,
+  "cacheReadTokens": 44663,
+  "cacheWriteTokens": 13713,
+  "reasoningTokens": 17,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 4.70735,
+  "apiDurationMs": 9714,
+  "mainInputTokens": 47932,
+  "mainRequests": 2,
+  "subagentInputTokens": 23263,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 17,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 4,
+    "grep_search": 4,
+    "read_file": 8
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.ts",
+      "kind": "code",
+      "tokens": 1604
+    },
+    {
+      "path": "worker/src/routes/character.ts",
+      "kind": "code",
+      "tokens": 1541
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 838
+    },
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.spec.ts",
+      "kind": "code",
+      "tokens": 763
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 697
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 542
+    },
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.md",
+      "kind": "doc",
+      "tokens": 531
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 463
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 6,
+  "docTokensRead": 1369,
+  "codeTokensRead": 5610,
+  "otherToolTokens": 7102,
+  "filesModified": [],
+  "answer": "**Opened:** `game-console.component.ts` → `openInventory()` calls `this.dialog.open(InventoryComponent, { data, panelClass: 'inv-dialog-panel', maxHeight: '90vh' })`.\n\n**Data passed:** `InventoryDialogData = { characterId: this.characterId, sessionId: this.sessionId }`, injected via `MAT_DIALOG_DATA` in `inventory.component.ts`.\n\n**API calls it makes** (via `GameApiService`, `inventory.component.ts`):\n- `getInventory(characterId)` → `GET /api/character/{characterId}` (on init)\n- `equipItem(characterId, itemId, equipped)` → `PATCH /api/character/{characterId}/equip`\n- `dropItem(characterId, itemId)` → `DELETE /api/character/{characterId}/inventory/{itemId}` (used for both dropping and \"using\" potions)\n\nNote: healing from potions is computed client-side and never persisted server-side (known bug B-05).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8333333333333334,
+    "passed": 5,
+    "total": 6,
+    "missing": [
+      "MatDialog"
+    ]
+  }
+}

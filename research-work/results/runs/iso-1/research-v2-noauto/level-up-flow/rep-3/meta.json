@@ -1,0 +1,56 @@
+{
+  "arm": {
+    "id": "research-v2-noauto",
+    "dir": "../research-documentation-v2",
+    "description": "v2 docs with auto-load disabled; the prompt points at AGENTS.md instead. Separates the auto-load effect from the content effect.",
+    "preamble": "Before answering, read AGENTS.md and follow it.",
+    "docsVersion": "v2"
+  },
+  "task": {
+    "id": "level-up-flow",
+    "area": "full-stack",
+    "prompt": "Explain the level-up flow end to end: when the UI offers it, which endpoint is called, and what changes on the character.",
+    "expect": [
+      [
+        "shouldLevelUp"
+      ],
+      [
+        "XP_THRESHOLDS"
+      ],
+      [
+        "/api/levelup",
+        "levelup.ts"
+      ],
+      [
+        "+2"
+      ],
+      [
+        "abilityChoice",
+        "ability"
+      ],
+      [
+        "hit die",
+        "hitDie",
+        "CLASS_HIT_DICE"
+      ]
+    ]
+  },
+  "rep": 3,
+  "prompt": "Before answering, read AGENTS.md and follow it.\n\nExplain the level-up flow end to end: when the UI offers it, which endpoint is called, and what changes on the character.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\iso-1\\research-documentation-v2",
+  "isolated": true,
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-custom-instructions",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color",
+    "--disallow-temp-dir"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T18:18:56.673Z"
+}

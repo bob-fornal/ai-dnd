@@ -17,7 +17,8 @@ for (const arm of readdirSync(runRoot, { withFileTypes: true }).filter((d) => d.
       const metaFile = path.join(dir, 'meta.json');
       if (!existsSync(metaFile)) continue;
       const meta = JSON.parse(readFileSync(metaFile, 'utf8'));
-      const armDir = path.resolve(WORK_DIR, meta.arm.dir);
+      // Isolated runs record the workspace they ran in; older runs ran in the arm folder itself.
+      const armDir = meta.workspaceDir ?? path.resolve(WORK_DIR, meta.arm.dir);
       const m = parseRun({ eventsFile: path.join(dir, 'events.jsonl'), usageFile: path.join(dir, 'usage.json'), armDir });
       const expect = tasks.find((t) => t.id === task)?.expect ?? meta.task.expect;
       m.grade = grade(m.answer, expect);

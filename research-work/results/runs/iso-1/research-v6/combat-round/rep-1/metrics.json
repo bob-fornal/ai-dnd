@@ -1,0 +1,52 @@
+{
+  "inputTokens": 47419,
+  "outputTokens": 661,
+  "cacheReadTokens": 36074,
+  "cacheWriteTokens": 11341,
+  "reasoningTokens": 15,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 4.21853,
+  "apiDurationMs": 8387,
+  "mainInputTokens": 47419,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "powershell": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 734
+    },
+    {
+      "path": "docs/code/worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 656
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1390,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Attack resolution flow\n\n**Client → Worker:** `game-console.component.ts:144` `combatAction('attack')` → `GameApiService.resolveCombat` (`game-api.service.ts:50`) → `POST /api/combat/resolve` → `worker/src/routes/combat.ts:11` loads character/session → `routes/combat.ts:38` calls `services/combat.ts:50` `resolveCombatRound(char, state, 'attack')`.\n\n**Dice resolution (all deterministic, in `services/combat.ts:81` using `dice.ts:55` `attackRoll`):**\n- Attack roll: d20 + (DEX for Rogue/Ranger, else STR) + proficiency `ceil(level/4)+1` vs monster AC. Nat 20 = crit, nat 1 = miss.\n- Damage: class die (`getPlayerDamageDice`, `:222` — Fighter/Cleric/Bard 1d8, others 1d6) + mod (INT for Wizard/Bard), min 1, doubled on crit.\n- Monster death check at `:121` (XP from `monster.xp_reward`); if monster survives, it then counterattacks the player (player death check `:152`).\n\n**Back in `routes/combat.ts`:** `:51` applies HP/XP via `updateCharacter`; `:56-57` rolls/grants loot (currently broken, never drops — B-01); `:68` calls `askDM(..., result.contextForDM)`.\n\n**AI's role:** only narrates the pre-computed `contextForDM` round log — it never rolls dice, computes damage, or decides outcomes. Equipment is also ignored in damage calc (B-08).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

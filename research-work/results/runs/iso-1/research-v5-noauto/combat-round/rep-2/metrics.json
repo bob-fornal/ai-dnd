@@ -1,0 +1,56 @@
+{
+  "inputTokens": 68311,
+  "outputTokens": 930,
+  "cacheReadTokens": 56771,
+  "cacheWriteTokens": 11534,
+  "reasoningTokens": 15,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.95012,
+  "apiDurationMs": 9945,
+  "mainInputTokens": 68311,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1048
+    },
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 723
+    },
+    {
+      "path": "docs/code/worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 632
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2403,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Attack resolution flow\n\n**Entry point:** `game-console.component.ts:144` `combatAction('attack')` → `GameApiService.resolveCombat` (`game-api.service.ts:50`) → `POST /api/combat/resolve` → `worker/src/routes/combat.ts:11` (handler) → `worker/src/routes/combat.ts:38` calls `resolveCombatRound` in `worker/src/services/combat.ts:50`.\n\n**Dice rolling** happens entirely inside `resolveCombatRound` (`combat.ts:81` for the attack branch), using `attackRoll` from `worker/src/services/dice.ts:55` (nat 20 = crit, nat 1 = miss):\n- Attack roll: d20 + STR (or DEX for Rogue/Ranger) + proficiency bonus `ceil(level/4)+1` vs monster AC.\n- Damage: class-based die from `getPlayerDamageDice` (`combat.ts:222`: Fighter/Cleric/Bard 1d8, others 1d6) + modifier (INT for Wizard/Bard), minimum 1, doubled on crit.\n- Monster death check at `combat.ts:121` (grants `monster.xp_reward`).\n\n**Back in `routes/combat.ts`:** HP/XP persisted (`:51`), loot rolled/granted on victory (`:56-57`), then `askDM(..., result.contextForDM)` (`:68`) sends the already-resolved outcome to the AI, state saved and logged (`:80-103`).\n\n**AI's role:** Only narrates `contextForDM` (the pre-computed round summary from `combat.ts:160`) — it never rolls dice, computes damage, or decides outcomes. Note: equipped weapons are ignored for damage (bug B-08), and `use_item` has no mechanical effect (B-04).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

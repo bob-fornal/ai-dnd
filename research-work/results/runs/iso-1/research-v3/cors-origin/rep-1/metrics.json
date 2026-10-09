@@ -1,0 +1,52 @@
+{
+  "inputTokens": 91999,
+  "outputTokens": 699,
+  "cacheReadTokens": 81579,
+  "cacheWriteTokens": 10412,
+  "reasoningTokens": 54,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 4.93518,
+  "apiDurationMs": 10685,
+  "mainInputTokens": 91999,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 2,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 385
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 385,
+  "codeTokensRead": 565,
+  "otherToolTokens": 25,
+  "filesModified": [],
+  "answer": "Allowed origins (worker\\src\\index.ts, the `app.use('*', cors({...}))` call, lines ~20-33): the `origin` callback permits exactly:\n\n- `http://localhost:4200`\n- any subdomain ending in `.pages.dev`\n- any subdomain ending in `.workers.dev`\n\nAll others return `null` (blocked).\n\n**To add a new custom domain**, edit that `origin` function in `worker\\src\\index.ts` — add a new `origin === '...'` check (or `.endsWith(...)` for a wildcard) inside the `if` condition alongside the existing checks. Since Hono's `cors()` only supports exact-string array matching (not wildcards) when passed an array, you must add it to this function, not an array literal. See `docs\\DEPLOYMENT_NOTES.md` §4 (\"CORS\") for the documented procedure.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "inputTokens": 223177,
+  "outputTokens": 1569,
+  "cacheReadTokens": 208347,
+  "cacheWriteTokens": 14812,
+  "reasoningTokens": 341,
+  "modelRequests": 9,
+  "premiumRequests": 1,
+  "aiCredits": 9.44254,
+  "apiDurationMs": 23725,
+  "mainInputTokens": 223177,
+  "mainRequests": 9,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "view": 4,
+    "powershell": 1,
+    "grep": 3
+  },
+  "failedToolCalls": 3,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 1781
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 385
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 2166,
+  "codeTokensRead": 0,
+  "otherToolTokens": 61,
+  "filesModified": [],
+  "answer": "**Allowed origins** (CORS, `worker/src/index.ts`, applied via `app.use('*', cors({ origin: ... }))`):\n- `http://localhost:4200` (exact match)\n- any origin ending in `.pages.dev`\n- any origin ending in `.workers.dev`\n\nThis is implemented as a custom `origin` **function** (not a string array), because Hono's `cors()` only does literal-string matching on array entries — wildcards like `'https://*.workers.dev'` don't work there (see `docs/DEPLOYMENT_NOTES.md` §4 CORS).\n\n**To add a new custom domain:** edit the `origin` function in `worker/src/index.ts` and add a new condition, e.g.:\n```typescript\norigin.endsWith('.yourdomain.com')\n```\nor an exact match like `origin === 'https://app.yourdomain.com'`. That's the single place to change — there's no separate allowlist config.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

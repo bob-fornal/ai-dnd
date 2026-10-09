@@ -1,0 +1,62 @@
+{
+  "inputTokens": 175720,
+  "outputTokens": 1866,
+  "cacheReadTokens": 161783,
+  "cacheWriteTokens": 13923,
+  "reasoningTokens": 422,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 8.58521,
+  "apiDurationMs": 21834,
+  "mainInputTokens": 175720,
+  "mainRequests": 7,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "view": 4,
+    "grep": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1128
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 638
+    },
+    {
+      "path": "worker/src/db/seed.md",
+      "kind": "doc",
+      "tokens": 487
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 1910,
+  "codeTokensRead": 1128,
+  "otherToolTokens": 182,
+  "filesModified": [],
+  "answer": "**Gold received:** `Math.floor(item.value * 0.5) * quantity` in `shop.ts` (`routes/shop.ts`, `sell` branch). Longsword `value = 15` (seed.sql item row, seeded at Aldric's Armory, `shop_inventory` id 1→item 2). floor(15×0.5)=7, ×2 = **14 gold**.\n\n**Checks, in order** (`POST /api/shop/transaction`, `routes/shop.ts`):\n1. Required fields present (`characterId, shopId, action, itemId, quantity`) → 400 if missing.\n2. `getCharacter` lookup → 404 if not found.\n3. Item lookup in `items` table → 404 if not found.\n4. Sell-specific: `character_inventory` row for that item checked — `inv.quantity < quantity` → 400 \"You do not have enough of this item to sell.\"\n(No gold/stock checks run for sell — those only apply to `buy`.)\n\n**Inventory row effect:** In the same `DB.batch`, gold is credited, then:\n- If `inv.quantity === quantity` (selling all owned, e.g., exactly 2 Longswords): row **deleted** — `DELETE FROM character_inventory WHERE character_id = ? AND item_id = ?`.\n- Otherwise: row **updated** — `quantity = quantity - ?`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

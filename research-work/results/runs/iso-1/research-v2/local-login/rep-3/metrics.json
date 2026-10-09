@@ -1,0 +1,58 @@
+{
+  "inputTokens": 70343,
+  "outputTokens": 934,
+  "cacheReadTokens": 59505,
+  "cacheWriteTokens": 10832,
+  "reasoningTokens": 94,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.8333,
+  "apiDurationMs": 10614,
+  "mainInputTokens": 70343,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 590
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 421
+    },
+    {
+      "path": "frontend/src/app/components/login/login.component.md",
+      "kind": "doc",
+      "tokens": 287
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 1298,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Login:** No server auth — `AuthService.login(username)` (`auth.service.ts:16`) loads/creates a local `UserProfile` from `localStorage` key `ai_dnd_user_<lowercase name>`, saved as active profile under `ai_dnd_user`. No profile → redirect to `/characters`; has profile → `login.component.ts` lists `CampaignSlot`s, with `resumeCampaign()` navigating to `/game/<sessionId>` (guarded by `authGuard`).\n\n**Campaigns storage (split):**\n- **Browser `localStorage`** (`AuthService`, keys `ai_dnd_user`/`ai_dnd_user_<name>`): the `CampaignSlot` list itself — pointers (`sessionId`, `characterId`, `location`) only.\n- **Workers KV** `session:<sessionId>` (`services/session.ts:8`): session state (location, quest, combat, last 20 history turns), TTL 7 days (`SESSION_TTL_SECONDS = 604800`).\n- **D1** (`characters`, `character_inventory`, `adventure_log`): the permanent character data.\n\n**Deleting a campaign slot:** `login.component.ts:55` `deleteCampaign()` → `AuthService.removeCampaign` (`auth.service.ts:54`) **only deletes the local slot** from `localStorage`. It does **not** call any Worker/delete endpoint — the KV session and D1 character/inventory/adventure_log rows are left untouched on the server, just orphaned (unreachable from the UI since nothing points to them anymore).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "no password"
+    ]
+  }
+}

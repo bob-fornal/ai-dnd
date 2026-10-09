@@ -1,0 +1,51 @@
+{
+  "inputTokens": 66002,
+  "outputTokens": 959,
+  "cacheReadTokens": 56347,
+  "cacheWriteTokens": 9649,
+  "reasoningTokens": 41,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.49939,
+  "apiDurationMs": 9647,
+  "mainInputTokens": 66002,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 829
+    },
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 649
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1478,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Level-up flow**\n\n**When offered:** The Worker checks `shouldLevelUp(character)` (`worker/src/services/character.ts:159`): `xp >= XP_THRESHOLDS[level]` (0,300,900,2700,6500,14000,23000,34000,48000,64000 from `worker/src/types/index.ts:175`) and `level < 10`. This is returned as `canLevelUp` by `POST /api/action` (`routes/action.ts:99`) and `POST /api/combat/resolve` (`routes/combat.ts:109`). Frontend also pre-computes it (`CharacterStateService.checkLevelUp`, `character-state.service.ts:52,76`) but the server value wins. UI shows a banner in the character sheet (`character-sheet.component.html:66`) and an ability picker in `game-console.component.html:19-28`.\n\n**Endpoint:** User picks an ability in the console → `levelUp(key)` (`game-console.component.ts:183`) → `GameApiService.levelUp(sessionId, characterId, abilityChoice)` (`game-api.service.ts:74`) → **`POST /api/levelup`** (`worker/src/routes/levelup.ts:10`). `abilityChoice` must be one of str/dex/con/int/wis/cha; returns 400 if `!shouldLevelUp`.\n\n**What changes:** `services/character.ts:133` `levelUp`:\n- `level += 1`\n- HP gain = `roll(class hit die) + CON mod` (d10 Fighter/Ranger, d8 Rogue/Cleric/Bard, d6 Wizard), added to both `max_hp` and current HP\n- Chosen ability score **+2** (uncapped, can exceed 20)\n- AC unchanged\n\nThen `routes/levelup.ts:39-50` logs a `[Level Up]` system row, generates flavor text via `generateLevelUpNarrative` (usually fallback), adds a DM history turn. Frontend `game-console.component.ts:187-194` updates character state, sets `canLevelUp=false`, shows a system message. Only one level per call — needs repeated calls for multi-level jumps.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

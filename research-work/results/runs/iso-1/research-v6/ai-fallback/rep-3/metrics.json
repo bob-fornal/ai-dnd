@@ -1,0 +1,56 @@
+{
+  "inputTokens": 96896,
+  "outputTokens": 921,
+  "cacheReadTokens": 83910,
+  "cacheWriteTokens": 12978,
+  "reasoningTokens": 96,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 5.8453,
+  "apiDurationMs": 11056,
+  "mainInputTokens": 96896,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "powershell": 1,
+    "grep": 1,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1474
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 721
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 721,
+  "codeTokensRead": 1474,
+  "otherToolTokens": 27,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`, `askDM` (line 81) catches a call failure to `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, retries once with `@cf/mistral/mistral-7b-instruct-v0.2-lora`; if that also throws, it returns `fallbackNarrative(playerAction)` directly.\n\nIf a model does respond, the raw text goes to `parseAIResponse(raw, playerAction)`, which:\n- returns `fallbackNarrative` immediately if `raw` is empty/non-string,\n- strips ```` ```json ```` fences and extracts the first `{...}` block, falling back to `fallbackNarrative` if no JSON-like block is found,\n- `JSON.parse`s the cleaned text inside a try/catch — on parse error it again returns `fallbackNarrative`.\n\n`fallbackNarrative(playerAction)` builds a canned `AIDMResponse`: a generic narrative string (\"You attempt to ... The world shifts around you...\"), null `gameStateChanges`, default `suggestedActions` (`['Look around','Proceed carefully','Listen for sounds','Rest a moment']`), and empty `diceRolls` — so gameplay never breaks even when the AI fails or returns malformed JSON.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

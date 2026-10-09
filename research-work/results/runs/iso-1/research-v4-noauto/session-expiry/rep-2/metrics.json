@@ -1,0 +1,66 @@
+{
+  "inputTokens": 117102,
+  "outputTokens": 1162,
+  "cacheReadTokens": 104975,
+  "cacheWriteTokens": 12117,
+  "reasoningTokens": 45,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 6.29275,
+  "apiDurationMs": 13561,
+  "mainInputTokens": 117102,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 5
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 925
+    },
+    {
+      "path": "worker/src/services/session.ts",
+      "kind": "code",
+      "tokens": 711
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 593
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 393
+    },
+    {
+      "path": "worker/src/routes/session.ts",
+      "kind": "code",
+      "tokens": 167
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 3,
+  "docTokensRead": 1518,
+  "codeTokensRead": 1271,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Confirmed against source — the doc is accurate. Answer:\n\n**Flow:**\n1. `login.component.ts:51-52` `resumeCampaign(slot)` → navigates to `/game/<sessionId>`.\n2. `game-console.component.ts` `ngOnInit` (lines 69-104) calls `GameApiService.getSession` (`game-api.service.ts:62`) → `GET /api/session/:id`.\n3. `worker/src/routes/session.ts:9-20` handler calls `loadSession` (`services/session.ts:12`), which does `kv.get(sessionKey(sessionId), 'json')`. KV TTL is `SESSION_TTL_SECONDS = 604800` (7 days, `services/session.ts:4`).\n4. On expiry `loadSession` returns `null`, so the route returns **404 `{ error: 'Session not found or expired' }`** (`routes/session.ts:14`) — it never calls the imported-but-unused `rebuildSession` (`services/session.ts:58`).\n5. Frontend's `error` callback (`game-console.component.ts:103`) just pushes `\"⚠ Could not load session. Is the Worker running?\"`; no character/inventory/log is loaded.\n\n**Can the game continue?** No — from the UI the resume fails outright even though D1 (`characters`, `character_inventory`, `adventure_log`) still has the data. This is tracked as **B-07**: other routes (`action`, `combat`, `levelup`, `quest`) do call `rebuildSession` as a fallback (rebuilding history from the last 20 `adventure_log` rows, resetting location to \"Unknown — session rebuilt from log\" and clearing quest/combat state), but they're never reached because step 3 already fails and blocks the console from loading.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

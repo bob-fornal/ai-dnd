@@ -1,0 +1,56 @@
+{
+  "inputTokens": 69896,
+  "outputTokens": 1042,
+  "cacheReadTokens": 58790,
+  "cacheWriteTokens": 11100,
+  "reasoningTokens": 56,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.994,
+  "apiDurationMs": 11264,
+  "mainInputTokens": 69896,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/session.ts",
+      "kind": "code",
+      "tokens": 711
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 590
+    },
+    {
+      "path": "worker/src/routes/session.ts",
+      "kind": "code",
+      "tokens": 167
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 2,
+  "docTokensRead": 590,
+  "codeTokensRead": 878,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Confirmed by code. Answer:\n\n**KV session TTL**: `SESSION_TTL_SECONDS = 604800` (7 days), set in `worker/src/services/session.ts:4`, refreshed on every `saveSession` write.\n\n**Frontend resume path**:\n1. `login.component.ts:51-52` `resumeCampaign(slot)` navigates to `/game/<sessionId>` (reads `sessionId`/`characterId` from a `localStorage` campaign slot via `AuthService`).\n2. `game-console.component.ts:69-104` `ngOnInit` sees no `startNarrative`, so calls `GameApiService.getSession` (`game-api.service.ts:62`) → `GET /api/session/:id`.\n\n**Worker route**: `worker/src/routes/session.ts:9-20` handler calls `loadSession(c.env.SESSION_KV, id)` (`services/session.ts:12-15`, a plain `kv.get`). If KV has expired, this returns `null`, and the route immediately responds **404 `{ error: 'Session not found or expired' }`** — it never calls `rebuildSession`, even though it's imported.\n\n**Result**: `game-console.component.ts` fails at step 3, shows \"Could not load session\", and the console stays empty — **the game cannot be resumed from the UI** once KV expires, even though the character's permanent D1 data (`characters`, `character_inventory`, `adventure_log`) still exists.\n\n**Note**: other routes (`action`, `combat`, `levelup`, `quest`) do correctly call `rebuildSession` (`services/session.ts:58-88`) to reconstruct state from the last 20 `adventure_log` rows (location → `\"Unknown — session rebuilt from log\"`, quest/combat reset) — but they're never reached because the resume request dies at the `GET /api/session/:id` step. This is tracked as bug **B-07**; the documented fix is making `routes/session.ts` fall back to `rebuildSession` using `characterId` from the frontend slot or a `characters.session_id` lookup.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

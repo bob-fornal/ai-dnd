@@ -1,0 +1,53 @@
+{
+  "inputTokens": 179258,
+  "outputTokens": 1206,
+  "cacheReadTokens": 165914,
+  "cacheWriteTokens": 13330,
+  "reasoningTokens": 98,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 7.85958,
+  "apiDurationMs": 15561,
+  "mainInputTokens": 179258,
+  "mainRequests": 7,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "powershell": 2,
+    "grep": 4
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "multiReadCalls": 2,
+  "filesRead": [
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1322
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 662
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 662,
+  "codeTokensRead": 1322,
+  "otherToolTokens": 107,
+  "filesModified": [],
+  "answer": "Longsword `value = 15`. With that confirmed:\n\n**Gold received:** `salePrice = Math.floor(15 × 0.5) × 2 = 7 × 2 = 14` gold (`worker/src/routes/shop.ts:88`, half-value rounds down **per unit before multiplying by quantity**).\n\n**Checks run, in order** (`shop.ts` POST `/api/shop/transaction`):\n1. Body field presence (`:36`)\n2. Character exists — `getCharacter` (`:41`)\n3. Item exists in `items` table (`:47`)\n4. Inventory ownership/quantity check: `character_inventory` row for that item must have `quantity >= 2` (`:94`)\n— no shop-side checks (stock, shop existence) are done for sells, only for buys.\n\n**Inventory row effect** (`:104-106`): since the player sells all stock listed, if `inv.quantity === 2` (exactly what's sold) the row is `DELETE`d entirely; if they owned more than 2, the row is updated via `quantity = quantity - 2` instead. Gold update and inventory change happen together in one `c.env.DB.batch([...])` call (`:98-107`).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "inputTokens": 69613,
+  "outputTokens": 1420,
+  "cacheReadTokens": 56403,
+  "cacheWriteTokens": 13204,
+  "reasoningTokens": 125,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 5.85026,
+  "apiDurationMs": 13804,
+  "mainInputTokens": 69613,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 5
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 829
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 711
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 694
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 638
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 385
+    }
+  ],
+  "docFilesRead": 5,
+  "codeFilesRead": 0,
+  "docTokensRead": 3257,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Files to change (Worker)\n\n1. **`worker/src/types/index.ts`** — add `RestBody { sessionId, characterId }` type (+ a rest-cost constant if fixed).\n2. **`worker/src/routes/rest.ts`** (new) — `restRoutes = new Hono<{ Bindings: Env }>()`; validate body, `getCharacter`, check `gold >= cost`, then `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (whitelisted fields only, per `services/character.ts:94`). Optionally call `askDM` for narration + `appendHistory`/`saveSession` + `adventure_log` insert, following `routes/action.ts`'s pattern.\n3. **`worker/src/index.ts:41-48`** — mount `app.route('/api/rest', restRoutes)`.\n4. **`worker/src/services/*.ts`** — put any HP/gold math shared across routes here, not in the route file.\n5. **`worker/migrations/000N_*.sql`** (new, only if schema changes) — never edit `0001_initial_schema.sql`.\n\n## Files to change (Angular frontend)\n\n6. **`frontend/src/app/models/game.models.ts`** — add response interface mirroring the Worker's `RestBody`/result.\n7. **`frontend/src/app/services/game-api.service.ts`** — add `rest(sessionId, characterId)` method posting to `${API_BASE}/api/rest`.\n8. **`game-console.component.ts` + `.html`** — add a button/handler that calls `rest()`, then `CharacterStateService.setCharacter(res.updatedCharacter)`, and push a log entry.\n9. **`game-console.component.spec.ts`** — tests using `GameApiService` as a Jasmine spy.\n\n## Also update\n- Docs beside each changed file (per `docs/AUTHORING.md` §3), `code.md` index/symbol-index rebuild.\n- `docs/PRD.md` §9 (API spec) and the `AGENTS.md` routing table (new feature area).\n- CORS only needs changes if a new frontend origin is added (`worker/src/index.ts:19-35`) — not required here.\n\n**Rule to preserve:** HP/gold math and the gold cost happen in Worker code; the AI only narrates the outcome.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

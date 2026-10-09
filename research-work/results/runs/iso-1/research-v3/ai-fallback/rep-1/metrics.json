@@ -1,0 +1,53 @@
+{
+  "inputTokens": 98721,
+  "outputTokens": 1030,
+  "cacheReadTokens": 84732,
+  "cacheWriteTokens": 13981,
+  "reasoningTokens": 46,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 6.22149,
+  "apiDurationMs": 12546,
+  "mainInputTokens": 98721,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2493
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 680,
+  "codeTokensRead": 2493,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Confirmed. In `worker/src/services/ai-dm.ts`:\n\n**Models:** primary `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format, temp 0.85, max_tokens 1024); on failure, falls back to `@cf/mistral/mistral-7b-instruct-v0.2-lora` (max_tokens 1024, no forced JSON format).\n\n**Flow:**\n1. `askDM()` calls llama-3.3; if `ai.run()` throws (or a `ReadableStream` is returned, triggering a thrown error), it's caught and logged (`[askDM] llama failed, trying mistral`), then it retries with mistral-7b.\n2. If mistral also throws, caught and logged (`[askDM] mistral also failed`), and `askDM` returns `fallbackNarrative(playerAction)` directly — no parsing attempted.\n3. If either model returns text, `rawText` goes to `parseAIResponse(raw, playerAction)`, which:\n   - Returns `fallbackNarrative` if `raw` is empty/non-string.\n   - Strips ```` ```json ```` fences, extracts the first `{...}` block via regex if the text doesn't start with `{`; if no JSON object is found, logs `[parseAIResponse] no JSON object found in response` and returns `fallbackNarrative`.\n   - Calls `JSON.parse(cleaned)`; on throw (invalid JSON), the `catch` returns `fallbackNarrative`.\n   - On success, fills missing/invalid fields with defaults (e.g., nulls, empty arrays, default `suggestedActions`).\n\n`fallbackNarrative(playerAction)` always returns a canned `AIDMResponse` describing a vague, inconclusive narrative with no state changes, so the game never breaks even when the AI totally fails.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

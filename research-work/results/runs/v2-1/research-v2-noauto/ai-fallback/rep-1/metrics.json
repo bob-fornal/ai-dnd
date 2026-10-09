@@ -1,0 +1,55 @@
+{
+  "inputTokens": 134078,
+  "outputTokens": 1133,
+  "cacheReadTokens": 123480,
+  "cacheWriteTokens": 10586,
+  "reasoningTokens": 232,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 6.2515,
+  "apiDurationMs": 15301,
+  "mainInputTokens": 134078,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "view": 3,
+    "glob": 2,
+    "grep": 1
+  },
+  "failedToolCalls": 2,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1465,
+  "codeTokensRead": 0,
+  "otherToolTokens": 6,
+  "filesModified": [],
+  "answer": "Per `worker/src/services/ai-dm.md` (and AGENTS.md routing), in `askDM` (ai-dm.ts:81):\n\n1. **Primary model**: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format, temp 0.85, 1024 tokens).\n2. **On throw/failure**: retries with fallback model `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n3. **If both fail**: returns `fallbackNarrative` (canned response, no model call).\n4. **Invalid/malformed JSON**: `parseAIResponse` strips code fences, extracts the first `{…}` block from the text, and fills in defaults for any missing `AIDMResponse` fields (schema defined in `RESPONSE_SCHEMA`, kept in sync with `AIDMResponse` type).\n\nNote: locally, `wrangler dev` without `--remote` stubs Workers AI entirely, so `fallbackNarrative` is always returned in dev.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

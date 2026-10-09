@@ -25,7 +25,9 @@ function walk(dir, out = []) {
 }
 
 const rel = (p) => path.relative(root, p).split(path.sep).join('/');
-const docFor = (file) => file.replace(/\.ts$/, '.md');
+// Docs live beside the code (v2/v3) or mirrored under docs/code/ (v4); use whichever layout the folder has.
+const DOCS_UNDER = existsSync(path.join(root, 'docs', 'code')) ? 'docs/code/' : '';
+const docFor = (file) => DOCS_UNDER + file.replace(/\.ts$/, '.md');
 
 // Route mounts from worker/src/index.ts: app.route('/api/x', xRoutes)
 const mounts = {};

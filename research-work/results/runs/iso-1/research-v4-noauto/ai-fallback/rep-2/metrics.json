@@ -1,0 +1,57 @@
+{
+  "inputTokens": 145314,
+  "outputTokens": 1306,
+  "cacheReadTokens": 130793,
+  "cacheWriteTokens": 14509,
+  "reasoningTokens": 55,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 7.55151,
+  "apiDurationMs": 15113,
+  "mainInputTokens": 145314,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 4,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2470
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 925
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 696
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1621,
+  "codeTokensRead": 2470,
+  "otherToolTokens": 27,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`, `askDM` (line 81) handles failures via a two-tier model fallback plus safe parsing:\n\n1. **Primary model**: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format). If the `.run()` call throws (or returns a `ReadableStream`), it's caught.\n2. **Fallback model**: `@cf/mistral/mistral-7b-instruct-v0.2-lora` is tried next. If that also throws, `askDM` returns `fallbackNarrative(playerAction)` immediately — no JSON parsing attempted.\n3. If either model succeeds, the raw text (from `choices[0].message.content` or legacy `response` field) goes to **`parseAIResponse(raw, playerAction)`**, which:\n   - Returns `fallbackNarrative` if `raw` is empty/non-string.\n   - Strips ```json fences, extracts the first `{...}` block; if none found, returns `fallbackNarrative`.\n   - Calls `JSON.parse`; on a thrown parse error (`catch`), also returns `fallbackNarrative`.\n   - If parsing succeeds but fields are missing/malformed, it fills safe defaults per-field (e.g., `narrative` defaults to `'The world holds its breath...'`, `hpDelta`/`xpGained`/etc. default to `null`, `suggestedActions` defaults to a canned array, `diceRolls` defaults to `[]`).\n\n**`fallbackNarrative(playerAction)`** is the single graceful-degradation function: it returns a canned `AIDMResponse` with generic narrative text, no stat changes, and default suggested actions — guaranteeing the Worker always returns a valid `AIDMResponse` even when both models fail or produce invalid JSON.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

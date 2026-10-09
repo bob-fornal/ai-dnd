@@ -1,0 +1,60 @@
+{
+  "inputTokens": 210161,
+  "outputTokens": 1571,
+  "cacheReadTokens": 190785,
+  "cacheWriteTokens": 19360,
+  "reasoningTokens": 153,
+  "modelRequests": 8,
+  "premiumRequests": 1,
+  "aiCredits": 10.2299,
+  "apiDurationMs": 19850,
+  "mainInputTokens": 210161,
+  "mainRequests": 8,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 7,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 3,
+    "glob": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3638
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 2323
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 633
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 2956,
+  "codeTokensRead": 3638,
+  "otherToolTokens": 614,
+  "filesModified": [],
+  "answer": "All in `worker/src/services/ai-dm.ts`.\n\n**Failure handling in `askDM`:**\n- Primary call: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format). If it throws (or returns a stream), it's caught, logged, and retried with fallback model `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n- If that also throws, `askDM` returns `fallbackNarrative(playerAction)` directly — a hardcoded `AIDMResponse` with generic narrative text, null stat deltas, and canned `suggestedActions`.\n- If a model call succeeds, the raw text goes to `parseAIResponse(raw, playerAction)`, which: strips markdown code fences, extracts the first `{...}` block if the text isn't already JSON, then `JSON.parse`s it. On empty/non-string input, no `{...}` match, or a `JSON.parse` throw, it also returns `fallbackNarrative(playerAction)`.\n\nOther helpers (`generateQuest`, `generateBackstory`, `generateLevelUpNarrative`) each wrap their own `ai.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', …)` call in try/catch and return their own hardcoded canned fallback (e.g. \"Blood on the Road\" quest, generic backstory/level-up prose) on any error — no retry model or shared `parseAIResponse`/`fallbackNarrative`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

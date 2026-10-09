@@ -1,0 +1,46 @@
+{
+  "inputTokens": 48080,
+  "outputTokens": 748,
+  "cacheReadTokens": 37105,
+  "cacheWriteTokens": 10971,
+  "reasoningTokens": 21,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 4.23365,
+  "apiDurationMs": 7891,
+  "mainInputTokens": 48080,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 649
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 649,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Level-Up Flow\n\n**When offered:** Worker computes `shouldLevelUp(character)` (`services/character.ts:159`) = `xp >= XP_THRESHOLDS[level]` and `level < 10`, returned as `canLevelUp` from `POST /api/action` and `POST /api/combat/resolve`. UI shows a banner (`character-sheet.component.html:66`) and ability picker (`game-console.component.html:19-28`), with a system prompt after combat.\n\n**Trigger → endpoint:** User picks an ability → `game-console.component.ts:183` `levelUp(key)` calls `GameApiService.levelUp(sessionId, characterId, abilityChoice)` (`game-api.service.ts:74`) → `POST /api/levelup` (`worker/src/routes/levelup.ts:10`). `abilityChoice` must be str/dex/con/int/wis/cha; returns 400 if `!shouldLevelUp`.\n\n**Character changes** (`services/character.ts:133` `levelUp`):\n- `level += 1`\n- HP gain = `roll(class hit die) + CON mod`, added to both `max_hp` and current HP\n- Chosen ability score **+2** (uncapped at 20)\n- AC unchanged\n\nHit dice: Fighter/Ranger d10, Rogue/Cleric/Bard d8, Wizard d6 (`CLASS_HIT_DICE`). XP thresholds: 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000 (max level 10).\n\n**After the call:** Worker logs flavor text + a `[Level Up]` system row and DM history turn; frontend runs `setCharacter`, `setCanLevelUp(false)`, shows a system message, updates campaign slot level (`game-console.component.ts:187-194`). One level per call — must repeat for multi-level jumps.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

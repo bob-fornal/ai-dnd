@@ -1,0 +1,54 @@
+{
+  "inputTokens": 125536,
+  "outputTokens": 1344,
+  "cacheReadTokens": 110858,
+  "cacheWriteTokens": 14668,
+  "reasoningTokens": 75,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 7.23016,
+  "apiDurationMs": 14895,
+  "mainInputTokens": 125536,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2483
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 696
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 696,
+  "codeTokensRead": 2483,
+  "otherToolTokens": 27,
+  "filesModified": [],
+  "answer": "Now I have the full picture — in `worker/src/services/ai-dm.ts`:\n\n**Models:** Primary `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format, temp 0.85, max 1024 tokens); fallback `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n\n**Failure handling in `askDM` (line 81):**\n1. Calls llama-3.3 in a `try`. If it throws (or streams), the `catch` logs the error and retries with mistral-7b-instruct-v0.2-lora.\n2. If the mistral call also throws (nested `catch`), `askDM` returns `fallbackNarrative(playerAction)` directly — no JSON parsing attempted.\n3. Whichever model succeeds, raw text is passed to `parseAIResponse(rawText, playerAction)`.\n\n**Invalid-JSON handling in `parseAIResponse`:**\n- Returns `fallbackNarrative` immediately if `raw` isn't a non-empty string.\n- Strips ```` ```json ```` fences, then if the text doesn't start with `{`, regex-extracts the first `{...}` block; if none found, logs a warning and returns `fallbackNarrative`.\n- `JSON.parse(cleaned)` wrapped in `try/catch` — on parse failure, returns `fallbackNarrative`.\n- On success, each field is defensively defaulted (e.g., missing `narrative` → canned line \"The world holds its breath...\", `suggestedActions` capped at 4 with defaults, `diceRolls` capped at 8).\n\n**`fallbackNarrative(playerAction)`** builds a generic `AIDMResponse`: narrative like `\"You attempt to {action}. The world shifts around you...\"`, all `gameStateChanges` deltas `null`/`false`/empty arrays, default `suggestedActions` (`Look around`, `Proceed carefully`, `Listen for sounds`, `Rest a moment`), empty `diceRolls`. This guarantees the worker's game-state logic always gets a safely-shaped object even when both models fail or return malformed output.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

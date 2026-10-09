@@ -1,0 +1,64 @@
+{
+  "inputTokens": 155996,
+  "outputTokens": 1322,
+  "cacheReadTokens": 136271,
+  "cacheWriteTokens": 19713,
+  "reasoningTokens": 80,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 8.97807,
+  "apiDurationMs": 17080,
+  "mainInputTokens": 155996,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 4,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3638
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 2323
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1197
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 633
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 4153,
+  "codeTokensRead": 3638,
+  "otherToolTokens": 22,
+  "filesModified": [],
+  "answer": "All logic is in `worker/src/services/ai-dm.ts` (doc: `ai-dm.md`).\n\n**Models used:**\n- Primary: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format, temp 0.85, 1024 tokens)\n- Fallback on failure/throw: `@cf/mistral/mistral-7b-instruct-v0.2-lora` (1024 tokens)\n\n**Flow (in `askDM`):**\n1. `askDM` calls llama-3.3 inside a try/catch. If it throws (or streams), the catch block calls mistral as a second attempt.\n2. If mistral's call also throws, `askDM` returns `fallbackNarrative(playerAction)` directly — a hardcoded `AIDMResponse` with generic narrative text, null stat deltas, and canned `suggestedActions`.\n3. If either model returns text, `askDM` passes the raw string to `parseAIResponse(rawText, playerAction)`.\n4. `parseAIResponse`: guards empty/non-string input → `fallbackNarrative`; strips ```` ```json ```` fences; if the result doesn't start with `{`, regex-extracts the first `{…}` block (warns via `console.warn` if none found) → `fallbackNarrative`; then `JSON.parse`s it inside a try/catch — any parse error → `fallbackNarrative`. On success it fills defaults for any missing/invalid fields (e.g. `hpDelta ?? null`, `suggestedActions` falls back to a 4-item default array) rather than failing.\n\nSo both \"model call failed\" and \"response wasn't valid JSON\" converge on the same safety net: `fallbackNarrative`, which guarantees a well-formed `AIDMResponse` even when both models and JSON parsing fail. The simpler helpers (`generateQuest`, `generateBackstory`, `generateLevelUpNarrative`) each have their own inline `try/catch` returning their own canned text, not `fallbackNarrative`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

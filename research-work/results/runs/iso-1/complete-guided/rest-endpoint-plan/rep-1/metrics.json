@@ -1,0 +1,98 @@
+{
+  "inputTokens": 542759,
+  "outputTokens": 6464,
+  "cacheReadTokens": 506615,
+  "cacheWriteTokens": 36114,
+  "reasoningTokens": 2085,
+  "modelRequests": 15,
+  "premiumRequests": 1,
+  "aiCredits": 25.6308,
+  "apiDurationMs": 70639,
+  "mainInputTokens": 542759,
+  "mainRequests": 15,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 34,
+  "toolCallsByName": {
+    "view": 28,
+    "grep": 5,
+    "powershell": 1
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 2322
+    },
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 1651
+    },
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.ts",
+      "kind": "code",
+      "tokens": 1556
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 1465
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 1180
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 1179
+    },
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1128
+    },
+    {
+      "path": "worker/migrations/0001_initial_schema.sql",
+      "kind": "code",
+      "tokens": 1026
+    },
+    {
+      "path": "frontend/src/app/models/game.models.ts",
+      "kind": "code",
+      "tokens": 824
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 647
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 10,
+  "docTokensRead": 1651,
+  "codeTokensRead": 11892,
+  "otherToolTokens": 396,
+  "filesModified": [],
+  "answer": "## Files to Change\n\n### Worker (`worker/src/`)\n\n1. **`types/index.ts`** — Add `RestBody { sessionId: string; characterId: string }` interface and a constant like `INN_REST_COST = 10` (flat gold cost; could instead be gold-per-missing-HP).\n\n2. **`routes/rest.ts` (new file)** — New Hono route, e.g. `POST /api/rest/inn`:\n   - Load character via `getCharacter(db, characterId)`.\n   - Reject if `character.gold < INN_REST_COST`.\n   - Call `updateCharacter(db, id, { hp: character.max_hp, gold: character.gold - INN_REST_COST })`.\n   - Return `{ success: true, updatedCharacter, cost: INN_REST_COST }`.\n   (Alternative: add this as a new handler inside existing `routes/shop.ts` instead of a new file, reusing its gold-check pattern.)\n\n3. **`index.ts`** — Import `restRoutes` and register `app.route('/api/rest', restRoutes)`.\n\n4. **`services/character.ts`** — No new function strictly required; `updateCharacter()` already supports `hp`/`gold` fields and is reused directly.\n\n5. **`migrations/0001_initial_schema.sql`** — Only needed if the cost should vary per inn/shop (add a `rest_cost` column to the `shops` table). Not required for a flat global cost.\n\n### Frontend (`frontend/src/app/`)\n\n1. **`services/game-api.service.ts`** — Add `restAtInn(sessionId, characterId): Observable<{ success: boolean; updatedCharacter: Character; cost: number }>` posting to `${API_BASE}/api/rest/inn`.\n\n2. **`models/game.models.ts`** — Optionally mirror `INN_REST_COST` constant for display (e.g., \"Rest costs 10 gold\").\n\n3. **`components/game-console/game-console.component.ts`** — Add a `restAtInn()` method: call the new API, then `charSvc.setCharacter(res.updatedCharacter)` and push a system log entry (\"You rest at the inn, restoring full HP for 10 gold.\").\n\n4. **`components/game-console/game-console.component.html`** — Add a \"Rest at the Inn\" button (near the inventory/level-up buttons) wired to `restAtInn()`, disabled when `character().gold < INN_REST_COST` or already at full HP.\n\nNo changes needed to `character-state.service.ts` (HP/gold signals already derive from `character()`).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

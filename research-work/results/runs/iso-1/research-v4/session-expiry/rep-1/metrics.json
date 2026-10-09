@@ -1,0 +1,46 @@
+{
+  "inputTokens": 45457,
+  "outputTokens": 732,
+  "cacheReadTokens": 35867,
+  "cacheWriteTokens": 9586,
+  "reasoningTokens": 17,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 3.84664,
+  "apiDurationMs": 7574,
+  "mainInputTokens": 45457,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 593
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 593,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "This doc already answers it precisely; answering directly.\n\n**Short answer: the game cannot be resumed from the UI — it silently fails, even though character data survives in D1.**\n\n**Trace:**\n1. `login.component.ts:51-52` `resumeCampaign(slot)` → navigates to `/game/<sessionId>`.\n2. `game-console.component.ts:69-104` `ngOnInit` calls `GameApiService.getSession` (`game-api.service.ts:62`) → `GET /api/session/:id`.\n3. `worker/src/routes/session.ts:9-14` calls `loadSession` (`services/session.ts`); if the KV key `session:<sessionId>` is gone, it returns **404 \"Session not found or expired\"**. This route imports `rebuildSession` but never calls it (**bug B-07**).\n4. Back in `game-console.component.ts`, the failed fetch shows \"Could not load session\" and the console stays empty — resume is dead-ended here.\n\n**Why it's fixable but currently broken:** other routes (`action`, `combat`, `levelup`, `quest`) do call `services/session.ts:58` `rebuildSession`, which reconstructs state from the last 20 `adventure_log` rows (location → \"Unknown — session rebuilt from log\", quest reset, combat state lost). But since the console never gets past the `GET /api/session/:id` 404, those routes are never reached.\n\n**KV facts:** key `session:<sessionId>` (`services/session.ts:8`), TTL `SESSION_TTL_SECONDS = 604800` (7 days), refreshed on every `saveSession` (`:17-29`).\n\n**Fix noted in docs:** have `routes/session.ts` fall back to `rebuildSession` on a KV miss (needs `characterId`, obtainable from the frontend slot or `characters.session_id`).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

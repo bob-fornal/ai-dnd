@@ -1,0 +1,57 @@
+{
+  "inputTokens": 71469,
+  "outputTokens": 1202,
+  "cacheReadTokens": 59597,
+  "cacheWriteTokens": 11866,
+  "reasoningTokens": 166,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 5.36164,
+  "apiDurationMs": 13873,
+  "mainInputTokens": 71469,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 590
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.ts",
+      "kind": "code",
+      "tokens": 450
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 421
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1011,
+  "codeTokensRead": 450,
+  "otherToolTokens": 258,
+  "filesModified": [],
+  "answer": "Confirmed: no network call accompanies deletion — purely local.\n\n**Login** — `AuthService.login(username)` (`frontend/src/app/services/auth.service.ts:16`) is name-only, no password/backend call. It loads `localStorage['ai_dnd_user_<lowercase name>']` if it exists, or creates an empty `UserProfile` and persists it under `ai_dnd_user` (active) and `ai_dnd_user_<name>` (per-user copy). `isLoggedIn()` just checks `profile() !== null`; `authGuard` gates routes on this.\n\n**Campaigns storage** — `UserProfile.campaigns` is an array of `CampaignSlot` objects held only in browser `localStorage` (keys `ai_dnd_user`, `ai_dnd_user_<name>`), each pointing to a Worker `sessionId`/`characterId`. Managed via `addCampaign`/`updateCampaign`/`removeCampaign` (`auth.service.ts:36,44,54`).\n\n**Deleting a campaign slot** — `login.component.ts:57` calls `auth.removeCampaign(slotId)`, which only filters the slot out of `profile.campaigns` and re-persists to `localStorage` (`auth.service.ts:54-59`). It makes **no API call to the Worker**. The server-side character row in D1 `characters` (plus `character_inventory`, `adventure_log`) and the KV `session:<sessionId>` (7-day TTL) are **not deleted** — they remain orphaned until the session's natural TTL expiry; nothing in the UI references or cleans them up.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

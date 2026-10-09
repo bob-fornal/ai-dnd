@@ -1,0 +1,36 @@
+# character-creation.component.ts
+
+Code: [`character-creation.component.ts`](../../../../../../../frontend/src/app/components/character-creation/character-creation.component.ts), [`character-creation.component.html`](../../../../../../../frontend/src/app/components/character-creation/character-creation.component.html), [`character-creation.component.css`](../../../../../../../frontend/src/app/components/character-creation/character-creation.component.css), [`character-creation.component.spec.ts`](../../../../../../../frontend/src/app/components/character-creation/character-creation.component.spec.ts)
+
+`app-character-creation`, routed at `/characters`. A four-step Material stepper: Identity (name and roll method), Race, Class, then Review.
+
+Files: `.ts`, `.html`, `.css`, `.spec.ts`
+
+Tests (`.spec.ts`, Jasmine/Karma via `npm test`): creates; renders the title; `canCreate` needs name, race, and class; rejects a whitespace-only name. API and auth are spies.
+
+<!-- anchors:start -->
+Anchors (`character-creation.component.ts`): `CharacterCreationComponent:34`, `createCharacter():67`
+<!-- anchors:end -->
+
+## Behavior
+- `createCharacter()` calls `GameApiService.createCharacter`, then:
+  1. `CharacterStateService.setCharacter(res.character)`
+  2. `AuthService.addCampaign(...)` with a new `slotId` and the returned `sessionId`/`characterId`
+  3. Navigates to `/game/<sessionId>`, passing `startNarrative` and `backstory` in **router state**
+- While waiting it shows a full-screen spinner. Errors show `err.error.error`.
+
+## Rules & gotchas
+- The race bonus and hit-die labels are **hard-coded copies** of the Worker rules. Update them alongside [worker types](../../../../../worker/src/types/index.md).
+- The slot location is hard-coded to the starting inn.
+
+## Connections
+**Parents (used by):**
+- [../../app.routes.md](../../app.routes.md): `characters`
+
+**Children (uses):**
+- [../../services/game-api.service.md](../../services/game-api.service.md): `createCharacter`
+- [../../services/auth.service.md](../../services/auth.service.md): `addCampaign`
+- [../../services/character-state.service.md](../../services/character-state.service.md): `setCharacter`
+- [../../models/game.models.md](../../models/game.models.md): `Race`, `CharacterClass`
+- Hands off to [../game-console/game-console.component.md](../game-console/game-console.component.md) through router state
+- Spec: [PRD §4.1](../../../../../../PRD.md#41-character-creation)

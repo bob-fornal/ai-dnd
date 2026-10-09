@@ -1,0 +1,53 @@
+{
+  "inputTokens": 66702,
+  "outputTokens": 885,
+  "cacheReadTokens": 56753,
+  "cacheWriteTokens": 9943,
+  "reasoningTokens": 67,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.50701,
+  "apiDurationMs": 9829,
+  "mainInputTokens": 66702,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 1,
+    "powershell": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1041
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 614
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1655,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## What happens on resume after KV expiry\n\n**Frontend path:**\n1. `login.component.ts:51-52` `resumeCampaign(slot)` navigates to `/game/<sessionId>` (campaign slot/`sessionId`/`characterId` come from `localStorage` via `AuthService`).\n2. `game-console.component.ts:69-104` `ngOnInit` sees no `startNarrative`, so it calls `GameApiService.getSession` (`game-api.service.ts:62`), hitting `GET /api/session/:id`.\n\n**Worker path:**\n3. `worker/src/routes/session.ts:9-14` handles the route, calling `loadSession` (`services/session.ts`). Since the KV key `session:<sessionId>` has TTL `SESSION_TTL_SECONDS = 604800` (7 days, `services/session.ts:4`) and has expired, `loadSession` finds nothing, and the route returns **404 \"Session not found or expired\"**.\n4. Critically, `routes/session.ts` *imports* `rebuildSession` (from `services/session.ts:58`, which reconstructs state from the last 20 `adventure_log` rows) but **never calls it** — this is tracked as bug **B-07**.\n\n**Result:** `game-console.component.ts` shows \"Could not load session\" and stays empty — **the game cannot be resumed from the UI**, even though the character and adventure log still exist permanently in D1. Other routes (`action`, `combat`, `levelup`, `quest`) do correctly call `rebuildSession` as a fallback, but they're never reached because the console fails at the `getSession` step first.\n\n**Fix noted in docs:** have `routes/session.ts` fall back to `rebuildSession` (using `characterId` from the frontend slot or `characters.session_id`) instead of just returning 404.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

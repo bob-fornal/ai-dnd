@@ -1,0 +1,51 @@
+{
+  "inputTokens": 49539,
+  "outputTokens": 737,
+  "cacheReadTokens": 37122,
+  "cacheWriteTokens": 12413,
+  "reasoningTokens": 20,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 4.58349,
+  "apiDurationMs": 8428,
+  "mainInputTokens": 49539,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 721
+    },
+    {
+      "path": "worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 612
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1333,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## How an \"Attack\" round resolves\n\n**Flow:** `game-console.component.ts:144 combatAction('attack')` → `GameApiService.resolveCombat` → `POST /api/combat/resolve` (`worker/src/routes/combat.ts:11`) → `resolveCombatRound` in `worker/src/services/combat.ts:50`.\n\n**Dice rolling** happens entirely in `services/combat.ts`, via `attackRoll` in `worker/src/services/dice.ts:55`:\n- **To-hit:** d20 + (DEX for Rogue/Ranger, else STR) + proficiency `ceil(level/4)+1`, vs. monster AC. Natural 20 = crit, natural 1 = miss.\n- **Damage:** class die from `getPlayerDamageDice` (`combat.ts:222`: Fighter/Cleric/Bard 1d8, others 1d6) + modifier (INT for Wizard/Bard), minimum 1, doubled on crit. Equipment is ignored (bug B-08).\n\nMonster death/XP award logic is at `combat.ts:121`. The function doesn't mutate state directly — `routes/combat.ts:51` applies HP/XP, `:56-57` rolls/grants loot, `:80-95` updates round/combatState and saves the session.\n\n**AI's role:** `routes/combat.ts:68` calls `askDM(..., result.contextForDM)` (built at `combat.ts:160`) purely to **narrate** the already-resolved round log — the AI never rolls dice, computes hit/damage, or decides outcomes; it only produces flavor text describing what the code determined.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

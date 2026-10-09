@@ -1,0 +1,61 @@
+{
+  "inputTokens": 68092,
+  "outputTokens": 1167,
+  "cacheReadTokens": 56514,
+  "cacheWriteTokens": 11572,
+  "reasoningTokens": 154,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 5.19148,
+  "apiDurationMs": 13507,
+  "mainInputTokens": 68092,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 925
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 593
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 508
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 443
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 0,
+  "docTokensRead": 2469,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "This answers all three parts clearly. Note: `removeCampaign` only deletes the slot (doc explicitly states \"It doesn't delete the character on the server\" — a known gotcha). Login is a local-only, name-based profile with no server auth. I have enough to answer concisely.\n\n## Login\nNo server auth — `AuthService.login(username)` (`frontend/src/app/services/auth.service.ts:16`) loads `localStorage[\"ai_dnd_user_<lowercase name>\"]` or creates an empty profile, then saves it as the active profile under key `ai_dnd_user`. `isLoggedIn()` (`:12`) is just `profile() !== null`. `authGuard` requires this local profile to exist to access `/game/:id`.\n\n## Campaigns storage\n- **Browser (`localStorage`)**: `CampaignSlot`s (pointing to `sessionId` + `characterId`) live inside the `UserProfile`, under keys `ai_dnd_user` and `ai_dnd_user_<name>`, managed by `addCampaign`/`updateCampaign`/`removeCampaign` in `auth.service.ts` (`:36,44,54`).\n- **Workers KV**: `session:<sessionId>` (`worker/src/services/session.ts:8`) — location, quest, combat state, last 20 history turns; TTL 7 days (`SESSION_TTL_SECONDS = 604800`).\n- **D1**: `characters`, `character_inventory`, `adventure_log` — permanent.\n\n## Deleting a campaign slot\n`removeCampaign()` (`auth.service.ts:54`) **only removes the local slot/pointer** from `localStorage`. It does **not** delete the server-side character, inventory, or adventure log in D1, nor the KV session — those persist orphaned with nothing left pointing to them.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

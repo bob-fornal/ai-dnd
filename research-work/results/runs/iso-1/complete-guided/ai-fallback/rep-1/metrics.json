@@ -1,0 +1,49 @@
+{
+  "inputTokens": 154765,
+  "outputTokens": 1616,
+  "cacheReadTokens": 140846,
+  "cacheWriteTokens": 13905,
+  "reasoningTokens": 31,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 7.91197,
+  "apiDurationMs": 17658,
+  "mainInputTokens": 154765,
+  "mainRequests": 7,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "view": 6,
+    "grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3638
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 3638,
+  "otherToolTokens": 104,
+  "filesModified": [],
+  "answer": "All logic lives in `worker/src/services/ai-dm.ts`, with `askDM()` as the main entry point.\n\n**Model fallback chain (in `askDM`):**\n1. Primary model: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (forces `response_format: { type: 'json_object' }`).\n2. If that `ai.run()` call throws, it's caught and logged (`[askDM] llama failed, trying mistral:`), then it retries with fallback model `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n3. If the fallback also throws, it's caught (`[askDM] mistral also failed:`) and `askDM` returns `fallbackNarrative(playerAction)` directly — no parsing attempted.\n\n**Invalid JSON handling (`parseAIResponse(raw, playerAction)`):**\n- Empty/non-string `raw` → `fallbackNarrative(playerAction)`.\n- Strips markdown fences (```` ```json ```` / ```` ``` ````); if result doesn't start with `{`, regex-extracts the first `{...}` block; if none found, logs `[parseAIResponse] no JSON object found...` and returns `fallbackNarrative`.\n- `JSON.parse(cleaned)` wrapped in try/catch — on failure, returns `fallbackNarrative(playerAction)`.\n- On success, fields are defensively coalesced (e.g. `?? null`, `Array.isArray(...)` checks) to guard partial/malformed schemas.\n\n**`fallbackNarrative(playerAction)`** returns a hardcoded `AIDMResponse` with a generic narrative, null/empty state changes, default `suggestedActions` (`['Look around', 'Proceed carefully', 'Listen for sounds', 'Rest a moment']`), and empty `diceRolls` — used for both total AI failure and unparseable JSON.\n\nSimilar but separate try/catch-with-hardcoded-fallback patterns exist for `generateQuest`, `generateBackstory`, and `generateLevelUpNarrative`, each using only the llama model with a static fallback string/object (no mistral retry).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

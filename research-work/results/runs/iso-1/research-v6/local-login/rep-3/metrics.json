@@ -1,0 +1,68 @@
+{
+  "inputTokens": 74837,
+  "outputTokens": 972,
+  "cacheReadTokens": 61675,
+  "cacheWriteTokens": 13156,
+  "reasoningTokens": 170,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 5.4957,
+  "apiDurationMs": 12216,
+  "mainInputTokens": 74837,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "powershell": 1,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "frontend/src/app/services/auth.service.ts",
+      "kind": "code",
+      "tokens": 623
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 614
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 529
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 462
+    },
+    {
+      "path": "docs/code/frontend/src/app/app.routes.md",
+      "kind": "doc",
+      "tokens": 294
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 1,
+  "docTokensRead": 1899,
+  "codeTokensRead": 623,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Login** — `frontend/src/app/services/auth.service.ts`, `login(username)` (line 16): no password/server call. It looks for `localStorage['ai_dnd_user_<lowercase name>']`; if found, loads it as the active `UserProfile`, else creates an empty one (`{username, campaigns: []}`) and persists it. Active profile is cached under key `ai_dnd_user`. `authGuard` just checks `isLoggedIn()` → `profile() !== null`.\n\n**Campaigns storage** — Campaign *slots* (pointers, not game data) live only in the browser: `UserProfile.campaigns: CampaignSlot[]`, persisted via `persist()` to both `ai_dnd_user_<name>` and `ai_dnd_user`. Each slot holds `sessionId` + `characterId` (+ `location`, set once, never updated) linking to server state:\n- Workers KV `session:<sessionId>` (`worker/src/services/session.ts`) — ephemeral, 7‑day TTL (`SESSION_TTL_SECONDS = 604800`), holds location/quest/combat/last 20 history turns.\n- D1 tables `characters`, `character_inventory`, `adventure_log` — permanent character data.\n\n**Deleting a campaign slot** — `removeCampaign(slotId)` (auth.service.ts line 54) only filters the slot out of `p.campaigns` and re-persists the profile to localStorage. It never calls the Worker API. Consequence: the D1 character row, `character_inventory`, `adventure_log`, and the KV session all remain on the server untouched/orphaned — only the browser's pointer to them is removed. (Documented gotcha: \"Clearing storage loses the links to server sessions; the D1 data stays, but nothing points to it.\")",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

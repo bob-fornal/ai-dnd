@@ -1,0 +1,56 @@
+{
+  "inputTokens": 67912,
+  "outputTokens": 896,
+  "cacheReadTokens": 56572,
+  "cacheWriteTokens": 11334,
+  "reasoningTokens": 29,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.86214,
+  "apiDurationMs": 10345,
+  "mainInputTokens": 67912,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 925
+    },
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 723
+    },
+    {
+      "path": "docs/code/worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 632
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2280,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Attack round resolution** — client `game-console.component.ts:144` `combatAction('attack')` → `GameApiService.resolveCombat` (`game-api.service.ts:50`) → `POST /api/combat/resolve`, handled in `worker/src/routes/combat.ts:11` (route `resolveCombat`), which calls `resolveCombatRound` in `worker/src/services/combat.ts:50`.\n\n**Where dice are rolled**: inside `resolveCombatRound` (`combat.ts:81` for the attack branch), using `attackRoll` and `rollExpression`/`roll`/`modifier` from `worker/src/services/dice.ts:55` and nearby helpers — d20 + ability mod (DEX for Rogue/Ranger, else STR) + proficiency `ceil(level/4)+1` vs monster AC; nat 20 = crit, nat 1 = miss. Damage = class die (`getPlayerDamageDice`, `combat.ts:222`) + mod, min 1, doubled on crit. Monster's counterattack (if combat continues) is also rolled here.\n\n**routes/combat.ts** then applies the pure result: `updateCharacter` (HP/XP, `:51`), `rollLoot`/`grantLoot` on victory (`:56-57`), persists `combatState`/session (`:80-95`), writes two `adventure_log` rows (`:100-103`).\n\n**AI's role**: `routes/combat.ts:68` calls `askDM(..., result.contextForDM)` — the AI only narrates the already-rolled, already-applied outcome; it performs no dice rolls, no HP/XP math, and cannot change the result (per AGENTS.md: \"the AI only narrates\").",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

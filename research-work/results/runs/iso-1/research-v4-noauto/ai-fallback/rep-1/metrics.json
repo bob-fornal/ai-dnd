@@ -1,0 +1,59 @@
+{
+  "inputTokens": 144902,
+  "outputTokens": 1310,
+  "cacheReadTokens": 130376,
+  "cacheWriteTokens": 14514,
+  "reasoningTokens": 47,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 7.54842,
+  "apiDurationMs": 14918,
+  "mainInputTokens": 144902,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 4,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2474
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 925
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 696
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1621,
+  "codeTokensRead": 2474,
+  "otherToolTokens": 27,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts` (`askDM`, `~line 81`):\n\n- **Model failure**: `askDM` calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast` first. If that call throws, it catches the error and retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. If the mistral call also throws, `askDM` returns `fallbackNarrative(playerAction)` directly — a canned `AIDMResponse` with a generic narrative, no stat deltas, and default suggested actions (no further retries).\n\n- **Invalid JSON**: If either model call succeeds, the extracted text is passed to `parseAIResponse(raw, playerAction)`, which:\n  1. Returns `fallbackNarrative` if `raw` is empty/non-string.\n  2. Strips ```` ```json ```` fences and, if the result doesn't start with `{`, regex-extracts the first `{...}` block; if none is found, logs a warning and returns `fallbackNarrative`.\n  3. Runs `JSON.parse(cleaned)`; on a parse exception (catch block), also returns `fallbackNarrative`.\n  4. On successful parse, fills in safe defaults for any missing/invalid fields (e.g. `narrative` defaults to `'The world holds its breath as your words echo into the shadows.'`, `hpDelta`/`xpGained`/`goldDelta` default to `null`, arrays default to `[]` or canned suggestions) rather than failing.\n\nSo the two models are `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (primary) and `@cf/mistral/mistral-7b-instruct-v0.2-lora` (fallback), and the functions are `askDM`, `parseAIResponse`, and `fallbackNarrative`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "inputTokens": 66357,
+  "outputTokens": 743,
+  "cacheReadTokens": 56521,
+  "cacheWriteTokens": 9830,
+  "reasoningTokens": 22,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.33212,
+  "apiDurationMs": 8388,
+  "mainInputTokens": 66357,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 925
+    },
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 652
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1577,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Level-up flow:**\n\n**When offered:** Worker computes `shouldLevelUp(character)` (`worker/src/services/character.ts:159`) = `xp >= XP_THRESHOLDS[level]` (levels cap at 10; thresholds 0,300,900,2700,6500,14000,23000,34000,48000,64000 in `worker/src/types/index.ts:175`). Returned as `canLevelUp` from `POST /api/action` and `POST /api/combat/resolve`. UI shows a banner in `character-sheet.component.html:66` and ability picker in `game-console.component.html:19-28`.\n\n**Endpoint:** Picking an ability calls `game-console.component.ts:183` `levelUp(key)` → `GameApiService.levelUp` (`game-api.service.ts:74`) → `POST /api/levelup` (`worker/src/routes/levelup.ts:10`), which validates `abilityChoice` (str/dex/con/int/wis/cha) and 400s if `!shouldLevelUp`.\n\n**Character changes** (`services/character.ts:133` `levelUp`):\n- Level +1\n- HP gain = roll(class hit die, via `CLASS_HIT_DICE`) + CON mod, added to both `max_hp` and current HP\n- +2 to the chosen ability score (uncapped at 20)\n- AC unchanged\n\nResponse adds flavor narrative, a `system` log entry, and a DM history turn; frontend then calls `setCharacter`, `setCanLevelUp(false)`, shows a system message. Only one level per call.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

@@ -34,6 +34,10 @@ research-work/
 | `research-v1-guided` | `../research-documentation-v1` | read `AGENTS.md` and follow its context-gathering steps (`code.md`, then component docs, then code) |
 | `research-v2` | `../research-documentation-v2` | none; `--no-custom-instructions` is **removed** so its `AGENTS.md` routing table auto-loads |
 | `research-v2-noauto` | `../research-documentation-v2` | read `AGENTS.md` and follow it (auto-load off), which isolates the auto-load effect |
+| `research-v3`, `research-v3-noauto` | `../research-documentation-v3` | as v2: v3 adds a root-relative path statement and named value sources |
+| `research-v4`, `research-v4-noauto` | `../research-documentation-v4` | as v2: v4 moves component docs to `docs/code/` with `Code:` links |
+| `research-v5`, `research-v5-noauto` | `../research-documentation-v5` | as v2: v5 adds routing rows for the adventure log and quests (`log-pagination` is no longer held out for v5) |
+| `research-v6`, `research-v6-noauto` | `../research-documentation-v6` | as v2: v6 = v4 plus `tools/read.mjs`; these arms allow `shell(node:*)` instead of `--allow-all-tools` (writes still denied; Copilot also allowed some read-only commands such as `cd` and `Select-String`) |
 
 The unguided arms show what an agent does on its own. The guided arms show what each documentation style is worth when the agent is pointed at it. Every arm except `research-v2` passes `--no-custom-instructions`, so Copilot does **not** auto-load any `AGENTS.md` (v1's holds authoring rules, and the repository root's holds Angular rules); the only guidance those agents get is the preamble. `research-v2` removes that flag on purpose so its routing-table `AGENTS.md` loads.
 
@@ -73,6 +77,16 @@ Arms can change the shared Copilot flags with `removeArgs` and `extraArgs` in `c
 
 **Cost:** the original suite was 8 tasks × 4 arms × 3 repeats = **96 Copilot sessions**; with 11 tasks and 6 arms a full run is 198. In the smoke test each session cost about 5–8 AI credits and one premium request. Use `--tasks`, `--arms`, and `--repeats` to start small.
 
+## Isolation
+
+By default (`"isolate": true`), `run.mjs` copies each arm folder to `<workspaceRoot>/<label>/<folder>` (default `../../ai-dnd-research-workspaces`, outside this repository and outside the system temp folder) and runs `git init` there. Each arm is then its own project root:
+
+- Relative paths in docs resolve against the arm, not the ai-dnd repository. Before isolation, doc-following arms lost round trips to denied out-of-folder paths (`v2-1`: 27/33 `research-v2` runs).
+- Only the arm's own `AGENTS.md` can load as instructions; the repository-root `AGENTS.md` can't.
+- No arm has `node_modules`, `dist`, `.angular`, or `.wrangler`.
+
+Copies are made once per label on first use and reused when a run resumes. `meta.json` records `workspaceDir`. Use `--no-isolate` to run in place. Runs before `iso-1` (`full-1`, `v2-1`) weren't isolated, so compare them only with each other.
+
 ## What each run is allowed to do
 
 All arms share the flags in `config.json`:
@@ -80,7 +94,7 @@ All arms share the flags in `config.json`:
 - `--allow-all-tools --deny-tool=write --deny-tool=shell`: the agent can read and search but can't edit files or run shell commands. That keeps runs read-only and makes file reads traceable through tool events.
 - `-C <arm folder>` (no `--allow-all-paths`): file access is limited to the arm's folder, so the agent can't see the other folder or the repo-root `bugs.md`.
 - `--disable-builtin-mcps`: removes the GitHub MCP server, about 10K tokens of tool definitions that aren't relevant here.
-- `--no-custom-instructions --no-ask-user --no-auto-update --no-color`: keeps runs non-interactive and comparable.
+- `--no-custom-instructions --no-ask-user --no-auto-update --no-color --disallow-temp-dir`: keeps runs non-interactive and comparable, and keeps agents out of the temp folder.
 - The model and reasoning effort are pinned (`claude-sonnet-5`, `medium`). Arm order is shuffled for each task so prompt-cache warmth doesn't favor one arm.
 
 ## Metrics

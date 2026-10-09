@@ -1,0 +1,76 @@
+{
+  "inputTokens": 82725,
+  "outputTokens": 2018,
+  "cacheReadTokens": 64554,
+  "cacheWriteTokens": 18165,
+  "reasoningTokens": 158,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 7.85153,
+  "apiDurationMs": 17908,
+  "mainInputTokens": 82725,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 7,
+  "toolCallsByName": {
+    "view": 7
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/code/frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 998
+    },
+    {
+      "path": "docs/code/worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 757
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 735
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 697
+    },
+    {
+      "path": "docs/code/worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 697
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 642
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 398
+    }
+  ],
+  "docFilesRead": 7,
+  "codeFilesRead": 0,
+  "docTokensRead": 4924,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Based on the docs (the \"rest at the inn\" example is already documented in `docs/flows/add-endpoint.md`):\n\n## Worker\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add `RestBody { sessionId, characterId }` interface near other `*Body` types (anchors `139-168`); optional `REST_COST` constant near rule constants (`:175+`). |\n| `worker/src/routes/rest.ts` (new) | `export const restRoutes = new Hono<{ Bindings: Env }>()`. Validate body, `getCharacter` (`services/character.ts:86`), check `gold >= cost`, call `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (`services/character.ts:94`) — only whitelisted fields. Follow `routes/action.ts` pattern for optional `askDM` narration + `appendHistory`/`saveSession` + `adventure_log` insert. |\n| `worker/src/index.ts:41-48` | Mount: `app.route('/api/rest', restRoutes)`. |\n| `worker/src/services/character.ts` | No change needed if `updateCharacter` already accepts `hp`/`gold` (it does, per whitelist). |\n| `worker/migrations/000N_*.sql` (new) | Only if a new \"inn/rest cost\" config needs a DB column — not required for a fixed-cost version; never edit `0001_initial_schema.sql`. |\n\n## Frontend\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add response interface (e.g. `RestResponse { updatedCharacter: Character }`), mirroring the Worker type. |\n| `frontend/src/app/services/game-api.service.ts` | Add `rest(sessionId, characterId)` method posting to `${API_BASE}/api/rest`, alongside existing methods like `equipItem()` (`:96`). |\n| `frontend/src/app/components/game-console/game-console.component.ts` + `.html` | Add an \"Inn/Rest\" button and handler calling `rest()`, then `CharacterStateService.setCharacter(res.updatedCharacter)`; push a narrative/system log entry (same pattern as `levelUp()` at `:183`). |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add a test for the new handler, with `GameApiService` as a Jasmine spy. |\n\n## Also update (docs, same change)\n- `docs/code/worker/src/routes/rest.md` (new, mirrors new route file).\n- `docs/code/worker/src/index.md` — add `/api/rest` row.\n- `docs/code/worker/src/types/index.md` — add `RestBody` anchor.\n- `docs/code/frontend/src/app/services/game-api.service.md` — add `rest()` row.\n- `docs/code/frontend/src/app/components/game-console/game-console.component.md` — new anchor/flow entry.\n- `docs/PRD.md` §9 (API spec) and `AGENTS.md` routing table if \"rest/inn\" becomes its own feature area.\n- `code.md` symbol index (re-run `research-work/scripts/build-symbol-index.mjs`).\n\nRule to preserve: HP restore and gold deduction happen in the Worker (`updateCharacter`), never computed client-side.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

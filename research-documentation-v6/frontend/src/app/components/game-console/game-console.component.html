@@ -1,0 +1,139 @@
+<div class="game-layout" [class.in-combat-border]="charSvc.inCombat()">
+
+  <!-- ── Left Sidebar: Character Sheet ────────────────────────────────── -->
+  <aside class="sidebar left-sidebar">
+    <app-character-sheet />
+
+    <!-- Inventory Button -->
+    <div class="sidebar-actions">
+      <button mat-stroked-button class="inv-btn" (click)="openInventory()">
+        <mat-icon>inventory_2</mat-icon>
+        Inventory
+        @if (charSvc.inventory().length > 0) {
+          <span class="inv-count">({{ charSvc.inventory().length }})</span>
+        }
+      </button>
+    </div>
+
+    <!-- Level Up Panel -->
+    @if (charSvc.canLevelUp()) {
+      <div class="levelup-panel">
+        <p class="lu-title title-font gold">Choose Ability to Improve (+2)</p>
+        <div class="ability-grid">
+          @for (key of abilityKeys; track key) {
+            <button mat-stroked-button (click)="levelUp(key)" [disabled]="luLoading()">
+              {{ key.toUpperCase() }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </aside>
+
+  <!-- ── Main Console ─────────────────────────────────────────────────── -->
+  <main class="console-area">
+
+    <!-- Combat Header -->
+    @if (charSvc.inCombat() && charSvc.combatState(); as cs) {
+      <div class="combat-header">
+        <span class="combat-label">⚔ COMBAT — Round {{ cs.round }}</span>
+        <div class="monster-info">
+          <span>{{ cs.monster.name }}</span>
+          <div class="enemy-hp-bar">
+            <div class="enemy-hp-fill"
+                 [style.width.%]="enemyHpPercent(cs)"></div>
+          </div>
+          <span class="text-muted">{{ cs.monster.hp }}/{{ cs.monster.max_hp }} HP</span>
+        </div>
+      </div>
+    }
+
+    <!-- Narrative Output -->
+    <div class="narrative-scroll" #narrativeScroll>
+      @for (entry of entries(); track $index) {
+        <div class="narrative-block"
+             [class.player-action]="entry.type === 'player'"
+             [class.system-msg]="entry.type === 'system'"
+             [class.combat-msg]="entry.type === 'combat'">
+          {{ entry.content }}
+        </div>
+      }
+      @if (loading()) {
+        <div class="thinking-indicator">
+          <mat-spinner diameter="20" />
+          <span class="text-muted narrative-font">The Dungeon Master deliberates…</span>
+        </div>
+      }
+    </div>
+
+    <!-- Quick Action Chips -->
+    @if (!loading() && suggestedActions().length > 0 && !charSvc.inCombat()) {
+      <div class="suggested-actions">
+        @for (action of suggestedActions(); track action) {
+          <button class="action-chip" mat-stroked-button (click)="sendQuickAction(action)">
+            {{ action }}
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Combat Action Buttons -->
+    @if (charSvc.inCombat()) {
+      <div class="combat-actions">
+        <button mat-raised-button color="warn"   (click)="combatAction('attack')"   [disabled]="loading()">
+          ⚔ Attack
+        </button>
+        <button mat-stroked-button               (click)="combatAction('dodge')"    [disabled]="loading()">
+          🛡 Dodge
+        </button>
+        <button mat-stroked-button color="accent" (click)="combatAction('use_item')" [disabled]="loading()">
+          🧪 Use Item
+        </button>
+        <button mat-stroked-button               (click)="combatAction('flee')"     [disabled]="loading()">
+          💨 Flee
+        </button>
+      </div>
+    }
+
+    <!-- Input Bar -->
+    @if (!charSvc.inCombat()) {
+      <div class="input-row">
+        <mat-form-field appearance="outline" class="input-field">
+          <input matInput
+                 [(ngModel)]="playerInput"
+                 placeholder="What do you do?"
+                 (keyup.enter)="sendAction()"
+                 [disabled]="loading()"
+                 maxlength="500" />
+        </mat-form-field>
+        <button mat-raised-button color="primary"
+                (click)="sendAction()"
+                [disabled]="loading() || !playerInput.trim()">
+          Send
+        </button>
+      </div>
+    }
+
+  </main>
+
+  <!-- ── Right Sidebar: Adventure Log ────────────────────────────────── -->
+  <aside class="sidebar right-sidebar">
+    <h4 class="title-font sidebar-title gold">Adventure Log</h4>
+    <div class="log-scroll">
+      @for (entry of logEntries(); track entry.id) {
+        <div class="log-entry" [class]="entry.actor">
+          <span class="log-actor">{{ entry.actor === 'dm' ? '🗺 DM' : entry.actor === 'player' ? '⚔ You' : '⚙' }}</span>
+          <p class="log-text">{{ entry.content }}</p>
+        </div>
+      }
+      @if (logEntries().length === 0) {
+        <p class="text-muted" style="font-size:.8rem;padding:.5rem">Your adventure log is empty.</p>
+      }
+    </div>
+    <button mat-button class="log-more-btn" (click)="loadMoreLog()"
+            [disabled]="logLoading() || logExhausted()">
+      {{ logExhausted() ? 'Beginning of log' : 'Load more' }}
+    </button>
+  </aside>
+
+</div>

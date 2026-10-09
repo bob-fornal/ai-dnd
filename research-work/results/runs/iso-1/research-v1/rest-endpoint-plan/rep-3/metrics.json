@@ -1,0 +1,86 @@
+{
+  "inputTokens": 241512,
+  "outputTokens": 3869,
+  "cacheReadTokens": 214283,
+  "cacheWriteTokens": 27211,
+  "reasoningTokens": 856,
+  "modelRequests": 9,
+  "premiumRequests": 1,
+  "aiCredits": 14.96101,
+  "apiDurationMs": 37909,
+  "mainInputTokens": 241512,
+  "mainRequests": 9,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 22,
+  "toolCallsByName": {
+    "view": 22
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 2322
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 1465
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 1180
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 1179
+    },
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1128
+    },
+    {
+      "path": "frontend/src/app/models/game.models.ts",
+      "kind": "code",
+      "tokens": 824
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 647
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "worker/src/routes/levelup.ts",
+      "kind": "code",
+      "tokens": 561
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 9,
+  "docTokensRead": 0,
+  "codeTokensRead": 9871,
+  "otherToolTokens": 308,
+  "filesModified": [],
+  "answer": "## Files to change\n\n**Worker**\n\n1. **`worker/src/types/index.ts`** — add `RestBody { sessionId: string; characterId: string }` interface (mirrors `ShopTransactionBody`) and a constant, e.g. `export const INN_REST_COST = 10;`.\n\n2. **`worker/src/routes/rest.ts`** (new file) — new Hono route, pattern-matched on `levelup.ts`/`shop.ts`:\n   - `POST /` handler: parse `RestBody`, load character via `getCharacter`, validate `character.gold >= INN_REST_COST` (else 400 \"Not enough gold\"), then `db.batch` to deduct gold and set `hp = max_hp` via `updateCharacter(db, id, { gold: character.gold - INN_REST_COST, hp: character.max_hp })`, insert an `adventure_log` entry (`actor: 'system'`, e.g. \"Rested at the inn, fully healed\"), load/update session history (`loadSession`/`saveSession`), return `{ success: true, updatedCharacter, cost: INN_REST_COST }`.\n\n3. **`worker/src/index.ts`** — import `restRoutes` and add `app.route('/api/rest', restRoutes);`.\n\n4. **`worker/src/services/character.ts`** (optional) — could add a `restAtInn(db, character)` helper (like `levelUp()`) instead of inlining logic in the route.\n\n**Angular frontend**\n\n5. **`frontend/src/app/services/game-api.service.ts`** — add `restAtInn(sessionId, characterId): Observable<{ success: boolean; updatedCharacter: Character; cost: number }>` calling `POST ${API_BASE}/api/rest`.\n\n6. **`frontend/src/app/models/game.models.ts`** — add `RestResponse` interface (mirrors shop/levelup response shapes) and optionally export `INN_REST_COST = 10` for UI display.\n\n7. **`frontend/src/app/components/game-console/game-console.component.ts`** — add `restLoading = signal(false)` and a `restAtInn()` method calling `api.restAtInn(...)`, updating `charSvc.setCharacter(res.updatedCharacter)` and pushing a log entry; disable when `charSvc.character()?.gold < INN_REST_COST` or `hp === max_hp`.\n\n8. **`frontend/src/app/components/game-console/game-console.component.html`** — add a \"Rest at the Inn (10gp)\" button near other action buttons, bound to `restAtInn()`/`restLoading()`.\n\nNo DB migration needed — `characters` table already has `hp`, `max_hp`, `gold` columns.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "inputTokens": 120013,
+  "outputTokens": 915,
+  "cacheReadTokens": 107216,
+  "cacheWriteTokens": 12787,
+  "reasoningTokens": 82,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 6.25807,
+  "apiDurationMs": 12164,
+  "mainInputTokens": 120013,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 2323
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 385
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 2708,
+  "codeTokensRead": 565,
+  "otherToolTokens": 75,
+  "filesModified": [],
+  "answer": "Allowed origins (`worker/src/index.ts`, `cors()` middleware, lines ~21-34): exact `http://localhost:4200`, plus any subdomain of `.pages.dev` and `.workers.dev` (checked via `origin.endsWith(...)`).\n\nTo add a new custom domain: edit the `origin` function inside the `cors({...})` call in `worker/src/index.ts` — add a new exact-match or `endsWith` condition in that `if` block. Per `index.md` and `DEPLOYMENT_NOTES.md §4`, Hono's array form only does exact matches, so wildcard subdomains require this function form.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

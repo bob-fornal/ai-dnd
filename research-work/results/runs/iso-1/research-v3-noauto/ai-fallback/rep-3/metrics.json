@@ -1,0 +1,58 @@
+{
+  "inputTokens": 93733,
+  "outputTokens": 862,
+  "cacheReadTokens": 79792,
+  "cacheWriteTokens": 13933,
+  "reasoningTokens": 64,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 5.94269,
+  "apiDurationMs": 10356,
+  "mainInputTokens": 93733,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2470
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 829
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1509,
+  "codeTokensRead": 2470,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`, `askDM` (line 81):\n\n1. Calls primary model **`@cf/meta/llama-3.3-70b-instruct-fp8-fast`** (json_object format). If the call throws (streaming response or any error), it's caught and retries with fallback model **`@cf/mistral/mistral-7b-instruct-v0.2-lora`**.\n2. If that also throws, `askDM` returns `fallbackNarrative(playerAction)` directly.\n3. Otherwise, the raw text goes to `parseAIResponse(raw, playerAction)`, which:\n   - Returns `fallbackNarrative` if `raw` is empty/non-string.\n   - Strips code fences, extracts the first `{...}` block (via regex); if none found, logs a warning and returns `fallbackNarrative`.\n   - Calls `JSON.parse`; on a throw (`catch {}` block), returns `fallbackNarrative`.\n\n`fallbackNarrative(playerAction)` produces a canned `AIDMResponse`: a generic narrative string templated with the player's action, null `hpDelta`/`xpGained`/`goldDelta`, empty item/dice arrays, `combatInitiated`/`combatEnded` false, and 4 generic `suggestedActions` (`Look around`, `Proceed carefully`, `Listen for sounds`, `Rest a moment`).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "inputTokens": 124973,
+  "outputTokens": 1249,
+  "cacheReadTokens": 110298,
+  "cacheWriteTokens": 14665,
+  "reasoningTokens": 73,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 7.12321,
+  "apiDurationMs": 14377,
+  "mainInputTokens": 124973,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2483
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 696
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 696,
+  "codeTokensRead": 2483,
+  "otherToolTokens": 27,
+  "filesModified": [],
+  "answer": "## Handling model/JSON failures — `worker/src/services/ai-dm.ts`\n\n**Models:** primary `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format, temp 0.85); fallback `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n\n**Flow in `askDM`:**\n1. Calls llama-3.3 in a `try`. If it throws (or returns a `ReadableStream`), catches the error and logs it, then calls mistral in a nested `try`.\n2. If mistral also throws, `askDM` returns `fallbackNarrative(playerAction)` immediately (skips parsing).\n3. Otherwise, whichever model's raw text succeeded is passed to `parseAIResponse(rawText, playerAction)`.\n\n**`parseAIResponse`** handles malformed/non-JSON output:\n- Returns `fallbackNarrative` if `raw` isn't a non-empty string.\n- Strips ```` ```json ```` fences, then extracts the first `{…}` block via regex if the text doesn't start with `{`; if no `{…}` found, returns `fallbackNarrative`.\n- Wraps `JSON.parse` in try/catch — on parse error, returns `fallbackNarrative`.\n- On success, fills defaults for any missing/invalid fields (e.g., `narrative` defaults to a canned line, `suggestedActions` defaults to `['Look around', 'Search the area', 'Listen carefully', 'Move on']`, numeric deltas default to `null`, arrays default to `[]`).\n\n**`fallbackNarrative(playerAction)`** is the single graceful-degradation function used for both total AI failure and unparseable JSON — it synthesizes a generic narrative referencing the player's action and returns a fully-valid `AIDMResponse` with no stat changes and default suggested actions.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

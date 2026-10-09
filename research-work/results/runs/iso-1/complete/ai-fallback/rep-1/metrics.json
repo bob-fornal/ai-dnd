@@ -1,0 +1,68 @@
+{
+  "inputTokens": 119946,
+  "outputTokens": 2017,
+  "cacheReadTokens": 87991,
+  "cacheWriteTokens": 14392,
+  "reasoningTokens": 64,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 5.86302,
+  "apiDurationMs": 16556,
+  "mainInputTokens": 75689,
+  "mainRequests": 3,
+  "subagentInputTokens": 44257,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 26,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 8,
+    "grep_search": 12,
+    "read_file": 4,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3493
+    },
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 2682
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 835
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 551
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 2,
+  "docTokensRead": 3517,
+  "codeTokensRead": 4044,
+  "otherToolTokens": 10010,
+  "filesModified": [],
+  "answer": "All logic lives in `worker/src/services/ai-dm.ts`:\n\n- **`askDM()`** calls primary model **`@cf/meta/llama-3.3-70b-instruct-fp8-fast`**; on error/exception, catches it and retries with fallback model **`@cf/mistral/mistral-7b-instruct-v0.2-lora`**. If that also throws, it returns **`fallbackNarrative(playerAction)`** directly.\n- **`parseAIResponse(raw, playerAction)`** handles bad/non-JSON text: guards empty/non-string input, strips markdown fences, regex-extracts a `{...}` block if the text doesn't start with `{`, then `JSON.parse`s it inside a `try/catch` — any failure (missing JSON, parse error) returns `fallbackNarrative(playerAction)`. Parsed fields are also individually null/array-guarded with `??`/`Array.isArray` defaults (e.g. `suggestedActions` defaults to `['Look around', 'Search the area', 'Listen carefully', 'Move on']`).\n- **`fallbackNarrative(playerAction)`** returns a hardcoded generic `AIDMResponse`: a vague narrative (\"You attempt to ... The world shifts around you...\") with all `gameStateChanges` null/false/empty, default `suggestedActions` (`'Look around', 'Proceed carefully', 'Listen for sounds', 'Rest a moment'`), and empty `diceRolls`.\n\nSimilar patterns (try/catch + hardcoded fallback) exist in `generateQuest`, `generateBackstory`, and `generateLevelUpNarrative`, each also using `@cf/meta/llama-3.3-70b-instruct-fp8-fast` and returning fixed fallback text/values on failure.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

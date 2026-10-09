@@ -1,0 +1,52 @@
+{
+  "inputTokens": 109707,
+  "outputTokens": 1177,
+  "cacheReadTokens": 99404,
+  "cacheWriteTokens": 10293,
+  "reasoningTokens": 111,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 5.74033,
+  "apiDurationMs": 15070,
+  "mainInputTokens": 109707,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 3,
+    "glob": 2
+  },
+  "failedToolCalls": 2,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 649
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1434,
+  "codeTokensRead": 0,
+  "otherToolTokens": 3,
+  "filesModified": [],
+  "answer": "## Level-Up Flow\n\n**When offered:** Worker decides via `shouldLevelUp(character)` (`services/character.ts:159`): `xp >= XP_THRESHOLDS[level]` (300/900/2700/6500/14000/23000/34000/48000/64000, max level 10) and `level < 10`. Returned as `canLevelUp` from `POST /api/action` (`routes/action.ts:99`) and `POST /api/combat/resolve` (`routes/combat.ts:109`). UI shows a banner in the character sheet (`character-sheet.component.html:66`) and an ability-choice picker in the console sidebar (`game-console.component.html:19-28`).\n\n**Endpoint:** Picking an ability calls `levelUp(key)` (`game-console.component.ts:183`) → `GameApiService.levelUp(sessionId, characterId, abilityChoice)` (`game-api.service.ts:74`) → **`POST /api/levelup`** (`worker/src/routes/levelup.ts:10`). `abilityChoice` must be one of str/dex/con/int/wis/cha; 400 if `!shouldLevelUp`.\n\n**What changes** (`services/character.ts:133` `levelUp`):\n- Level +1\n- HP gain = roll of class hit die (Fighter/Ranger d10, Rogue/Cleric/Bard d8, Wizard d6) + CON mod, added to both `max_hp` and current HP\n- Chosen ability score +2 (no cap at 20)\n- AC unchanged\n\nResponse also adds flavor text (`generateLevelUpNarrative`), a `[Level Up]` system log row, and a DM history turn (`routes/levelup.ts:39-50`). Frontend then updates character state, clears `canLevelUp`, shows a system message (`game-console.component.ts:187-194`). Only one level per call, even with enough XP for two.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "inputTokens": 164169,
+  "outputTokens": 1417,
+  "cacheReadTokens": 151244,
+  "cacheWriteTokens": 12911,
+  "reasoningTokens": 81,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 7.67243,
+  "apiDurationMs": 18276,
+  "mainInputTokens": 164169,
+  "mainRequests": 7,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 2,
+    "glob": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1483
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 680
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1465,
+  "codeTokensRead": 1483,
+  "otherToolTokens": 69,
+  "filesModified": [],
+  "answer": "Confirmed via `worker/src/services/ai-dm.ts` (askDM:81) and its doc.\n\n**Flow:**\n1. `askDM` (in `worker/src/services/ai-dm.ts`) first calls model **`@cf/meta/llama-3.3-70b-instruct-fp8-fast`**. If the call throws, it retries with **`@cf/mistral/mistral-7b-instruct-v0.2-lora`**. If *that* also throws, it returns `fallbackNarrative(playerAction)` directly (no parsing attempted).\n2. If a model call succeeds, the extracted text is passed to `parseAIResponse(raw, playerAction)`, which:\n   - Returns `fallbackNarrative(...)` immediately if `raw` isn't a non-empty string.\n   - Strips ```` ```json ```` fences, then extracts the first `{...}` block if the text doesn't start with `{` — logging `[parseAIResponse] no JSON object found in response:` and returning `fallbackNarrative(...)` if no JSON object is found.\n   - Wraps `JSON.parse(cleaned)` in a `try/catch`; any parse error (invalid JSON) also returns `fallbackNarrative(...)`.\n3. `fallbackNarrative(playerAction)` builds a canned `AIDMResponse`: a generic narrative string (\"You attempt to ... The world shifts around you...\"), null/empty `gameStateChanges`, 4 generic `suggestedActions`, and an empty `diceRolls` array — so the game always gets a valid, well-formed response even on total AI failure.\n\nRelated: `generateQuest`, `generateBackstory`, `generateLevelUpNarrative` have their own simpler canned-text fallbacks (noted in `bugs.md` B-03).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

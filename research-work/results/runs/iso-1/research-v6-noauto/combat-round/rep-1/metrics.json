@@ -1,0 +1,58 @@
+{
+  "inputTokens": 68213,
+  "outputTokens": 831,
+  "cacheReadTokens": 56765,
+  "cacheWriteTokens": 11442,
+  "reasoningTokens": 19,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.828,
+  "apiDurationMs": 9784,
+  "mainInputTokens": 68213,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 1,
+    "powershell": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1041
+    },
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 734
+    },
+    {
+      "path": "docs/code/worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 656
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2431,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Attack resolution flow\n\n**Trigger:** `game-console.component.ts:144` `combatAction('attack')` → `GameApiService.resolveCombat` (`game-api.service.ts:50`) → `POST /api/combat/resolve` → `worker/src/routes/combat.ts:11`, which calls `resolveCombatRound` (`worker/src/services/combat.ts:50`).\n\n**Where dice are rolled:** entirely in code, inside `resolveCombatRound` (`combat.ts:81` for the attack), using `attackRoll` and `rollExpression`/`roll`/`modifier` from `worker/src/services/dice.ts:55` et al.\n\n- **To-hit:** d20 + (DEX if Rogue/Ranger, else STR) + proficiency `ceil(level/4)+1`, vs monster AC. Nat 20 = crit, nat 1 = miss.\n- **Damage:** class damage die (`getPlayerDamageDice`, `combat.ts:222`: Fighter/Cleric/Bard 1d8, else 1d6) + ability mod (INT for Wizard/Bard), minimum 1, doubled on crit. **Equipped weapons are ignored (bug B-08).**\n- Monster death check at `combat.ts:121` (grants `monster.xp_reward`).\n\n**Post-resolution (`routes/combat.ts`):** HP/XP applied (`:51`), loot rolled/granted on victory (`:56-57`, though loot never actually drops per bug B-01), then `askDM(..., result.contextForDM)` (`:68`) and session/log persistence (`:80-103`).\n\n**AI's role:** Only narrates `contextForDM`, the pre-resolved round summary (`combat.ts:160`). It never rolls dice, computes hit/damage, or decides outcomes — \"the Worker owns the rules; the AI only narrates.\"",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

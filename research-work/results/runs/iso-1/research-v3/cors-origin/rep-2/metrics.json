@@ -1,0 +1,52 @@
+{
+  "inputTokens": 91954,
+  "outputTokens": 667,
+  "cacheReadTokens": 81541,
+  "cacheWriteTokens": 10405,
+  "reasoningTokens": 52,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 4.90067,
+  "apiDurationMs": 9300,
+  "mainInputTokens": 91954,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 2,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 385
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 385,
+  "codeTokensRead": 565,
+  "otherToolTokens": 25,
+  "filesModified": [],
+  "answer": "Allowed origins today: `http://localhost:4200`, any `*.pages.dev`, any `*.workers.dev`.\n\n**File:** `worker/src/index.ts`\n**Where:** inside the `origin` callback passed to `cors({...})` (the `app.use('*', cors({...}))` block, lines ~20–30).\n\nTo add a new custom domain, add another condition to that `if` check, e.g.:\n```ts\norigin === 'https://your-custom-domain.com' ||\n```\n(or `origin.endsWith('.your-domain.com')` for subdomains) inside the same function — array-based origin matching won't support wildcards per the existing comment/doc note (`worker/src/index.md`, `docs/DEPLOYMENT_NOTES.md` §4).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "inputTokens": 136612,
+  "outputTokens": 964,
+  "cacheReadTokens": 125849,
+  "cacheWriteTokens": 10751,
+  "reasoningTokens": 55,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 6.17113,
+  "apiDurationMs": 13128,
+  "mainInputTokens": 136612,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 829
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 385
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1214,
+  "codeTokensRead": 565,
+  "otherToolTokens": 50,
+  "filesModified": [],
+  "answer": "**Allowed origins:** `http://localhost:4200` (exact), any `*.pages.dev`, and any `*.workers.dev` subdomain.\n\n**Where defined:** `worker/src/index.ts`, inside the `cors()` middleware's `origin` callback (lines ~21-28), passed to `app.use('*', cors({...}))`.\n\n**To add a new custom domain:** edit that same `origin` function in `worker/src/index.ts` — add a condition like `origin === 'https://your-domain.com'` or an `origin.endsWith('.your-domain.com')` check inside the `if (...)` block (array entries only match exact strings, so wildcards must go through this function). See `worker/src/index.md` and `docs/DEPLOYMENT_NOTES.md §4 (CORS)` for details.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

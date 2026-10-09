@@ -1,0 +1,53 @@
+{
+  "inputTokens": 66693,
+  "outputTokens": 732,
+  "cacheReadTokens": 56755,
+  "cacheWriteTokens": 9932,
+  "reasoningTokens": 24,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.3513,
+  "apiDurationMs": 8576,
+  "mainInputTokens": 66693,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 1,
+    "powershell": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1041
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 614
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1655,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Flow when the KV session has expired:**\n\n1. **Frontend**: `login.component.ts:51-52` `resumeCampaign(slot)` → navigates to `/game/<sessionId>`. `game-console.component.ts:69-104` `ngOnInit` (no `startNarrative`) calls `GameApiService.getSession` (`game-api.service.ts:62`) → `GET /api/session/:id`.\n2. **Worker**: `worker/src/routes/session.ts:9` handler calls `loadSession` (`:12`), which reads KV key `session:<sessionId>` (`services/session.ts:8`, TTL `SESSION_TTL_SECONDS = 604800` / 7 days, `:4`). Since the key is gone, `routes/session.ts:14` returns **404 \"Session not found or expired\"**.\n3. The route imports `rebuildSession` (`services/session.ts:58`, which rebuilds history from the last 20 `adventure_log` rows) **but never calls it** — this is bug **B-07**.\n\n**Result**: `game-console.component.ts` shows \"Could not load session\" and the screen stays empty — **the game cannot be resumed from the UI**, even though the character and log data still exist permanently in D1 (`characters`, `character_inventory`, `adventure_log`). Other routes (`action`, `combat`, `levelup`, `quest`) do call `rebuildSession` and would recover (with location reset to \"Unknown — session rebuilt from log\", quest reset, combat lost), but they're never reached because step 3 fails first.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

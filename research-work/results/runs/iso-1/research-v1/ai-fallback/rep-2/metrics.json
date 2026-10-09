@@ -1,0 +1,45 @@
+{
+  "inputTokens": 77010,
+  "outputTokens": 1605,
+  "cacheReadTokens": 52236,
+  "cacheWriteTokens": 13379,
+  "reasoningTokens": 14,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 4.68509,
+  "apiDurationMs": 11538,
+  "mainInputTokens": 47610,
+  "mainRequests": 2,
+  "subagentInputTokens": 29400,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 25,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 10,
+    "grep_search": 14
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [],
+  "docFilesRead": 0,
+  "codeFilesRead": 0,
+  "docTokensRead": 0,
+  "codeTokensRead": 0,
+  "otherToolTokens": 11210,
+  "filesModified": [],
+  "answer": "**Location:** `worker/src/services/ai-dm.ts`, function `askDM`, with helper `parseAIResponse` and `fallbackNarrative`.\n\n**Flow:**\n1. `askDM` calls model **`@cf/meta/llama-3.3-70b-instruct-fp8-fast`** (JSON-object format, temp 0.85, 1024 tokens).\n2. If that call throws, it catches the error and retries with fallback model **`@cf/mistral/mistral-7b-instruct-v0.2-lora`**.\n3. If the mistral call also throws, `askDM` returns `fallbackNarrative(playerAction)` directly.\n4. If a model does respond, raw text goes to `parseAIResponse`, which strips markdown fences, extracts the first `{...}` JSON block, and calls `JSON.parse`. If the text isn't valid JSON (parse throws, or no `{...}` found, or input is empty/non-string), it also returns `fallbackNarrative(playerAction)`.\n\n**`fallbackNarrative`** produces a canned narrative (e.g. \"You attempt to ... The world shifts around you...\") with null game-state changes, no items, and default suggested actions (`Look around`, `Proceed carefully`, `Listen for sounds`, `Rest a moment`), ensuring the app always gets a valid `AIDMResponse` even on total AI failure.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

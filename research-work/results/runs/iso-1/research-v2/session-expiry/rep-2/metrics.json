@@ -1,0 +1,46 @@
+{
+  "inputTokens": 45029,
+  "outputTokens": 720,
+  "cacheReadTokens": 35633,
+  "cacheWriteTokens": 9392,
+  "reasoningTokens": 62,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 3.78146,
+  "apiDurationMs": 8098,
+  "mainInputTokens": 45029,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 590
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 590,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Short answer: **no, the game cannot be resumed from the UI** once KV expires — it's a known bug (B-07).\n\n**Trace:**\n1. `login.component.ts:51-52` `resumeCampaign(slot)` → navigates to `/game/<sessionId>`.\n2. `game-console.component.ts:69-104` `ngOnInit` calls `GameApiService.getSession` (`game-api.service.ts:62`).\n3. Worker: `GET /api/session/:id` (`worker/src/routes/session.ts:9`) calls `loadSession` (`:12`). KV key is `session:<sessionId>` with **7-day TTL** (`SESSION_TTL_SECONDS = 604800`, `services/session.ts:4`). If expired/missing, the route returns **404 \"Session not found or expired\"** — it imports `rebuildSession` but never calls it.\n4. `game-console.component.ts` shows \"Could not load session\" and stays empty.\n\n**Why it's recoverable in principle but not in practice:** D1 data (`characters`, `character_inventory`, `adventure_log`) is permanent, and other routes (`action`, `combat`, `levelup`, `quest`) *do* call `rebuildSession` (`services/session.ts:58`), which reconstructs history from the last 20 `adventure_log` rows (location becomes \"Unknown — session rebuilt from log\", quest resets, combat state lost). But those routes are never reached because the console fails earlier at step 3's 404.\n\n**Fix noted in docs:** have `routes/session.ts` fall back to `rebuildSession` using `characterId` (from the frontend slot or `characters.session_id` lookup).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

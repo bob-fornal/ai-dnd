@@ -1,0 +1,48 @@
+{
+  "inputTokens": 127041,
+  "outputTokens": 1105,
+  "cacheReadTokens": 118312,
+  "cacheWriteTokens": 8717,
+  "reasoningTokens": 192,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 5.65289,
+  "apiDurationMs": 15002,
+  "mainInputTokens": 127041,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "grep": 3,
+    "powershell": 1,
+    "view": 1
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 565,
+  "otherToolTokens": 39,
+  "filesModified": [],
+  "answer": "Found it — `worker\\src\\index.ts`, the `cors()` middleware's `origin` callback (lines ~20-30).\n\n**Currently allowed origins:**\n- `http://localhost:4200` (local dev)\n- any subdomain of `*.pages.dev`\n- any subdomain of `*.workers.dev`\n\n**Where to add a custom domain:** edit the `origin` callback in `worker\\src\\index.ts`, inside the `if (...)` condition, e.g.:\n\n```js\norigin === 'http://localhost:4200' ||\norigin.endsWith('.pages.dev') ||\norigin.endsWith('.workers.dev') ||\norigin === 'https://your-custom-domain.com'   // add this line\n```\n\nFor a wildcard subdomain (e.g. any `*.yourdomain.com`), add `origin.endsWith('.yourdomain.com')` similarly. No other config files define CORS allowlists.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

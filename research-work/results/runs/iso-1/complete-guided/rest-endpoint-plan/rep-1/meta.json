@@ -1,0 +1,54 @@
+{
+  "arm": {
+    "id": "complete-guided",
+    "dir": "../complete",
+    "description": "Baseline told to use its docs.",
+    "preamble": "Before answering, orient yourself with the project documentation in this folder (PRD.md, SETUP.md, docs/), then read only the code you need.",
+    "docsVersion": "baseline"
+  },
+  "task": {
+    "id": "rest-endpoint-plan",
+    "area": "full-stack",
+    "prompt": "I want to add a 'rest at the inn' feature: the player pays gold to restore HP to full. List every file that would need to change on the Worker and in the Angular frontend, and what each change is. Do not make the changes.",
+    "expect": [
+      [
+        "index.ts"
+      ],
+      [
+        "routes/"
+      ],
+      [
+        "updateCharacter"
+      ],
+      [
+        "game-api.service"
+      ],
+      [
+        "game-console"
+      ],
+      [
+        "CharacterStateService",
+        "character-state.service",
+        "setCharacter"
+      ]
+    ]
+  },
+  "rep": 1,
+  "prompt": "Before answering, orient yourself with the project documentation in this folder (PRD.md, SETUP.md, docs/), then read only the code you need.\n\nI want to add a 'rest at the inn' feature: the player pays gold to restore HP to full. List every file that would need to change on the Worker and in the Angular frontend, and what each change is. Do not make the changes.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\iso-1\\complete",
+  "isolated": true,
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-custom-instructions",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color",
+    "--disallow-temp-dir"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T16:16:46.280Z"
+}

@@ -1,0 +1,53 @@
+{
+  "inputTokens": 46345,
+  "outputTokens": 685,
+  "cacheReadTokens": 35847,
+  "cacheWriteTokens": 10494,
+  "reasoningTokens": 77,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 4.02624,
+  "apiDurationMs": 7300,
+  "mainInputTokens": 46345,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 593
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 443
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1036,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Login is entirely client-side — no server auth. `AuthService.login(username)` (auth.service.ts:16) reads/creates `localStorage[\"ai_dnd_user_<lowercase name>\"]`, then stores it as the active profile under `ai_dnd_user` (sets the `profile` signal). `isLoggedIn()` (:12) just checks `profile() !== null`; `authGuard` gates routes on that.\n\n**Campaigns** are stored only in the browser: each `UserProfile.campaigns` is a list of `CampaignSlot`s in `localStorage`, holding `sessionId` + `characterId` pointing at Worker-side state (KV session + D1 character). `addCampaign`/`updateCampaign`/`removeCampaign` (auth.service.ts:36/44/54) manage these slots.\n\n**On deletion:** `removeCampaign` only deletes the local slot — it makes no Worker API call. The server-side character row in D1 (`characters`, `character_inventory`, `adventure_log`) and the KV session (`session:<sessionId>`, 7-day TTL) remain fully intact; the browser just loses the pointer to them, so that data becomes orphaned/unreachable from the UI.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "no password"
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "inputTokens": 146022,
+  "outputTokens": 1308,
+  "cacheReadTokens": 132930,
+  "cacheWriteTokens": 13080,
+  "reasoningTokens": 308,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 7.239,
+  "apiDurationMs": 19431,
+  "mainInputTokens": 146022,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "view": 4,
+    "powershell": 1,
+    "glob": 1
+  },
+  "failedToolCalls": 2,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 638
+    },
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.md",
+      "kind": "doc",
+      "tokens": 543
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1181,
+  "codeTokensRead": 0,
+  "otherToolTokens": 186,
+  "filesModified": [],
+  "answer": "**Opened from:** `game-console.component.html:9` (Inventory button) → `openInventory()` in `game-console.component.ts:237`, which calls `MatDialog.open(InventoryComponent, { data, panelClass: 'inv-dialog-panel', maxHeight: '90vh' })` (`:242`).\n\n**Data passed:** `InventoryDialogData = { characterId, sessionId }` (`inventory.component.ts:19`), injected via `MAT_DIALOG_DATA`.\n\n**API calls it can make (via `GameApiService`):**\n- `getInventory` → `GET /api/character/:id` (`worker/src/routes/character.ts:72`) — on `ngOnInit()` (`:53`)\n- `equipItem` → `PATCH /api/character/:id/equip` (`routes/character.ts:93`) — via `toggleEquip()` (`:72`)\n- `dropItem` → `DELETE /api/character/:id/inventory/:itemId` (`routes/character.ts:137`) — via `dropItem()` (`:144`) and also reused by `usePotion()` (`:96`) to consume a potion (heal math is done client-side, not saved — bug B-05)\n\nNo shop endpoints (`GET /api/shop/:id`, `POST /api/shop/transaction`) are wired to this dialog yet.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

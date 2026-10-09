@@ -1,0 +1,46 @@
+{
+  "inputTokens": 45113,
+  "outputTokens": 839,
+  "cacheReadTokens": 35619,
+  "cacheWriteTokens": 9490,
+  "reasoningTokens": 14,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 3.92468,
+  "apiDurationMs": 9381,
+  "mainInputTokens": 45113,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 649
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 649,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Level-up flow\n\n**Trigger:** XP thresholds in `XP_THRESHOLDS` (`worker/src/types/index.ts:175`, mirrored `game.models.ts:146`) — 0/300/900/2700/6500/14000/23000/34000/48000/64000, max level 10. Worker computes `shouldLevelUp(character)` (`services/character.ts:159`) = `xp >= XP_THRESHOLDS[level] && level < 10`, returned as `canLevelUp` from `POST /api/action` and `POST /api/combat/resolve`. Frontend `CharacterStateService.checkLevelUp` precomputes it but the server value overwrites it (`game-console.component.ts:128,155`).\n\n**UI:** Banner in `character-sheet.component.html:66` and an ability picker in `game-console.component.html:19-28`; a system prompt appears after combat.\n\n**Call chain:**\n1. User picks ability → `game-console.component.ts:183` `levelUp(key)` → `GameApiService.levelUp(sessionId, characterId, abilityChoice)` (`game-api.service.ts:74`).\n2. `POST /api/levelup` (`worker/src/routes/levelup.ts:10`) — validates `abilityChoice` is str/dex/con/int/wis/cha; 400 if `!shouldLevelUp`.\n3. `services/character.ts:133` `levelUp`: level +1; HP gain = roll(class hit die) + CON mod, added to both `max_hp` and current HP; **+2 to chosen ability score** (uncapped at 20); AC unchanged. Hit dice: Fighter/Ranger d10, Rogue/Cleric/Bard d8, Wizard d6.\n4. `routes/levelup.ts:39-50` adds flavor text (usually fallback, bug B-03), a `[Level Up]` system log row, and a DM history turn.\n5. `game-console.component.ts:187-194` updates character state, sets `canLevelUp=false`, shows a system message, bumps campaign slot level.\n\nOne level per call — a character with 2+ levels of banked XP must call the endpoint repeatedly.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

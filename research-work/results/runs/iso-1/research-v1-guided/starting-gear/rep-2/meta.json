@@ -1,0 +1,50 @@
+{
+  "arm": {
+    "id": "research-v1-guided",
+    "dir": "../research-documentation-v1",
+    "description": "v1 component docs, told to follow AGENTS.md's context-gathering steps.",
+    "preamble": "Before answering, read AGENTS.md and follow its 'How to gather context for a task' steps: start from code.md, then the relevant component docs, then only the code you need.",
+    "docsVersion": "v1"
+  },
+  "task": {
+    "id": "starting-gear",
+    "area": "data",
+    "prompt": "What items does a newly created Fighter start with, and where is that defined? Give the item names, not just IDs.",
+    "expect": [
+      [
+        "CLASS_STARTING_ITEMS"
+      ],
+      [
+        "Longsword"
+      ],
+      [
+        "Shield"
+      ],
+      [
+        "Potion of Healing",
+        "Potion"
+      ],
+      [
+        "seed.sql"
+      ]
+    ]
+  },
+  "rep": 2,
+  "prompt": "Before answering, read AGENTS.md and follow its 'How to gather context for a task' steps: start from code.md, then the relevant component docs, then only the code you need.\n\nWhat items does a newly created Fighter start with, and where is that defined? Give the item names, not just IDs.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\iso-1\\research-documentation-v1",
+  "isolated": true,
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-custom-instructions",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color",
+    "--disallow-temp-dir"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T17:22:48.858Z"
+}

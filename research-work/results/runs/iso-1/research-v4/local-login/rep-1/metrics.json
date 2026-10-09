@@ -1,0 +1,53 @@
+{
+  "inputTokens": 46406,
+  "outputTokens": 819,
+  "cacheReadTokens": 35849,
+  "cacheWriteTokens": 10553,
+  "reasoningTokens": 134,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 4.17503,
+  "apiDurationMs": 8817,
+  "mainInputTokens": 46406,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 593
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 443
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1036,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Enough detail to answer confidently.\n\n**Login:** Local, name-only — no server auth. `AuthService.login(username)` (`auth.service.ts:16`) loads `localStorage['ai_dnd_user_<lowercase name>']` or creates an empty `UserProfile`, then stores it as the active profile under key `ai_dnd_user`. `logout()` (`:31`) just clears the active key.\n\n**Campaigns:** Stored entirely client-side as `CampaignSlot`s inside that `UserProfile` in `localStorage` (keys `ai_dnd_user` / `ai_dnd_user_<name>`). Each slot holds a `sessionId` + `characterId` pointing at server data (Workers KV session + D1 `characters` row). Managed via `addCampaign`/`updateCampaign`/`removeCampaign` (`auth.service.ts:36,44,54`).\n\n**Deleting a campaign slot:** `removeCampaign` only deletes the local slot/link — it does **not** call the Worker to delete anything. The server-side character stays fully intact in D1 (`characters`, `character_inventory`, `adventure_log`), and the KV session (`session:<sessionId>`) just lives out its 7-day TTL (`SESSION_TTL_SECONDS = 604800`, `services/session.ts:4`). Result: orphaned server data with no local pointer to it (documented gotcha in `auth.service.md`).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "authGuard"
+    ]
+  }
+}

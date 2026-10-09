@@ -1,0 +1,57 @@
+{
+  "inputTokens": 89323,
+  "outputTokens": 1210,
+  "cacheReadTokens": 77907,
+  "cacheWriteTokens": 11408,
+  "reasoningTokens": 65,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 5.62174,
+  "apiDurationMs": 14500,
+  "mainInputTokens": 89323,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "glob": 1,
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 721
+    },
+    {
+      "path": "worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 612
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2118,
+  "codeTokensRead": 0,
+  "otherToolTokens": 3,
+  "filesModified": [],
+  "answer": "## Attack round resolution\n\n**Flow:** `game-console.component.ts:144` `combatAction('attack')` → `GameApiService.resolveCombat` (`game-api.service.ts:50`) → `POST /api/combat/resolve` → `worker/src/routes/combat.ts:11` (handler) → `worker/src/services/combat.ts:50` `resolveCombatRound(char, state, 'attack')`.\n\n**Dice/resolution logic — all in `services/combat.ts`, `resolveCombatRound` (anchor `:81` for the attack branch):**\n- Attack roll: d20 + ability mod (DEX for Rogue/Ranger, else STR) + proficiency (`ceil(level/4)+1`) vs monster AC, via `attackRoll` in `dice.ts:55` (nat 20 = crit, nat 1 = miss).\n- Damage: class die from `getPlayerDamageDice` (`:222`; Fighter/Cleric/Bard 1d8, others 1d6) + ability mod (INT for Wizard/Bard), minimum 1, doubled on crit.\n- Monster then counterattacks (unless combat already ended) at `:130`.\n- Monster death check at `:121` (grants `monster.xp_reward`); player death at `:152` (HP ≤ 0 ends combat in defeat).\n- Output is a `CombatRoundResult` (HP deltas, victory/end flags, XP, `diceRolls`, `contextForDM`) — the function itself doesn't mutate state; the caller does.\n\n**Caller (`routes/combat.ts`) applies effects:** clamps HP, adds XP (`:51`), rolls/grants loot on victory (`:56-57`, though loot never actually drops — bug B-01), then calls `askDM(..., result.contextForDM)` (`:68`) to **narrate** the already-resolved round, updates/clears `combatState` and saves the session (`:80-95`), and writes two `adventure_log` rows (`:100-103`).\n\n**AI's role:** The AI (`askDM`/`ai-dm.ts`) only narrates the pre-computed `contextForDM` text — it never rolls dice, computes damage, or decides outcomes. All mechanics (rolls, AC/HP math, crit/miss, death, XP) happen in `combat.ts`/`dice.ts` before the AI is invoked.\n\nKnown related bug: equipped weapons are ignored for damage dice (B-08) — damage always comes from the character's class, not gear.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "inputTokens": 168841,
+  "outputTokens": 1486,
+  "cacheReadTokens": 156981,
+  "cacheWriteTokens": 11846,
+  "reasoningTokens": 298,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 7.58992,
+  "apiDurationMs": 20425,
+  "mainInputTokens": 168841,
+  "mainRequests": 7,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 7,
+  "toolCallsByName": {
+    "view": 4,
+    "powershell": 1,
+    "glob": 2
+  },
+  "failedToolCalls": 3,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 590
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 590,
+  "codeTokensRead": 0,
+  "otherToolTokens": 56,
+  "filesModified": [],
+  "answer": "**Resume path:** `login.component.ts:51-52` `resumeCampaign(slot)` navigates to `/game/<sessionId>` → `game-console.component.ts:69-104` `ngOnInit` calls `GameApiService.getSession` (`game-api.service.ts:62`) → Worker route `GET /api/session/:id` (`worker/src/routes/session.ts:9`) calls `loadSession` (`:12`), which reads KV key `session:<sessionId>`.\n\n**When KV has expired** (TTL = `SESSION_TTL_SECONDS = 604800`, 7 days, in `worker/src/services/session.ts:4`): `loadSession` finds nothing, and `routes/session.ts:14` returns **404 \"Session not found or expired\"** — it imports `rebuildSession` but never calls it (tracked as bug **B-07**).\n\n**Result:** The game *cannot* continue from the UI. `game-console.component.ts` shows \"Could not load session\" and stays empty, even though the character's D1 data (`characters`, `character_inventory`, `adventure_log`) is still intact. Ironically, the other routes (`action`, `combat`, `levelup`, `quest`) *do* call `rebuildSession` (`services/session.ts:58`, rebuilding location/history from the last 20 `adventure_log` rows), but they're never reached because resume fails earlier at the `GET /api/session/:id` step.\n\n**Fix noted in docs:** have `routes/session.ts` fall back to `rebuildSession` on a 404, using the `characterId` from the frontend slot or `characters.session_id`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "inputTokens": 66773,
+  "outputTokens": 915,
+  "cacheReadTokens": 56729,
+  "cacheWriteTokens": 10038,
+  "reasoningTokens": 61,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.56028,
+  "apiDurationMs": 9827,
+  "mainInputTokens": 66773,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1048
+    },
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 652
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1700,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Level-Up Flow\n\n**When offered:** Worker computes `shouldLevelUp(character)` (`worker/src/services/character.ts:159`) — true when `xp >= XP_THRESHOLDS[level]` (thresholds: 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000; max level 10) and `level < 10`. This is returned as `canLevelUp` from `POST /api/action` (`routes/action.ts:99`) and `POST /api/combat/resolve` (`routes/combat.ts:109`). Frontend also precomputes via `CharacterStateService.checkLevelUp` but overwrites with the server value. UI shows a banner in `character-sheet.component.html:66` and an ability picker in `game-console.component.html:19-28`.\n\n**Endpoint called:** User picks an ability → `game-console.component.ts:183` `levelUp(key)` → `GameApiService.levelUp(sessionId, characterId, abilityChoice)` (`game-api.service.ts:74`) → **`POST /api/levelup`** (`worker/src/routes/levelup.ts:10`). `abilityChoice` must be one of str/dex/con/int/wis/cha; returns 400 if `!shouldLevelUp`.\n\n**What changes on the character** (`services/character.ts:133` `levelUp`):\n- `level` +1\n- HP: rolls class hit die (Fighter/Ranger d10, Rogue/Cleric/Bard d8, Wizard d6) + CON modifier, added to both `max_hp` and current HP\n- Chosen ability score: **+2** (uncapped — no 20 ceiling)\n- AC is unaffected\n\nThe route also generates flavor text (usually fallback, bug B-03), writes a `system` log row `[Level Up] …`, and a DM history turn. Frontend then updates character state, sets `canLevelUp` false, posts a system message, and updates the campaign slot's level.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

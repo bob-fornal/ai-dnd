@@ -1,0 +1,46 @@
+{
+  "inputTokens": 70816,
+  "outputTokens": 953,
+  "cacheReadTokens": 60125,
+  "cacheWriteTokens": 10685,
+  "reasoningTokens": 147,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.82795,
+  "apiDurationMs": 11604,
+  "mainInputTokens": 70816,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 590
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 590,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## What happens on resume after KV expiry\n\n**Frontend path:**\n1. `login.component.ts:51-52` → `resumeCampaign(slot)` navigates to `/game/<sessionId>`.\n2. `game-console.component.ts:69-104` `ngOnInit` calls `GameApiService.getSession` (`game-api.service.ts:62`) since there's no `startNarrative`.\n3. This hits `GET /api/session/:id` → `worker/src/routes/session.ts:9`, which calls `loadSession` (`worker/src/services/session.ts:12`).\n\n**Worker behavior:** `session:<sessionId>` is stored in KV with a 7‑day TTL (`SESSION_TTL_SECONDS = 604800`, `session.ts:4`), reset on every `saveSession`. Once it expires, `loadSession` returns nothing, and `routes/session.ts:14` responds with **404 \"Session not found or expired\"**. The route imports `rebuildSession` but never calls it — this is bug **B-07**.\n\n**Result:** `game-console.component.ts` shows \"Could not load session\" and the screen stays empty — **the game cannot be resumed from the UI**, even though the character's permanent D1 data (`characters`, `character_inventory`, `adventure_log`) is still intact.\n\n**Notably**, other routes (`action`, `combat`, `levelup`, `quest`) *do* call `rebuildSession` (`services/session.ts:58`), reconstructing history from the last 20 `adventure_log` rows (location becomes \"Unknown — session rebuilt from log\", quest resets, combat state lost). But they're never reached because the console fails at the `GET /api/session/:id` step first.\n\n**Fix (per docs):** have `routes/session.ts` fall back to `rebuildSession` using the `characterId` (from the frontend slot or `characters.session_id` lookup) instead of just 404ing.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

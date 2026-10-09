@@ -1,0 +1,52 @@
+{
+  "inputTokens": 91979,
+  "outputTokens": 711,
+  "cacheReadTokens": 81565,
+  "cacheWriteTokens": 10406,
+  "reasoningTokens": 52,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 4.9454,
+  "apiDurationMs": 9606,
+  "mainInputTokens": 91979,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 2,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 385
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 385,
+  "codeTokensRead": 565,
+  "otherToolTokens": 25,
+  "filesModified": [],
+  "answer": "**Allowed origins** (`worker/src/index.ts`, the `cors()` middleware's `origin` function, ~line 20):\n- `http://localhost:4200` (exact match)\n- any subdomain of `.pages.dev`\n- any subdomain of `.workers.dev`\n\nAnything else returns `null` and is rejected.\n\n**To add a new custom domain:** edit the `origin` callback in `worker/src/index.ts` inside `app.use('*', cors({...}))` — add another condition, e.g. `origin === 'https://yourdomain.com'` or `origin.endsWith('.yourdomain.com')`, to the `if` statement alongside the existing checks. (See `worker/src/index.md` and `docs/DEPLOYMENT_NOTES.md` §4 \"CORS\" for background — Hono's `origin` array option only does exact-string matches, which is why this uses a function instead.)",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

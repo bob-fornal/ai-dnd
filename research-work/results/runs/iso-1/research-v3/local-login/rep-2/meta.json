@@ -1,0 +1,57 @@
+{
+  "arm": {
+    "id": "research-v3",
+    "dir": "../research-documentation-v3",
+    "description": "v3 = v2 plus root-relative path statement in AGENTS.md and named value sources in flows. AGENTS.md auto-loaded, no preamble.",
+    "preamble": "",
+    "removeArgs": [
+      "--no-custom-instructions"
+    ],
+    "docsVersion": "v3"
+  },
+  "task": {
+    "id": "local-login",
+    "area": "frontend",
+    "heldOut": true,
+    "prompt": "How does login work, where are campaigns stored, and what happens to the server-side character when a campaign slot is deleted?",
+    "expect": [
+      [
+        "localStorage"
+      ],
+      [
+        "ai_dnd_user"
+      ],
+      [
+        "authGuard"
+      ],
+      [
+        "removeCampaign"
+      ],
+      [
+        "no password",
+        "name-only",
+        "not deleted",
+        "doesn't delete",
+        "does not delete",
+        "remains"
+      ]
+    ]
+  },
+  "rep": 2,
+  "prompt": "How does login work, where are campaigns stored, and what happens to the server-side character when a campaign slot is deleted?\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\iso-1\\research-documentation-v3",
+  "isolated": true,
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color",
+    "--disallow-temp-dir"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T17:42:26.237Z"
+}

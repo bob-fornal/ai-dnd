@@ -1,0 +1,52 @@
+{
+  "inputTokens": 92860,
+  "outputTokens": 692,
+  "cacheReadTokens": 82195,
+  "cacheWriteTokens": 10657,
+  "reasoningTokens": 71,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 5.00175,
+  "apiDurationMs": 9018,
+  "mainInputTokens": 92860,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 2,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 398
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 398,
+  "codeTokensRead": 565,
+  "otherToolTokens": 25,
+  "filesModified": [],
+  "answer": "Allowed origins: `http://localhost:4200`, any `*.pages.dev`, and any `*.workers.dev` (matched via `origin.endsWith(...)`).\n\nTo add a new custom domain: edit `worker/src/index.ts`, inside the `cors({ origin: (origin) => {...} })` function (around line 21), add a new condition e.g. `origin === 'https://yourdomain.com'` or `origin.endsWith('.yourdomain.com')` to the `if` check. Since Hono's `cors` only matches array entries as exact strings, wildcard subdomains require this function-based approach — see `docs/DEPLOYMENT_NOTES.md §4 (CORS)`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

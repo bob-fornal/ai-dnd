@@ -1,0 +1,46 @@
+{
+  "inputTokens": 45112,
+  "outputTokens": 761,
+  "cacheReadTokens": 35618,
+  "cacheWriteTokens": 9490,
+  "reasoningTokens": 15,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 3.84666,
+  "apiDurationMs": 8218,
+  "mainInputTokens": 45112,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 649
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 649,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Level-Up Flow\n\n**When offered:** Worker computes `shouldLevelUp(character)` (`worker/src/services/character.ts:159`) = `xp >= XP_THRESHOLDS[level]` and `level < 10`, where `XP_THRESHOLDS` (`worker/src/types/index.ts:175`) = `[0,300,900,2700,6500,14000,23000,34000,48000,64000]`. This flag (`canLevelUp`) comes back from `POST /api/action` and `POST /api/combat/resolve`. Frontend shows a banner (`character-sheet.component.html:66`) and an ability picker (`game-console.component.html:19-28`), with the server value overwriting the client's own `checkLevelUp` guess.\n\n**Endpoint called:** `game-console.component.ts:183` `levelUp(key)` → `GameApiService.levelUp(sessionId, characterId, abilityChoice)` → `POST /api/levelup` (`worker/src/routes/levelup.ts:10`). `abilityChoice` must be one of str/dex/con/int/wis/cha; 400 if `!shouldLevelUp`.\n\n**What changes on the character** (`services/character.ts:133` `levelUp`):\n- `level` +1\n- HP gain = `roll(class hit die) + CON mod`, added to both `max_hp` and current HP (hit dice: Fighter/Ranger d10, Rogue/Cleric/Bard d8, Wizard d6)\n- **+2** to the chosen ability score (no 20 cap, AC unchanged)\n- A `[Level Up]` system log row, DM history turn, and flavor narrative (usually fallback text per bug B-03) are added\n\nFrontend then updates state (`setCharacter`, `setCanLevelUp(false)`), shows a system message, and updates the campaign slot level. One call = one level; a character gaining two levels at once must call the endpoint twice.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

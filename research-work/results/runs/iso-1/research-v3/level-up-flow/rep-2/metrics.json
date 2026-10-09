@@ -1,0 +1,46 @@
+{
+  "inputTokens": 45218,
+  "outputTokens": 669,
+  "cacheReadTokens": 35670,
+  "cacheWriteTokens": 9544,
+  "reasoningTokens": 17,
+  "modelRequests": 2,
+  "premiumRequests": 1,
+  "aiCredits": 3.7692,
+  "apiDurationMs": 6992,
+  "mainInputTokens": 45218,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 649
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 649,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Level-Up Flow\n\n**When offered:** Worker computes `shouldLevelUp(character)` (`worker/src/services/character.ts:159`) = `xp >= XP_THRESHOLDS[level]` (thresholds 0,300,900,...,64000, max level 10) and returns `canLevelUp` from `POST /api/action` (`action.ts:99`) or `POST /api/combat/resolve` (`combat.ts:109`). Frontend shows a banner (`character-sheet.component.html:66`) and ability picker (`game-console.component.html:19-28`).\n\n**Endpoint called:** UI's `levelUp(key)` (`game-console.component.ts:183`) → `GameApiService.levelUp(sessionId, characterId, abilityChoice)` (`game-api.service.ts:74`) → **`POST /api/levelup`** (`worker/src/routes/levelup.ts:10`), validating `abilityChoice` ∈ str/dex/con/int/wis/cha and 400 if `!shouldLevelUp`.\n\n**What changes:** `services/character.ts:133` `levelUp` — level +1; HP gain = `roll(class hit die) + CON mod` added to both `max_hp` and current HP; chosen ability **+2** (uncapped at 20); AC unchanged. Hit dice: Fighter/Ranger d10, Rogue/Cleric/Bard d8, Wizard d6.\n\nOne level per call (must repeat if XP spans two thresholds). Response also returns flavor narrative, a `[Level Up]` system log row, and a DM history turn; frontend updates character state and clears `canLevelUp`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

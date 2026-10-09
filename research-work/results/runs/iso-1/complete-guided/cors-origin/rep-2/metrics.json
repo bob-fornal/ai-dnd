@@ -1,0 +1,48 @@
+{
+  "inputTokens": 132124,
+  "outputTokens": 1665,
+  "cacheReadTokens": 122257,
+  "cacheWriteTokens": 9855,
+  "reasoningTokens": 92,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 6.57629,
+  "apiDurationMs": 18848,
+  "mainInputTokens": 132124,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "grep": 6,
+    "glob": 1,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 386
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 386,
+  "otherToolTokens": 377,
+  "filesModified": [],
+  "answer": "Allowed origins (CORS) are defined in `worker\\src\\index.ts`, lines 21–31, inside the `cors({ origin: (origin) => {...} })` config passed to `app.use('*', cors({...}))`.\n\nCurrently allowed:\n- Exact match `http://localhost:4200`\n- Any subdomain ending in `.pages.dev`\n- Any subdomain ending in `.workers.dev`\n\nTo add a new custom domain, edit that `origin` function in `worker\\src\\index.ts` — add another condition in the `if (...)` block, e.g.:\n```ts\norigin === 'https://your-custom-domain.com' ||\n```\nor `origin.endsWith('.your-custom-domain.com')` for subdomain matching, then return `origin`. That's the single source of truth for allowed browser origins.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

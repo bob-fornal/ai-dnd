@@ -1,0 +1,55 @@
+{
+  "inputTokens": 72582,
+  "outputTokens": 888,
+  "cacheReadTokens": 59846,
+  "cacheWriteTokens": 12730,
+  "reasoningTokens": 54,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 5.26862,
+  "apiDurationMs": 10081,
+  "mainInputTokens": 72582,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "powershell": 1,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1493
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 721
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 721,
+  "codeTokensRead": 1493,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Handling model failure / invalid JSON — `worker/src/services/ai-dm.ts`\n\n**Models:** primary `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format, temp 0.85, 1024 tokens), fallback `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n\n**Flow in `askDM(ai, character, session, playerAction, combatContext?)`:**\n1. Calls llama-3.3 in a `try`; a thrown error (or streaming response) is caught.\n2. On error, calls mistral in a nested `try`. If that also throws, returns `fallbackNarrative(playerAction)` directly — a hardcoded `AIDMResponse` with generic narrative text, null stat deltas, empty item/dice arrays, and 4 canned `suggestedActions`.\n3. Otherwise, whichever model's raw text succeeded is passed to `parseAIResponse(raw, playerAction)`.\n\n**`parseAIResponse`:**\n- Returns `fallbackNarrative` immediately if `raw` isn't a non-empty string.\n- Strips ```` ```json ```` fences, then if the text doesn't start with `{`, regex-extracts the first `{…}` block; if none found, logs a warning and returns `fallbackNarrative`.\n- `JSON.parse` wrapped in `try/catch` — on parse failure, returns `fallbackNarrative`.\n- On success, fills defaults for any missing fields (e.g. `narrative` defaults to a stock sentence, `suggestedActions` defaults to 4 canned options, arrays capped at 4 suggestedActions / 8 diceRolls).\n\nSo all failure paths (model error, streaming response, empty text, no JSON found, parse exception) converge on `fallbackNarrative`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

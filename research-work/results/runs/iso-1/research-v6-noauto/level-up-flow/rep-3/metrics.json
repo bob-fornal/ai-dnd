@@ -1,0 +1,53 @@
+{
+  "inputTokens": 66886,
+  "outputTokens": 934,
+  "cacheReadTokens": 56736,
+  "cacheWriteTokens": 10144,
+  "reasoningTokens": 28,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.60592,
+  "apiDurationMs": 10163,
+  "mainInputTokens": 66886,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 1,
+    "powershell": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1041
+    },
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 672
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1713,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Level-Up Flow\n\n**When offered:** The Worker computes `shouldLevelUp(character)` (`services/character.ts:159`) = `xp >= XP_THRESHOLDS[level] && level < 10`, where `XP_THRESHOLDS` (`worker/src/types/index.ts:175`) = `[0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000]`. This flag (`canLevelUp`) comes back from `POST /api/action` and `POST /api/combat/resolve`. Frontend shows a banner in `character-sheet.component.html:66` and an ability picker in `game-console.component.html:19-28`.\n\n**Endpoint called:** Player picks an ability → `game-console.component.ts:183` `levelUp(key)` → `GameApiService.levelUp(sessionId, characterId, abilityChoice)` (`game-api.service.ts:74`) → **`POST /api/levelup`** (`worker/src/routes/levelup.ts:10`). `abilityChoice` must be one of str/dex/con/int/wis/cha; returns 400 if `!shouldLevelUp`.\n\n**What changes on the character** (`services/character.ts:133` `levelUp`):\n- `level` +1\n- HP gain = `roll(class hit die) + CON mod`, added to both `max_hp` and current HP\n- **+2** to the chosen ability score (uncapped — not limited to 20)\n- AC is unchanged\n\nHit dice by class: Fighter/Ranger d10, Rogue/Cleric/Bard d8, Wizard d6.\n\nThe route also generates flavor narrative (usually fallback text, known bug B-03), logs a `[Level Up] …` system row, and adds a DM history turn. One level per call — a character with enough XP for two levels needs two separate calls. Frontend then updates state via `setCharacter`, `setCanLevelUp(false)`, and a system message.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

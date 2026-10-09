@@ -1,0 +1,68 @@
+{
+  "inputTokens": 93610,
+  "outputTokens": 1211,
+  "cacheReadTokens": 81191,
+  "cacheWriteTokens": 12411,
+  "reasoningTokens": 132,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 5.93917,
+  "apiDurationMs": 14075,
+  "mainInputTokens": 93610,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 5
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.ts",
+      "kind": "code",
+      "tokens": 623
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 590
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 481
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 421
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 1,
+  "docTokensRead": 2277,
+  "codeTokensRead": 623,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Login** — `AuthService.login(username)` (`frontend/src/app/services/auth.service.ts:16`): no password/server call. It looks for `localStorage['ai_dnd_user_<lowercase name>']`; if found, loads that `UserProfile`, else creates an empty one. Active profile also saved to `localStorage['ai_dnd_user']`. `isLoggedIn()` (`:12`) is just `profile() !== null`. There's no backend auth endpoint — it's purely name-based local identity.\n\n**Campaign storage** — `UserProfile.campaigns: CampaignSlot[]` lives only in the browser's `localStorage`, persisted by `AuthService.persist` (`:71-76`) under both keys above. Each `CampaignSlot` just points at a Worker `sessionId` + `characterId`. The actual game data is server-side: Workers KV key `session:<sessionId>` (character location, quest, combat state, last 20 history turns, 7-day TTL) and D1 tables `characters`, `character_inventory`, `adventure_log` (permanent).\n\n**Deleting a campaign slot** — `AuthService.removeCampaign(slotId)` (`:54`) only filters the slot out of `profile.campaigns` and re-persists to `localStorage`. **It does not call any Worker API and does not touch D1 or KV** — the server-side character, inventory, and adventure log rows, and the KV session, all remain untouched/orphaned. The local link is simply lost (noted explicitly in `auth.service.md`: \"`removeCampaign` only deletes the slot. It doesn't delete the character on the server.\").",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "authGuard"
+    ]
+  }
+}

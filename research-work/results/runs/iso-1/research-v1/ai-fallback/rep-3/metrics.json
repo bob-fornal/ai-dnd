@@ -1,0 +1,79 @@
+{
+  "inputTokens": 149458,
+  "outputTokens": 2254,
+  "cacheReadTokens": 115765,
+  "cacheWriteTokens": 14487,
+  "reasoningTokens": 59,
+  "modelRequests": 8,
+  "premiumRequests": 1,
+  "aiCredits": 6.67499,
+  "apiDurationMs": 19343,
+  "mainInputTokens": 101977,
+  "mainRequests": 4,
+  "subagentInputTokens": 47481,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 27,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 8,
+    "grep_search": 10,
+    "read_file": 6,
+    "grep": 1,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3764
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 2300
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1232
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 673
+    },
+    {
+      "path": "worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 588
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 556
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 2,
+  "docTokensRead": 4793,
+  "codeTokensRead": 4320,
+  "otherToolTokens": 10397,
+  "filesModified": [],
+  "answer": "All logic lives in `worker/src/services/ai-dm.ts`.\n\n**Model fallback chain — `askDM()`:**\n1. Calls primary model `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (with `response_format: json_object`).\n2. If that `ai.run()` call throws (or returns a `ReadableStream`), it's caught and logged (`\"[askDM] llama failed, trying mistral\"`), then it retries with fallback model `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n3. If the fallback also throws, it logs `\"[askDM] mistral also failed\"` and returns `fallbackNarrative(playerAction)` directly — never reaching JSON parsing.\n\n**Invalid-JSON handling — `parseAIResponse(raw, playerAction)`:**\n- Rejects empty/non-string input → `fallbackNarrative`.\n- Strips Markdown fences (```` ```json ````); if text still doesn't start with `{`, regex-extracts the first `{...}` block; if none found, logs `\"[parseAIResponse] no JSON object found in response\"` → `fallbackNarrative`.\n- Wraps `JSON.parse(cleaned)` in try/catch; on parse error → `fallbackNarrative`.\n- On success, fills any missing/invalid fields with safe defaults (e.g. narrative fallback text, `null` deltas, default `suggestedActions` like `['Look around', 'Search the area', ...]`).\n\n**Final safety net — `fallbackNarrative(playerAction)`:** returns a canned `AIDMResponse` with a generic narrative (\"You attempt to ...The world shifts around you...\"), null state changes, default suggested actions, and empty dice rolls — used whenever model calls fail or output can't be parsed.\n\nSimilar try/catch-with-canned-defaults patterns exist in `generateQuest()` (model: llama-3.3-70b, fallback quest \"Blood on the Road\") and `generateBackstory()` (fallback generic backstory text), each using only the one model with a catch-all default, not the two-model chain.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

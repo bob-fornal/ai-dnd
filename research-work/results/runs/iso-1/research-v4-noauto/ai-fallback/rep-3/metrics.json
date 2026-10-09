@@ -1,0 +1,58 @@
+{
+  "inputTokens": 94419,
+  "outputTokens": 999,
+  "cacheReadTokens": 80215,
+  "cacheWriteTokens": 14196,
+  "reasoningTokens": 50,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 6.1539,
+  "apiDurationMs": 11568,
+  "mainInputTokens": 94419,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2488
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 925
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 696
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1621,
+  "codeTokensRead": 2488,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Model failure / invalid JSON handling (`worker/src/services/ai-dm.ts`)\n\n**Models involved:**\n1. Primary: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (json_object format, temp 0.85, 1024 tokens)\n2. Fallback: `@cf/mistral/mistral-7b-instruct-v0.2-lora` (1024 tokens, used only if primary throws)\n\n**Functions involved:**\n- `askDM(ai, char, session, action, combatContext?)` — orchestrates the call. Wraps the llama call in `try/catch`; on error, retries mistral in a nested `try/catch`. If **both** throw, it returns `fallbackNarrative(playerAction)` directly.\n- `parseAIResponse(raw, playerAction)` — called with whatever text was recovered. Guards against non-string/empty input, strips markdown fences, extracts the first `{...}` block if the text isn't already JSON, then `JSON.parse`s it inside a `try/catch`. Any parse failure (invalid JSON, no `{...}` found, empty/non-string raw) returns `fallbackNarrative(playerAction)`. Valid JSON still gets per-field defaulting (e.g., `hpDelta ?? null`, `suggestedActions` defaulted to a 4-item list if not an array).\n- `fallbackNarrative(playerAction)` — the terminal safety net. Returns a canned `AIDMResponse`: a generic narrative templated with the player's action, all `gameStateChanges` null/false/empty, 4 default `suggestedActions`, and an empty `diceRolls` array — so the turn always completes even when both models fail or return unparseable output.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

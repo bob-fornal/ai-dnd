@@ -1,0 +1,56 @@
+{
+  "inputTokens": 67374,
+  "outputTokens": 890,
+  "cacheReadTokens": 56324,
+  "cacheWriteTokens": 11044,
+  "reasoningTokens": 15,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 4.77868,
+  "apiDurationMs": 11600,
+  "mainInputTokens": 67374,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 785
+    },
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 721
+    },
+    {
+      "path": "worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 612
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2118,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "## Attack resolution flow\n\n**UI → API**: `game-console.component.ts:144 combatAction('attack')` → `GameApiService.resolveCombat` (`game-api.service.ts:50`) → `POST /api/combat/resolve` handled in `worker/src/routes/combat.ts:11`, which loads character/session then calls `services/combat.ts:50 resolveCombatRound` (`routes/combat.ts:38`).\n\n**Dice rolling (all in `worker/src/services/combat.ts`, backed by `dice.ts:55 attackRoll`)**: at `combat.ts:81`, player attack = d20 + (DEX for Rogue/Ranger, else STR) + proficiency `ceil(level/4)+1` vs monster AC (nat 20 = crit, nat 1 = miss). Damage = class die (`getPlayerDamageDice`, `:222`) + modifier, min 1, doubled on crit. If the monster survives, it attacks back using the same engine; monster death/XP handled at `:121`, player death at `:152`.\n\n**Persistence**: `routes/combat.ts:51` applies HP/XP, `:56-57` rolls/grants loot (currently a no-op, B-01), `:80-95` updates round/session, `:100-103` writes adventure log rows.\n\n**AI's role**: `routes/combat.ts:68` calls `askDM(..., result.contextForDM)` — the AI only narrates the already-resolved round from `contextForDM` (`combat.ts:160`). It never rolls dice, computes damage, or decides outcomes; all combat math is deterministic code in `services/combat.ts`/`dice.ts`.\n\nKnown bugs: equipment is ignored in damage (B-08); loot never drops (B-01).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

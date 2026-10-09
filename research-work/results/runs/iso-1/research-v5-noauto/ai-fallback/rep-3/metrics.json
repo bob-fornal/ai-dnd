@@ -1,0 +1,59 @@
+{
+  "inputTokens": 144159,
+  "outputTokens": 1311,
+  "cacheReadTokens": 130698,
+  "cacheWriteTokens": 13449,
+  "reasoningTokens": 118,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 7.28961,
+  "apiDurationMs": 15133,
+  "mainInputTokens": 144159,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "view": 4,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1602
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1048
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 696
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1744,
+  "codeTokensRead": 1602,
+  "otherToolTokens": 27,
+  "filesModified": [],
+  "answer": "**In `worker/src/services/ai-dm.ts`, function `askDM` (line 81):**\n\n1. **Model call failure**: `askDM` calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast` first. If that `.run()` throws, it's caught and retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. If the fallback model also throws, `askDM` immediately returns `fallbackNarrative(playerAction)`.\n\n2. **Invalid/non-JSON response**: Whatever raw text comes back (from either model) is passed to `parseAIResponse(rawText, playerAction)`, which:\n   - Returns `fallbackNarrative` if `raw` isn't a non-empty string.\n   - Strips markdown code fences and extracts the first `{...}` block; if no JSON object is found, returns `fallbackNarrative`.\n   - Calls `JSON.parse(cleaned)`; if that throws, the `catch` returns `fallbackNarrative`.\n   - On success, it still fills safe defaults field-by-field (e.g., `narrative` defaults to `\"The world holds its breath as your words echo into the shadows.\"`, `suggestedActions` defaults to `['Look around', 'Search the area', 'Listen carefully', 'Move on']`).\n\n`fallbackNarrative(playerAction)` builds a hardcoded `AIDMResponse`: a generic narrative string referencing the player's action, all `gameStateChanges` fields null/false/empty, default `suggestedActions`, and empty `diceRolls` — guaranteeing a valid response shape even when AI fully fails.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

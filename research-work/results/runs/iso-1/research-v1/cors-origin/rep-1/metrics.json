@@ -1,0 +1,65 @@
+{
+  "inputTokens": 63310,
+  "outputTokens": 1008,
+  "cacheReadTokens": 44328,
+  "cacheWriteTokens": 10140,
+  "reasoningTokens": 15,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 3.66006,
+  "apiDurationMs": 8246,
+  "mainInputTokens": 44357,
+  "mainRequests": 2,
+  "subagentInputTokens": 18953,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 17,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "read_file": 4,
+    "file_search": 6,
+    "grep_search": 6
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1232
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 940
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 603
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 423
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 2595,
+  "codeTokensRead": 603,
+  "otherToolTokens": 4734,
+  "filesModified": [],
+  "answer": "**Allowed origins:** `http://localhost:4200`, any `*.pages.dev`, and any `*.workers.dev` subdomain.\n\n**Where configured:** `worker\\src\\index.ts` — in the `cors()` middleware call (from `hono/cors`), via the `origin` callback function (must be a function, not an array, since Hono matches array entries as literal strings and can't handle wildcard subdomains).\n\n**To add a new custom domain:** Edit the `origin` function in `worker\\src\\index.ts` and add a check, e.g.:\n```ts\norigin === 'https://your-custom-domain.com' ||\n```\ninside the existing `if (...)` condition. Documented in `docs\\DEPLOYMENT_NOTES.md` §4 (CORS) and `worker\\src\\index.md`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

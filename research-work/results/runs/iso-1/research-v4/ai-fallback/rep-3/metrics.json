@@ -1,0 +1,53 @@
+{
+  "inputTokens": 73431,
+  "outputTokens": 863,
+  "cacheReadTokens": 59390,
+  "cacheWriteTokens": 14035,
+  "reasoningTokens": 29,
+  "modelRequests": 3,
+  "premiumRequests": 1,
+  "aiCredits": 5.56075,
+  "apiDurationMs": 10004,
+  "mainInputTokens": 73431,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2488
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 696
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 696,
+  "codeTokensRead": 2488,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`:\n\n**Model failure handling (`askDM`, line 81):**\n1. Calls primary model `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (JSON mode, temp 0.85, 1024 tokens).\n2. If it throws (or returns a `ReadableStream`), catches the error and retries with fallback model `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n3. If the mistral call also throws, returns `fallbackNarrative(playerAction)` directly — a hardcoded generic narrative (no HP/XP/gold changes, 4 canned suggested actions, no dice rolls).\n\n**Invalid JSON handling (`parseAIResponse`):**\n- Called with whatever `rawText` came back (from either model).\n- Returns `fallbackNarrative` if `raw` is empty/non-string.\n- Strips markdown code fences, then extracts the first `{...}` block if the text doesn't start with `{`; if no JSON-like block is found, logs a warning and returns `fallbackNarrative`.\n- Wraps `JSON.parse(cleaned)` in try/catch — on parse failure, returns `fallbackNarrative`.\n- On success, still defensively fills in defaults for every field (e.g. `narrative` falls back to `\"The world holds its breath...\"` if missing/empty, `suggestedActions`/`diceRolls` default to arrays if not present, arrays truncated to 4/8 items).\n\nSo two layers of safety net exist: model-call retry (llama → mistral → fallback) plus response-shape validation (`parseAIResponse` → `fallbackNarrative`), both converging on the same `fallbackNarrative` function for any unrecoverable failure.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

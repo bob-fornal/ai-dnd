@@ -39,7 +39,7 @@ export function parseRun({ eventsFile, usageFile, armDir }) {
     inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, reasoningTokens: 0,
     modelRequests: 0, premiumRequests: 0, aiCredits: 0, apiDurationMs: 0,
     mainInputTokens: 0, mainRequests: 0, subagentInputTokens: 0, subagentRuns: 0, models: [],
-    toolCalls: 0, toolCallsByName: {}, failedToolCalls: 0, toolset: '',
+    toolCalls: 0, toolCallsByName: {}, failedToolCalls: 0, toolset: '', multiReadCalls: 0,
     filesRead: [], docFilesRead: 0, codeFilesRead: 0,
     docTokensRead: 0, codeTokensRead: 0, otherToolTokens: 0,
     filesModified: [], answer: '', exitCode: null,
@@ -90,7 +90,15 @@ export function parseRun({ eventsFile, usageFile, armDir }) {
       const tokens = estimateTokens(content.length);
       // Copilot CLI exposes different tool families per session: view/grep/glob or read_file/grep_search/file_search.
       const target = s.args.path ?? s.args.file_path ?? s.args.filePath;
-      if (READ_TOOLS.has(s.name) && target && d.success !== false && path.extname(target)) {
+      const command = String(s.args.command ?? '');
+      if (/tools[\\/]read\.mjs/.test(command) && d.success !== false) {
+        // v6 multi-target reader: one shell call returns several files; split by its "### path" headers.
+        m.multiReadCalls = (m.multiReadCalls ?? 0) + 1;
+        for (const part of content.split(/^### /m).slice(1)) {
+          const rel = part.split(/[\s(]/)[0];
+          if (rel && path.extname(rel)) reads.set(rel, (reads.get(rel) ?? 0) + estimateTokens(part.length));
+        }
+      } else if (READ_TOOLS.has(s.name) && target && d.success !== false && path.extname(target)) {
         const rel = toRelative(target, armDir);
         reads.set(rel, (reads.get(rel) ?? 0) + tokens);
       } else {

@@ -1,6 +1,6 @@
 # Research Documentation v2: Designing Docs for Fewer Agent Round Trips
 
-**Status:** implemented and smoke-tested; full measurement pending.
+**Status:** implemented and measured (`v2-1`); results in §5b. A harness flaw (relative paths resolved against the git root) inflated the doc-following arms; an isolated re-run is the next step.
 **Folders:** [`research-documentation-v2/`](../research-documentation-v2/) (docs), [`research-work/`](../research-work/README.md) (harness, arms `research-v2` and `research-v2-noauto`).
 **Date:** 2026-10-09
 
@@ -92,6 +92,47 @@ One run of `research-v2` on `level-up-flow` (`results/runs/smoke-v2`):
 | Answer score | 6/6 | 5/6–6/6 |
 
 The agent never opened `AGENTS.md` with a tool; the routing table was already in its context. It read one flow doc and answered. That confirms the mechanism works. It is **not** a result: one sample, on a task the flow was written for.
+
+## 5b. Results: `full-1` + `v2-1` (198 runs)
+
+Full tables: `research-work/results/combined/summary.md` (`node scripts/analyze.mjs results/runs/full-1 results/runs/v2-1 --out results/combined`). Medians across 11 tasks × 3 repeats; the four original arms ran the 3 held-out tasks in `v2-1`.
+
+| Metric | complete | complete-guided | research-v1 | research-v1-guided | **research-v2** | **research-v2-noauto** |
+|---|---|---|---|---|---|---|
+| Input tokens | 115K | 201K | 117K | 240K | **146K** | **115K** |
+| Input minus cache reads | 24.8K | 17.4K | 29.5K | 19.1K | **13.6K** | **11.4K** |
+| Main-agent round trips | 4 | 8 | 4 | 9 | **6** | **5** |
+| File tokens read (est.) | 4.7K | 3.6K | 7.3K | 5.8K | **1.6K** | **2.1K** |
+| Code files read | 4 | 2 | 3 | 1 | **0** | **0** |
+| Tool calls | 21 | 14 | 22 | 11 | **6** | **6** |
+| AI credits | 5.9 | 9.4 | 6.6 | 11.2 | **7.3** | **6.4** |
+| Answer score | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+
+**What held up**
+- **v2 does what the docs promise.** Agents answer from docs (median 0 code files, 6 tool calls, −65% file tokens). Fresh, non-cached input is the lowest of any arm (−45% to −54% against `complete`).
+- **v2 fixes v1's guided-arm problem.** Against the like-for-like doc-following arm (`research-v1-guided`), v2 cuts input by 39% (auto-load) and 52% (no auto-load), and cuts round trips from 9 to 5–6.
+- **Flows work where they exist.** On `rest-endpoint-plan`, input fell from 312K (`complete`) to 111K–164K. On `level-up-flow`, `starting-gear`, and `combat-round`, v2 was at or below `complete`.
+
+**What didn't**
+- **v2 doesn't beat the unguided baseline overall** (`complete` 115K vs `research-v2` 146K and `research-v2-noauto` 115K). Unguided arms push searching into a cheaper search subagent (29 of 33 runs), which v2 agents almost never use.
+- **Held-out tasks show limited transfer.** v2 beat `complete` on `local-login` (−10% to −16%) but lost on `log-pagination` (+34% to +148%) and `shop-sell` (+272% to +377%; `complete` answered `shop-sell` in 2 round trips).
+- **Auto-loading cost more than no auto-load** (146K vs 115K; ~25.2K vs ~23.4K context per request). The extra fixed context (root + v2 `AGENTS.md`) and the path problem below outweighed the saved read.
+- **One answer-completeness gap:** `research-v2-noauto` scored 3/5 on `starting-gear` in 2 of 3 runs. The character-creation flow lists the items but doesn't name `CLASS_STARTING_ITEMS` or `seed.sql`.
+
+**Harness flaw found: relative paths resolve against the git root**
+
+Every arm runs as a subfolder of the `ai-dnd` repository (`-C <arm folder>`). When an agent follows a relative path from a doc (`docs/flows/inventory.md`, `AGENTS.md`), Copilot resolves it against the **repository root**. Path verification denies it, and the agent spends extra turns re-locating the folder.
+
+| Arm | Runs with out-of-folder path attempts |
+|---|---|
+| complete / research-v1 (unguided) | 0–8 of 24–33 |
+| research-v1-guided (`full-1`) | 22 / 24 |
+| research-v2 | 27 / 33 (59 failed calls) |
+| research-v2-noauto | 20 / 33 (40 failed calls) |
+
+This penalizes exactly the doc-following arms, and it wouldn't happen in a real project where the docs sit at the repository root. **v1-guided and v2 numbers are inflated by it**, probably by one or more round trips per run (~25K tokens each). The next run should isolate each arm: copy it to its own workspace outside the repository (its own git root, so no root `AGENTS.md` is loaded either). Also make `AGENTS.md` say that its paths are relative to its own folder.
+
+**Follow-up:** the fixes (isolated workspaces in the harness; path statement and named value sources in the docs) are implemented as v3, and every arm is being re-measured as `iso-1`. See [research-documentation-v3.md](research-documentation-v3.md).
 
 ## 6. Risks and open questions
 

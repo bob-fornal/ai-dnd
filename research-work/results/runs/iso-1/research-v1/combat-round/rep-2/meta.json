@@ -1,0 +1,50 @@
+{
+  "arm": {
+    "id": "research-v1",
+    "dir": "../research-documentation-v1",
+    "description": "v1 component docs beside the code (code.md index, AGENTS.md authoring rules), no hint.",
+    "preamble": "",
+    "docsVersion": "v1"
+  },
+  "task": {
+    "id": "combat-round",
+    "area": "worker",
+    "prompt": "When the player chooses Attack during combat, how is the round resolved? Name the files and functions involved, where the dice are rolled, and what the AI is (and is not) responsible for.",
+    "expect": [
+      [
+        "resolveCombatRound"
+      ],
+      [
+        "attackRoll"
+      ],
+      [
+        "dice.ts"
+      ],
+      [
+        "askDM"
+      ],
+      [
+        "contextForDM",
+        "narrat"
+      ]
+    ]
+  },
+  "rep": 2,
+  "prompt": "When the player chooses Attack during combat, how is the round resolved? Name the files and functions involved, where the dice are rolled, and what the AI is (and is not) responsible for.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\iso-1\\research-documentation-v1",
+  "isolated": true,
+  "copilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-custom-instructions",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color",
+    "--disallow-temp-dir"
+  ],
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T16:59:16.352Z"
+}
