@@ -21,6 +21,7 @@
 - On death it only shows a message. Input stays enabled and HP stays at 0 ([bugs.md B-10](../../../../../bugs.md)).
 - Narrative entries live only in memory. A reload shows just the log sidebar and a "resumes" line.
 - The log isn't refreshed after new actions; only "Load more" fetches.
+- `openInventory()` doesn't display as a centered modal ([bugs.md B-14](../../../../../bugs.md)).
 - If the session has expired in KV, `getSession` returns 404 and the console can't load ([bugs.md B-07](../../../../../bugs.md), [routes/session](../../../../../worker/src/routes/session.md)).
 
 ## Connections

@@ -6,7 +6,7 @@ Start here. Find the area you're working on, open its doc, and follow that doc's
 - [PRD.md](PRD.md): product requirements, data model, API spec, prompt design
 - [SETUP.md](SETUP.md): local development and deployment steps
 - [docs/DEPLOYMENT_NOTES.md](docs/DEPLOYMENT_NOTES.md): production issues hit while shipping, with fixes
-- [bugs.md](bugs.md): known bugs (B-01 to B-13) with location, cause, and affected docs
+- [bugs.md](bugs.md): known bugs (B-01 to B-14) with location, cause, and affected docs
 
 ## Worker: entry & types
 - [worker/src/index.md](worker/src/index.md): Hono app, CORS, health check, mounts all `/api/*` routes

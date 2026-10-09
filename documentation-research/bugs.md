@@ -19,6 +19,7 @@ When you fix a bug, delete its entry and update the **Gotchas** in the component
 | B-11 | Low | Out-of-date config comment in `frontend/wrangler.toml` |
 | B-12 | Low | `grantLoot` upsert can never update (latent duplicates) |
 | B-13 | Unverified | Equip query uses a table alias in `UPDATE` |
+| B-14 | Medium | Inventory dialog opens at the bottom of the page, not centered over the content |
 
 ---
 
@@ -90,3 +91,10 @@ When you fix a bug, delete its entry and update the **Gotchas** in the component
 - **Where:** `worker/src/routes/character.ts:116`
 - **Cause:** `UPDATE character_inventory ci SET …` may be rejected by SQLite's `UPDATE` grammar. Test `PATCH /api/character/:id/equip` with a weapon or armor that's already equipped.
 - **Docs:** [character route](worker/src/routes/character.md)
+
+**B-14: Inventory dialog isn't centered as a modal**
+- **Symptom:** clicking **Inventory** in the game console opens the dialog at the bottom of the page instead of centered over the other content with a backdrop.
+- **Where:** `frontend/src/styles.scss:23-25` (theme setup), and `openInventory()` in `frontend/.../game-console.component.ts`
+- **Likely cause:** `styles.scss` includes `mat.all-component-themes` but not `mat.core()`. In Angular Material 18, `mat.core()` brings in the CDK overlay styles (`.cdk-overlay-container` as `position: fixed`, the backdrop, and the centering pane). Without them, the overlay container renders as a plain block appended to the end of `<body>`. `html, body { overflow: hidden }` can then also push it partly off-screen. The `inv-dialog-panel` `panelClass` has no styles defined anywhere.
+- **Fix idea:** add `@include mat.core();` to `styles.scss` (outside `:root`), or add `@angular/cdk/overlay-prebuilt.css` to `styles` in `angular.json`. Then confirm the dialog is centered with a backdrop. Any other `MatDialog`, `MatSnackBar`, `MatSelect`, or tooltip overlay is probably affected too.
+- **Docs:** [game console](frontend/src/app/components/game-console/game-console.component.md), [inventory](frontend/src/app/components/inventory/inventory.component.md), [styles](frontend/src/styles.md)

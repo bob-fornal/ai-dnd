@@ -17,6 +17,7 @@
 ## Gotchas
 - Healing from a potion is never saved. The next server response overwrites HP ([bugs.md B-05](../../../../../bugs.md)). It also breaks the rule that the Worker owns all dice.
 - Only `heal` potions can be used; anything else shows "no direct use effect".
+- The dialog opens at the bottom of the page instead of centered ([bugs.md B-14](../../../../../bugs.md)).
 
 ## Connections
 **Parents (used by):**
