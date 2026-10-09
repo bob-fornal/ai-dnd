@@ -1,0 +1,106 @@
+note: complete has node_modules in: ., frontend, worker
+note: complete-guided has node_modules in: ., frontend, worker
+note: research has node_modules in: frontend, worker
+note: research-guided has node_modules in: frontend, worker
+Running: 8 tasks x 4 arms x 3 repeats = 96 Copilot runs (model claude-sonnet-5).
+Output: C:\Projects\PERSONAL\ai-dnd\research-work\results\runs\full-1
+
+[1/96] complete-guided / combat-round / rep 1 ... in 195067 out 2222 docs 1 code 3 score 5/5
+[2/96] research / combat-round / rep 1 ... in 87042 out 1704 docs 4 code 5 score 5/5
+[3/96] complete / combat-round / rep 1 ... in 107925 out 1931 docs 1 code 6 score 5/5
+[4/96] research-guided / combat-round / rep 1 ... in 152030 out 1609 docs 7 code 0 score 5/5
+[5/96] complete-guided / rest-endpoint-plan / rep 1 ... in 458032 out 4710 docs 1 code 10 score 5/6
+[6/96] research-guided / rest-endpoint-plan / rep 1 ... in 216494 out 2986 docs 9 code 2 score 6/6
+[7/96] complete / rest-endpoint-plan / rep 1 ... in 447663 out 5666 docs 0 code 9 score 6/6
+[8/96] research / rest-endpoint-plan / rep 1 ... in 383474 out 4980 docs 0 code 10 score 6/6
+[9/96] research-guided / session-expiry / rep 1 ... in 180478 out 1682 docs 6 code 0 score 5/5
+[10/96] research / session-expiry / rep 1 ... in 173835 out 3146 docs 4 code 8 score 5/5
+[11/96] complete-guided / session-expiry / rep 1 ... in 359171 out 3674 docs 0 code 6 score 5/5
+[12/96] complete / session-expiry / rep 1 ... in 133598 out 2989 docs 1 code 9 score 5/5
+[13/96] research-guided / inventory-dialog / rep 1 ... in 239545 out 1539 docs 4 code 0 score 6/6
+[14/96] complete / inventory-dialog / rep 1 ... in 68100 out 1556 docs 0 code 7 score 5/6
+[15/96] complete-guided / inventory-dialog / rep 1 ... in 87085 out 1381 docs 0 code 7 score 5/6
+[16/96] research / inventory-dialog / rep 1 ... in 67768 out 1222 docs 1 code 4 score 5/6
+[17/96] research / ai-fallback / rep 1 ... in 165422 out 2406 docs 2 code 1 score 4/5
+[18/96] complete / ai-fallback / rep 1 ... in 190561 out 2270 docs 2 code 1 score 4/5
+[19/96] complete-guided / ai-fallback / rep 1 ... in 223759 out 2549 docs 0 code 2 score 4/5
+[20/96] research-guided / ai-fallback / rep 1 ... in 151120 out 1279 docs 3 code 1 score 4/5
+[21/96] complete-guided / starting-gear / rep 1 ... in 152052 out 965 docs 0 code 1 score 4/5
+[22/96] research-guided / starting-gear / rep 1 ... in 609538 out 3680 docs 3 code 3 score 5/5
+[23/96] research / starting-gear / rep 1 ... in 91032 out 1108 docs 6 code 2 score 4/5
+[24/96] complete / starting-gear / rep 1 ... in 108923 out 690 docs 0 code 1 score 4/5
+[25/96] research / cors-origin / rep 1 ... in 74204 out 1234 docs 6 code 1 score 5/5
+[26/96] complete-guided / cors-origin / rep 1 ... in 87518 out 1234 docs 0 code 0 score 5/5
+[27/96] research-guided / cors-origin / rep 1 ... in 195688 out 1242 docs 3 code 1 score 5/5
+[28/96] complete / cors-origin / rep 1 ... in 107460 out 928 docs 0 code 1 score 5/5
+[29/96] complete / level-up-flow / rep 1 ... in 201523 out 3421 docs 2 code 4 score 5/6
+[30/96] complete-guided / level-up-flow / rep 1 ... in 249588 out 3257 docs 1 code 2 score 5/6
+[31/96] research / level-up-flow / rep 1 ... in 196704 out 3119 docs 3 code 5 score 6/6
+[32/96] research-guided / level-up-flow / rep 1 ... in 335508 out 3859 docs 8 code 2 score 6/6
+[33/96] complete-guided / combat-round / rep 2 ... in 158066 out 2159 docs 2 code 6 score 5/5
+[34/96] complete / combat-round / rep 2 ... in 106941 out 2028 docs 2 code 6 score 5/5
+[35/96] research / combat-round / rep 2 ... in 68910 out 1723 docs 0 code 4 score 5/5
+[36/96] research-guided / combat-round / rep 2 ... in 230528 out 2073 docs 6 code 1 score 5/5
+[37/96] research-guided / rest-endpoint-plan / rep 2 ... in 434024 out 4131 docs 11 code 2 score 6/6
+[38/96] research / rest-endpoint-plan / rep 2 ... in 229396 out 5315 docs 17 code 1 score 6/6
+[39/96] complete / rest-endpoint-plan / rep 2 ... in 311536 out 4370 docs 1 code 11 score 6/6
+[40/96] complete-guided / rest-endpoint-plan / rep 2 ... in 508157 out 4841 docs 1 code 10 score 6/6
+[41/96] complete-guided / session-expiry / rep 2 ... in 365403 out 4230 docs 1 code 6 score 5/5
+[42/96] research / session-expiry / rep 2 ... in 102626 out 2218 docs 1 code 7 score 5/5
+[43/96] research-guided / session-expiry / rep 2 ... in 479662 out 3284 docs 7 code 2 score 5/5
+[44/96] complete / session-expiry / rep 2 ... in 179769 out 2731 docs 0 code 6 score 5/5
+[45/96] complete-guided / inventory-dialog / rep 2 ... in 164665 out 1570 docs 0 code 3 score 5/6
+[46/96] research / inventory-dialog / rep 2 ... in 319035 out 2729 docs 1 code 3 score 5/6
+[47/96] complete / inventory-dialog / rep 2 ... in 62493 out 1286 docs 0 code 4 score 5/6
+[48/96] research-guided / inventory-dialog / rep 2 ... in 240382 out 1646 docs 2 code 0 score 6/6
+[49/96] complete / ai-fallback / rep 2 ... in 73043 out 1591 docs 2 code 1 score 4/5
+[50/96] complete-guided / ai-fallback / rep 2 ... in 90800 out 1055 docs 0 code 1 score 4/5
+[51/96] research-guided / ai-fallback / rep 2 ... in 150768 out 1074 docs 3 code 1 score 4/5
+[52/96] research / ai-fallback / rep 2 ... in 92608 out 1597 docs 4 code 2 score 4/5
+[53/96] research-guided / starting-gear / rep 2 ... in 387604 out 2639 docs 3 code 1 score 5/5
+[54/96] research / starting-gear / rep 2 ... in 322298 out 2866 docs 0 code 1 score 5/5
+[55/96] complete / starting-gear / rep 2 ... in 81023 out 1352 docs 2 code 0 score 5/5
+[56/96] complete-guided / starting-gear / rep 2 ... in 259519 out 2458 docs 0 code 2 score 5/5
+[57/96] research-guided / cors-origin / rep 2 ... in 169755 out 1489 docs 4 code 0 score 5/5
+[58/96] complete-guided / cors-origin / rep 2 ... in 107640 out 796 docs 0 code 1 score 5/5
+[59/96] research / cors-origin / rep 2 ... in 128910 out 1040 docs 0 code 1 score 5/5
+[60/96] complete / cors-origin / rep 2 ... in 152613 out 1208 docs 0 code 1 score 5/5
+[61/96] research-guided / level-up-flow / rep 2 ... in 312305 out 2917 docs 7 code 1 score 5/6
+[62/96] complete / level-up-flow / rep 2 ... in 75233 out 1903 docs 2 code 5 score 6/6
+[63/96] research / level-up-flow / rep 2 ... in 146322 out 2343 docs 4 code 7 score 5/6
+[64/96] complete-guided / level-up-flow / rep 2 ... in 429172 out 4705 docs 0 code 5 score 6/6
+[65/96] complete / combat-round / rep 3 ... in 152757 out 2183 docs 2 code 5 score 5/5
+[66/96] research / combat-round / rep 3 ... in 113056 out 2190 docs 6 code 3 score 5/5
+[67/96] research-guided / combat-round / rep 3 ... in 117163 out 1341 docs 6 code 0 score 5/5
+[68/96] complete-guided / combat-round / rep 3 ... in 203291 out 2272 docs 1 code 4 score 5/5
+[69/96] complete-guided / rest-endpoint-plan / rep 3 ... in 386271 out 4936 docs 1 code 9 score 6/6
+[70/96] research-guided / rest-endpoint-plan / rep 3 ... in 366790 out 3585 docs 12 code 0 score 6/6
+[71/96] research / rest-endpoint-plan / rep 3 ... in 608004 out 5807 docs 0 code 11 score 6/6
+[72/96] complete / rest-endpoint-plan / rep 3 ... in 275329 out 4631 docs 1 code 10 score 6/6
+[73/96] complete-guided / session-expiry / rep 3 ... in 199558 out 3035 docs 0 code 4 score 5/5
+[74/96] research / session-expiry / rep 3 ... in 388258 out 4363 docs 3 code 5 score 5/5
+[75/96] complete / session-expiry / rep 3 ... in 73012 out 1755 docs 1 code 3 score 5/5
+[76/96] research-guided / session-expiry / rep 3 ... in 338824 out 2535 docs 6 code 2 score 5/5
+[77/96] complete-guided / inventory-dialog / rep 3 ... in 167222 out 1876 docs 0 code 1 score 6/6
+[78/96] research / inventory-dialog / rep 3 ... in 75898 out 1451 docs 3 code 2 score 5/6
+[79/96] research-guided / inventory-dialog / rep 3 ... in 200228 out 1607 docs 4 code 0 score 5/6
+[80/96] complete / inventory-dialog / rep 3 ... in 65043 out 1206 docs 0 code 5 score 5/6
+[81/96] research / ai-fallback / rep 3 ... in 78651 out 1751 docs 3 code 2 score 4/5
+[82/96] research-guided / ai-fallback / rep 3 ... in 234931 out 1440 docs 3 code 1 score 4/5
+[83/96] complete / ai-fallback / rep 3 ... in 181110 out 2201 docs 1 code 1 score 4/5
+[84/96] complete-guided / ai-fallback / rep 3 ... in 88676 out 1002 docs 0 code 1 score 4/5
+[85/96] research / starting-gear / rep 3 ... in 234252 out 4267 docs 2 code 3 score 5/5
+[86/96] research-guided / starting-gear / rep 3 ... in 178773 out 1750 docs 4 code 0 score 5/5
+[87/96] complete / starting-gear / rep 3 ... in 105828 out 2067 docs 2 code 2 score 5/5
+[88/96] complete-guided / starting-gear / rep 3 ... in 342291 out 3418 docs 0 code 2 score 5/5
+[89/96] complete / cors-origin / rep 3 ... in 61501 out 1461 docs 1 code 3 score 5/5
+[90/96] complete-guided / cors-origin / rep 3 ... in 108795 out 1143 docs 0 code 1 score 5/5
+[91/96] research-guided / cors-origin / rep 3 ... in 164192 out 985 docs 3 code 1 score 5/5
+[92/96] research / cors-origin / rep 3 ... in 58607 out 1104 docs 1 code 1 score 5/5
+[93/96] complete / level-up-flow / rep 3 ... in 150486 out 2850 docs 0 code 5 score 5/6
+[94/96] research-guided / level-up-flow / rep 3 ... in 396246 out 3262 docs 5 code 4 score 5/6
+[95/96] research / level-up-flow / rep 3 ... in 299321 out 3208 docs 5 code 7 score 6/6
+[96/96] complete-guided / level-up-flow / rep 3 ... in 207013 out 2818 docs 0 code 5 score 5/6
+
+Done. Summarize with:
+  node scripts/analyze.mjs results/runs/full-1

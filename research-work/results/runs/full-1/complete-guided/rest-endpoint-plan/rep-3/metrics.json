@@ -1,0 +1,91 @@
+{
+  "inputTokens": 386271,
+  "outputTokens": 4936,
+  "cacheReadTokens": 354359,
+  "cacheWriteTokens": 31888,
+  "reasoningTokens": 660,
+  "modelRequests": 12,
+  "premiumRequests": 1,
+  "aiCredits": 19.99998,
+  "apiDurationMs": 51057,
+  "mainInputTokens": 386271,
+  "mainRequests": 12,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 34,
+  "toolCallsByName": {
+    "view": 28,
+    "grep": 6
+  },
+  "failedToolCalls": 2,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 2322
+    },
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 1651
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 1465
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 1180
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 1179
+    },
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1128
+    },
+    {
+      "path": "frontend/src/app/models/game.models.ts",
+      "kind": "code",
+      "tokens": 824
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 647
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "worker/migrations/0001_initial_schema.sql",
+      "kind": "code",
+      "tokens": 117
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 9,
+  "docTokensRead": 1651,
+  "codeTokensRead": 9427,
+  "otherToolTokens": 635,
+  "filesModified": [],
+  "answer": "I have enough context. Here's the full file list and planned changes.\n\n## Worker (backend)\n\n1. **`worker/src/types/index.ts`**\n   - Add a `RestBody` interface: `{ sessionId: string; characterId: string }`.\n   - Add a cost constant, e.g. `export const INN_REST_COST = 10; // gold per rest`.\n\n2. **`worker/src/routes/shop.ts`** (or a new `worker/src/routes/rest.ts`, preferred for clarity)\n   - New route, e.g. `POST /api/rest` (new file `rest.ts` with `restRoutes`), handler:\n     - Parse body, load character via `getCharacter`.\n     - Validate `character.gold >= INN_REST_COST` (400 if not).\n     - Validate character isn't already at full HP / not in combat (optional check against session's `inCombat`).\n     - Deduct gold, set `hp = max_hp`, call `updateCharacter(db, id, { gold: character.gold - INN_REST_COST, hp: character.max_hp })`.\n     - Return `{ success: true, updatedCharacter, cost: INN_REST_COST, narrative: '...' }`.\n\n3. **`worker/src/services/character.ts`**\n   - No change needed — `updateCharacter` already accepts `hp`/`gold` partials. (Reuse as-is.)\n\n4. **`worker/src/index.ts`**\n   - Import and mount the new route: `import { restRoutes } from './routes/rest.js';` and `app.route('/api/rest', restRoutes);`.\n\n5. **`worker/migrations/0001_initial_schema.sql`** (or a new migration file, e.g. `0002_add_inn.sql`)\n   - Only needed if you want an \"Inn\" entity in the `shops` table (e.g., `INSERT INTO shops (name, location) VALUES ('The Prancing Pony Inn', 'Town Square')`) so the rest action is tied to a specific shop/location id. Not required if resting is a flat global action.\n\n## Frontend (Angular)\n\n6. **`frontend/src/app/models/game.models.ts`**\n   - Add a `RestResponse` interface mirroring the worker response: `{ success: boolean; cost: number; narrative: string; updatedCharacter: Character }`.\n\n7. **`frontend/src/app/services/game-api.service.ts`**\n   - Add `restAtInn(sessionId: string, characterId: string): Observable<RestResponse>` calling `POST ${API_BASE}/api/rest`.\n\n8. **`frontend/src/app/components/game-console/game-console.component.ts`**\n   - Add a `restAtInn()` method: guard on `loading()`, call `api.restAtInn(...)`, on success call `charSvc.setCharacter(res.updatedCharacter)`, push a system/dm entry with the narrative and gold cost, handle insufficient-gold error.\n\n9. **`frontend/src/app/components/game-console/game-console.component.html`**\n   - Add a \"Rest at the Inn\" button (likely near suggested-actions/inventory button), bound to `restAtInn()`, possibly disabled when `charSvc.character()?.gold < cost` or `hp === max_hp`.\n\n10. **`frontend/src/app/services/character-state.service.ts`**\n    - No change required — `setCharacter` already updates `hp`/`gold`, and `hpPercent` computed signal will reflect full HP automatically.\n\nNo DB schema changes are strictly required if gold cost is a fixed constant; the `shops`/`shop_inventory` tables are only needed if the inn should be a discoverable location with variable pricing.",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

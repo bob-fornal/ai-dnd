@@ -1,0 +1,91 @@
+{
+  "inputTokens": 383474,
+  "outputTokens": 4980,
+  "cacheReadTokens": 352546,
+  "cacheWriteTokens": 30902,
+  "reasoningTokens": 1596,
+  "modelRequests": 13,
+  "premiumRequests": 1,
+  "aiCredits": 19.76162,
+  "apiDurationMs": 54812,
+  "mainInputTokens": 383474,
+  "mainRequests": 13,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 27,
+  "toolCallsByName": {
+    "view": 26,
+    "grep": 1
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 2322
+    },
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.ts",
+      "kind": "code",
+      "tokens": 1556
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 1465
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 1180
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 1179
+    },
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1128
+    },
+    {
+      "path": "frontend/src/app/models/game.models.ts",
+      "kind": "code",
+      "tokens": 824
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 647
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "worker/src/routes/levelup.ts",
+      "kind": "code",
+      "tokens": 561
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 10,
+  "docTokensRead": 0,
+  "codeTokensRead": 11427,
+  "otherToolTokens": 352,
+  "filesModified": [],
+  "answer": "## Rest at the Inn — Files to Change\n\n**Worker (backend)**\n\n1. **`worker/src/types/index.ts`** — Add `RestBody { sessionId: string; characterId: string }` interface (mirrors `LevelUpBody`/`ShopTransactionBody` pattern). Optionally add a constant, e.g. `INN_REST_COST = 10` (flat gold cost) or a formula based on `character.level`.\n\n2. **`worker/src/routes/rest.ts`** *(new file)* — `restRoutes = new Hono<{ Bindings: Env }>()` with `POST /` handler:\n   - Parse `RestBody`, load character via `getCharacter`.\n   - Compute cost (flat constant or `level * X`); if `character.gold < cost` return 400 `{ error: 'Not enough gold...' }`.\n   - If `character.hp === character.max_hp`, optionally short-circuit with a message (already at full HP).\n   - `updateCharacter(db, id, { hp: character.max_hp, gold: character.gold - cost })`.\n   - Insert an `adventure_log` row (actor `'system'`) like `levelup.ts` does, e.g. `\"${name} rests at the inn and recovers to full health.\"`.\n   - Return `{ success: true, updatedCharacter, cost }`.\n\n3. **`worker/src/index.ts`** — Import `restRoutes` and register `app.route('/api/rest', restRoutes);`.\n\n4. **`worker/src/services/character.ts`** *(optional)* — No new function strictly needed since `updateCharacter`/`getCharacter` already support `hp`/`gold`; only touch if you want a dedicated `restAtInn()` helper for testability.\n\nNo DB migration is required — `characters.hp`, `max_hp`, and `gold` columns already exist (`worker/migrations`, `worker/src/db/seed.sql` unchanged).\n\n**Angular frontend**\n\n5. **`frontend/src/app/models/game.models.ts`** — Add `RestResponse { success: boolean; updatedCharacter: Character; cost: number }` (mirrors `CombatResponse`/level-up response shapes).\n\n6. **`frontend/src/app/services/game-api.service.ts`** — Add `restAtInn(sessionId: string, characterId: string): Observable<RestResponse>` → `POST ${API_BASE}/api/rest`.\n\n7. **`frontend/src/app/components/game-console/game-console.component.ts`** — Add `restLoading = signal(false)` and method `restAtInn()`: call `api.restAtInn(...)`, on success `charSvc.setCharacter(res.updatedCharacter)`, `pushEntry('system', ...)` with cost/HP message; on error push error entry (gold shortfall message from backend).\n\n8. **`frontend/src/app/components/game-console/game-console.component.html`** — Add a \"Rest at the Inn\" button (near the inventory/level-up controls), bound to `restAtInn()`, disabled while `loading()`/`inCombat()` or when `character.gold < cost`.\n\n9. **`frontend/src/app/components/game-console/game-console.component.css`** — Minor styling for the new button if it doesn't match existing button classes.\n\nNo change needed to `character-state.service.ts` (its existing `setCharacter` already recomputes `hpPercent`).",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

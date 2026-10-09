@@ -1,0 +1,2 @@
+arm,task,rep,inputTokens,outputTokens,freshInputTokens,cacheReadTokens,cacheWriteTokens,mainInputTokens,mainRequests,subagentInputTokens,subagentRuns,toolset,modelRequests,aiCredits,toolCalls,failedToolCalls,docFilesRead,codeFilesRead,docTokensRead,codeTokensRead,readTokens,score,missing,filesModified,topFiles
+"research-v2","level-up-flow","rep-1",45660,871,9761,35899,9757,45660,2,0,0,"view",2,4.02903,1,0,1,0,649,0,649,1,"",0,"docs/flows/level-up.md(649)"

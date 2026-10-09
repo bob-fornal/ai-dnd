@@ -1,0 +1,71 @@
+{
+  "inputTokens": 67768,
+  "outputTokens": 1222,
+  "cacheReadTokens": 44829,
+  "cacheWriteTokens": 13919,
+  "reasoningTokens": 18,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 4.82339,
+  "apiDurationMs": 9270,
+  "mainInputTokens": 48415,
+  "mainRequests": 2,
+  "subagentInputTokens": 19353,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 11,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 2,
+    "grep_search": 3,
+    "read_file": 5
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.ts",
+      "kind": "code",
+      "tokens": 1597
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.html",
+      "kind": "code",
+      "tokens": 1279
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 534
+    },
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.md",
+      "kind": "doc",
+      "tokens": 523
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 456
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 4,
+  "docTokensRead": 523,
+  "codeTokensRead": 3866,
+  "otherToolTokens": 6336,
+  "filesModified": [],
+  "answer": "**Where it's opened:** `GameConsoleComponent.openInventory()` in `frontend/src/app/components/game-console/game-console.component.ts`, triggered by the \"Inventory\" button in `game-console.component.html`. It calls `this.dialog.open(InventoryComponent, { data, panelClass: 'inv-dialog-panel', maxHeight: '90vh' })`.\n\n**Data passed:** an `InventoryDialogData` object (`{ characterId: this.characterId, sessionId: this.sessionId }`), injected into `InventoryComponent` via Angular Material's `MAT_DIALOG_DATA` token.\n\n**API calls** (via `GameApiService`, defined in `inventory.component.ts`):\n- `getInventory(characterId)` – loads inventory on init\n- `equipItem(characterId, itemId, equipped)` – toggle equip/unequip\n- `dropItem(characterId, itemId)` – drop item, also reused to \"use\" a potion (healing is computed client-side, not persisted server-side — a known bug per `bugs.md` B-05)",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8333333333333334,
+    "passed": 5,
+    "total": 6,
+    "missing": [
+      "MatDialog"
+    ]
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "inputTokens": 152613,
+  "outputTokens": 1208,
+  "cacheReadTokens": 143068,
+  "cacheWriteTokens": 9531,
+  "reasoningTokens": 187,
+  "modelRequests": 7,
+  "premiumRequests": 1,
+  "aiCredits": 6.45491,
+  "apiDurationMs": 18336,
+  "mainInputTokens": 152613,
+  "mainRequests": 7,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "grep": 4,
+    "glob": 1,
+    "view": 1
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 565,
+  "otherToolTokens": 275,
+  "filesModified": [],
+  "answer": "**Allowed origins** (CORS config in `worker\\src\\index.ts`, the `cors({ origin: (origin) => ... })` callback passed to `app.use('*', cors({...}))`, lines ~21-32):\n\n- Exact match: `http://localhost:4200`\n- Any subdomain ending in `.pages.dev`\n- Any subdomain ending in `.workers.dev`\n\nAnything else returns `null` (rejected) — note the comment: Hono's array-based `origin` option only does exact string matches, so wildcards require this function form.\n\n**To add a new custom domain:** edit that `origin` callback in `worker\\src\\index.ts` and add another condition, e.g.:\n```ts\norigin === 'https://your-custom-domain.com' ||\n```\n(or `origin.endsWith('.your-custom-domain.com')` for subdomains) inside the `if (...)` check before `return origin;`.",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

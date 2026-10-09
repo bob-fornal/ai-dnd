@@ -1,0 +1,64 @@
+{
+  "inputTokens": 234931,
+  "outputTokens": 1440,
+  "cacheReadTokens": 214659,
+  "cacheWriteTokens": 20254,
+  "reasoningTokens": 96,
+  "modelRequests": 9,
+  "premiumRequests": 1,
+  "aiCredits": 10.80028,
+  "apiDurationMs": 22102,
+  "mainInputTokens": 234931,
+  "mainRequests": 9,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "glob": 2,
+    "view": 4,
+    "grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3638
+    },
+    {
+      "path": "AGENT.md",
+      "kind": "doc",
+      "tokens": 2322
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1197
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 633
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 4152,
+  "codeTokensRead": 3638,
+  "otherToolTokens": 46,
+  "filesModified": [],
+  "answer": "## Answer\n\nAll handled in `worker/src/services/ai-dm.ts`.\n\n**Models:**\n- Primary: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (JSON-object format, temp 0.85)\n- Fallback (only in `askDM`): `@cf/mistral/mistral-7b-instruct-v0.2-lora`\n\n**Flow (`askDM`):**\n1. Calls llama-3.3; on throw (or a `ReadableStream` streaming response), catches the error and retries with mistral-7b.\n2. If mistral also throws, returns `fallbackNarrative(playerAction)` directly — a hardcoded, generic `AIDMResponse` (static narrative text, no stat/dice changes, 4 canned `suggestedActions`, empty `diceRolls`).\n3. Whatever raw text is obtained goes to `parseAIResponse(rawText, playerAction)`.\n\n**`parseAIResponse`** guards invalid/non-JSON output:\n- Empty/non-string raw → `fallbackNarrative`.\n- Strips ```json fences, then if it doesn't start with `{`, regexes out the first `{…}` block; if none found, logs a warning and returns `fallbackNarrative`.\n- `JSON.parse` wrapped in try/catch — parse failure also returns `fallbackNarrative`.\n- On success, missing fields are defaulted (e.g. default narrative string, default `suggestedActions`, nulls for deltas).\n\nThe other AI functions (`generateQuest`, `generateBackstory`, `generateLevelUpNarrative`) only call llama-3.3, each with its own try/catch returning hardcoded fallback text/quest data on any failure (no mistral retry, no shared `parseAIResponse`).",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

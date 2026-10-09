@@ -1,0 +1,102 @@
+{
+  "inputTokens": 366790,
+  "outputTokens": 3585,
+  "cacheReadTokens": 342609,
+  "cacheWriteTokens": 24157,
+  "reasoningTokens": 598,
+  "modelRequests": 12,
+  "premiumRequests": 1,
+  "aiCredits": 16.48123,
+  "apiDurationMs": 42073,
+  "mainInputTokens": 366790,
+  "mainRequests": 12,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 20,
+  "toolCallsByName": {
+    "view": 13,
+    "glob": 2,
+    "grep": 5
+  },
+  "failedToolCalls": 2,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENT.md",
+      "kind": "doc",
+      "tokens": 2322
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1197
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 789
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 622
+    },
+    {
+      "path": "worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 546
+    },
+    {
+      "path": "worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 538
+    },
+    {
+      "path": "worker/migrations/0001_initial_schema.md",
+      "kind": "doc",
+      "tokens": 501
+    },
+    {
+      "path": "worker/src/db/seed.md",
+      "kind": "doc",
+      "tokens": 487
+    },
+    {
+      "path": "frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 439
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 428
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 385
+    },
+    {
+      "path": "worker/src/routes/shop.md",
+      "kind": "doc",
+      "tokens": 377
+    }
+  ],
+  "docFilesRead": 12,
+  "codeFilesRead": 0,
+  "docTokensRead": 8631,
+  "codeTokensRead": 0,
+  "otherToolTokens": 82,
+  "filesModified": [],
+  "answer": "I have enough context (PRD §4.4 section heading differs; shop.md/character.md cover the pattern sufficiently). Here's the file list:\n\n## Worker (new/changed files)\n\n| File | Change |\n|---|---|\n| **`worker/src/routes/shop.ts`** (or new `inn.ts`) | Add `POST /api/inn/rest` (or extend `shop.ts` with an `action: 'rest'` case): reads `characterId`, computes a flat/per-level gold cost, checks `character.gold >= cost`, sets `hp = max_hp`, decrements `gold`, returns `{ success, cost, updatedGold, character }` |\n| **`worker/src/services/character.ts`** | No new function strictly needed — reuse `updateCharacter(db, id, { hp, gold })`. Possibly add a small `restAtInn(db, character, cost)` helper for consistency with other services |\n| **`worker/src/types/index.ts`** | Add `InnRestBody` (`sessionId`, `characterId`, `shopId?`) and maybe an `INN_REST_COST` constant (flat gold cost or `costPerHp`) |\n| **`worker/src/index.ts`** | Mount the new route if a separate `inn.ts` router is created (`app.route('/api/inn', innRoutes)`) |\n| **`worker/src/db/seed.sql`** | Optional: mark one existing shop (e.g. \"Rusty Flagon Store\", shop id 2) as the inn, or add an `is_inn`/`rest_cost` column/row — only if cost is data-driven rather than a constant |\n| **`worker/migrations/0002_*.sql`** (new) | Only if adding an `is_inn`/`rest_cost` column to `shops` — otherwise skip |\n\n## Frontend (new/changed files)\n\n| File | Change |\n|---|---|\n| **`frontend/src/app/services/game-api.service.ts`** | Add `restAtInn(sessionId, characterId)` method calling `POST /api/inn/rest` |\n| **`frontend/src/app/models/game.models.ts`** | Add `InnRestResponse` interface mirroring the Worker response |\n| **`frontend/src/app/services/character-state.service.ts`** | No new members required — call `setCharacter(updatedCharacter)` with the server response after the rest call |\n| **`frontend/src/app/components/game-console/game-console.component.ts/.html`** | Add a \"Rest at the Inn\" button/action, a handler calling `gameApi.restAtInn(...)`, then `characterState.setCharacter(...)`, show gold cost / insufficient-gold message |\n| **`frontend/src/app/components/character-sheet/character-sheet.component.ts/.html`** (optional) | Could surface a rest button here instead/also, since it already shows HP/gold |\n\n## Docs (per AGENT.md rules)\nCreate/update `.md` beside each changed code file (new `routes/inn.md` or edit `routes/shop.md`), update `code.md` index, update `PRD.md` §4.4 economy spec, and add the new endpoint to `game-api.service.md`'s connections table.",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "inputTokens": 190561,
+  "outputTokens": 2270,
+  "cacheReadTokens": 160428,
+  "cacheWriteTokens": 16387,
+  "reasoningTokens": 76,
+  "modelRequests": 9,
+  "premiumRequests": 1,
+  "aiCredits": 8.52831,
+  "apiDurationMs": 21337,
+  "mainInputTokens": 162457,
+  "mainRequests": 6,
+  "subagentInputTokens": 28104,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 21,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "read_file": 3,
+    "file_search": 3,
+    "grep_search": 10,
+    "grep": 2,
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 4193
+    },
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 2675
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 828
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 3503,
+  "codeTokensRead": 4193,
+  "otherToolTokens": 7534,
+  "filesModified": [],
+  "answer": "Now I have the full picture.\n\n**File:** `worker/src/services/ai-dm.ts`\n\n**Models used:**\n- Primary: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`\n- Fallback: `@cf/mistral/mistral-7b-instruct-v0.2-lora` (used only in `askDM`)\n\n**Flow (`askDM` function):**\n1. Calls llama-3.3-70b; on error (or a `ReadableStream` streaming response, which it explicitly rejects), logs and catches the error, then retries with mistral-7b.\n2. If mistral also throws, returns `fallbackNarrative(playerAction)` directly — a hardcoded `AIDMResponse` with a generic narrative, no stat changes, and default suggested actions.\n3. Whatever raw text is obtained is passed to `parseAIResponse(raw, playerAction)`, which:\n   - Returns `fallbackNarrative()` if `raw` is empty/non-string.\n   - Strips markdown code fences, then regex-extracts the first `{...}` block if the text isn't pure JSON.\n   - Returns `fallbackNarrative()` if no `{...}` JSON object can be found.\n   - Wraps `JSON.parse(cleaned)` in try/catch, returning `fallbackNarrative()` on parse failure.\n   - On success, still defensively fills in missing/invalid fields with safe defaults (e.g., `null` deltas, empty arrays, default `suggestedActions` like `['Look around', 'Search the area', ...]`).\n\nOther functions (`generateQuest`, `generateBackstory`, `generateLevelUpNarrative`) each wrap their single llama call in try/catch and return their own hardcoded fallback content (e.g., quest \"Blood on the Road\") on any error, including JSON parse failures.",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

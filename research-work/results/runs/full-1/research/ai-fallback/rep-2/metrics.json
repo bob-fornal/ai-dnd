@@ -1,0 +1,76 @@
+{
+  "inputTokens": 92608,
+  "outputTokens": 1597,
+  "cacheReadTokens": 61267,
+  "cacheWriteTokens": 13851,
+  "reasoningTokens": 32,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 4.78565,
+  "apiDurationMs": 11839,
+  "mainInputTokens": 48360,
+  "mainRequests": 2,
+  "subagentInputTokens": 44248,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 25,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 9,
+    "grep_search": 9,
+    "read_file": 6
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "AGENT.md",
+      "kind": "doc",
+      "tokens": 2292
+    },
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1524
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1224
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 1141
+    },
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 794
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 666
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 2,
+  "docTokensRead": 4976,
+  "codeTokensRead": 2665,
+  "otherToolTokens": 9789,
+  "filesModified": [],
+  "answer": "In `worker/src/services/ai-dm.ts`:\n\n- **`askDM()`** calls primary model `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; if it throws, it catches the error and retries with fallback model `@cf/mistral/mistral-7b-instruct-v0.2-lora`. If that also fails, it returns `fallbackNarrative(playerAction)`.\n- **`parseAIResponse(raw, playerAction)`** handles malformed JSON: strips markdown fences, regex-extracts the first `{...}` block if the text isn't pure JSON, and wraps `JSON.parse` in try/catch — any failure (empty string, no JSON found, parse error) returns `fallbackNarrative(playerAction)`.\n- **`fallbackNarrative(playerAction)`** is the shared graceful-degradation function producing a generic narrative + empty/neutral `gameStateChanges`, default `suggestedActions`, and empty `diceRolls`, so the game continues even when AI is unavailable or unparseable.",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

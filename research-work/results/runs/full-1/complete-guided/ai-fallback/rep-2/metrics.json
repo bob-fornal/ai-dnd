@@ -1,0 +1,48 @@
+{
+  "inputTokens": 90800,
+  "outputTokens": 1055,
+  "cacheReadTokens": 77074,
+  "cacheWriteTokens": 13718,
+  "reasoningTokens": 14,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 6.02758,
+  "apiDurationMs": 13270,
+  "mainInputTokens": 90800,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "view": 2,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3638
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 3638,
+  "otherToolTokens": 187,
+  "filesModified": [],
+  "answer": "I've reviewed the resilience logic in `worker/src/services/ai-dm.ts`.\n\n**Flow in `askDM()`:**\n1. Primary call uses model **`@cf/meta/llama-3.3-70b-instruct-fp8-fast`** (with `response_format: { type: 'json_object' }`). If it throws or returns a `ReadableStream`, caught in a `try/catch`.\n2. On failure, falls back to model **`@cf/mistral/mistral-7b-instruct-v0.2-lora`** in a nested `try/catch`.\n3. If *that* also throws, `askDM` immediately returns `fallbackNarrative(playerAction)` — a hardcoded generic narrative response (no AI call at all).\n4. Whatever raw text was obtained (from either model) is passed to `parseAIResponse(raw, playerAction)`.\n\n**`parseAIResponse()`** validates/repairs output:\n- Returns `fallbackNarrative()` if `raw` isn't a non-empty string.\n- Strips markdown code fences (```` ```json ... ``` ````).\n- If text doesn't start with `{`, regex-extracts the first `{...}` block; if none found, logs a warning and returns `fallbackNarrative()`.\n- Wraps `JSON.parse(cleaned)` in `try/catch` — on parse error, returns `fallbackNarrative()`.\n- On success, defensively coerces each field (`narrative`, `gameStateChanges.*`, `suggestedActions`, `diceRolls`) with `??`/`Array.isArray` checks and defaults, so partially-malformed JSON still yields a valid `AIDMResponse`.\n\n**`fallbackNarrative(playerAction)`** is the final safety net: returns a static, in-character `AIDMResponse` (generic narrative text + empty/null game-state changes + 4 default suggested actions) so the game loop never breaks even if both AI models fail entirely.\n\nSimilar but simpler try/catch-with-static-fallback patterns exist in `generateQuest`, `generateBackstory`, and `generateLevelUpNarrative` in the same file, each falling back to hardcoded content on any error.",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

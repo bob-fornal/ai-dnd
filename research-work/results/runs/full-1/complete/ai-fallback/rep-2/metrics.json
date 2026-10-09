@@ -1,0 +1,61 @@
+{
+  "inputTokens": 73043,
+  "outputTokens": 1591,
+  "cacheReadTokens": 48710,
+  "cacheWriteTokens": 12715,
+  "reasoningTokens": 30,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 4.75855,
+  "apiDurationMs": 12788,
+  "mainInputTokens": 47219,
+  "mainRequests": 2,
+  "subagentInputTokens": 25824,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 17,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "read_file": 3,
+    "file_search": 5,
+    "grep_search": 8
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 2675
+    },
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1520
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 828
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 3503,
+  "codeTokensRead": 1520,
+  "otherToolTokens": 6363,
+  "filesModified": [],
+  "answer": "## How failures are handled — `worker/src/services/ai-dm.ts`\n\n**Models involved:**\n- Primary: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (forces `response_format: {type:'json_object'}`)\n- Fallback: `@cf/mistral/mistral-7b-instruct-v0.2-lora`\n\n**Flow in `askDM()`:**\n1. Calls Llama 3.3; on exception, catches it and retries with Mistral 7B.\n2. If Mistral also throws, returns `fallbackNarrative(playerAction)` immediately (no parsing attempted).\n3. Otherwise, raw text (from either model) is passed to `parseAIResponse(raw, playerAction)`.\n\n**`parseAIResponse()`** — defends against malformed JSON:\n- Empty/non-string input → `fallbackNarrative()`.\n- Strips ```` ```json ```` fences; if text doesn't start with `{`, regex-extracts the first `{...}` block; if none found, warns via `console.warn` and returns `fallbackNarrative()`.\n- Wraps `JSON.parse` in try/catch — any parse error → `fallbackNarrative()`.\n- Even on success, individually defaults missing/invalid fields (e.g. `narrative` falls back to a stock line, `suggestedActions` defaults to `['Look around', 'Search the area', 'Listen carefully', 'Move on']`).\n\n**`fallbackNarrative(playerAction)`** — returns a hard-coded `AIDMResponse` with generic atmospheric narrative text and neutral `gameStateChanges` (all deltas `null`, no items, no combat flags).\n\nSimilar per-function try/catch + hard-coded fallback patterns exist in `generateQuest()` (\"Blood on the Road\" quest), `generateBackstory()`, and `generateLevelUpNarrative()`.",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

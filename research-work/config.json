@@ -1,0 +1,72 @@
+{
+  "$comment": "Settings for the documentation token-usage experiment. Paths are relative to research-work/.",
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "repeats": 3,
+  "cooldownSeconds": 5,
+  "timeoutSeconds": 600,
+  "copilotLoader": null,
+  "extraCopilotArgs": [
+    "--allow-all-tools",
+    "--deny-tool=write",
+    "--deny-tool=shell",
+    "--disable-builtin-mcps",
+    "--no-custom-instructions",
+    "--no-ask-user",
+    "--no-auto-update",
+    "--no-color"
+  ],
+  "promptSuffix": "This is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "$aliasesComment": "Run folders created before the v1 rename used the old arm IDs; analyze.mjs maps them with armAliases.",
+  "armAliases": {
+    "research": "research-v1",
+    "research-guided": "research-v1-guided"
+  },
+  "arms": [
+    {
+      "id": "complete",
+      "dir": "../complete",
+      "description": "Baseline: original document-type docs (PRD.md, SETUP.md, docs/), no hint.",
+      "preamble": "",
+      "docsVersion": "baseline"
+    },
+    {
+      "id": "complete-guided",
+      "dir": "../complete",
+      "description": "Baseline told to use its docs.",
+      "preamble": "Before answering, orient yourself with the project documentation in this folder (PRD.md, SETUP.md, docs/), then read only the code you need.",
+      "docsVersion": "baseline"
+    },
+    {
+      "id": "research-v1",
+      "dir": "../research-documentation-v1",
+      "description": "v1 component docs beside the code (code.md index, AGENTS.md authoring rules), no hint.",
+      "preamble": "",
+      "docsVersion": "v1"
+    },
+    {
+      "id": "research-v1-guided",
+      "dir": "../research-documentation-v1",
+      "description": "v1 component docs, told to follow AGENTS.md's context-gathering steps.",
+      "preamble": "Before answering, read AGENTS.md and follow its 'How to gather context for a task' steps: start from code.md, then the relevant component docs, then only the code you need.",
+      "docsVersion": "v1"
+    },
+    {
+      "id": "research-v2",
+      "dir": "../research-documentation-v2",
+      "description": "v2 docs: AGENTS.md auto-loaded (routing table, batch reads), flows, symbol index, anchors. No preamble.",
+      "preamble": "",
+      "removeArgs": [
+        "--no-custom-instructions"
+      ],
+      "docsVersion": "v2"
+    },
+    {
+      "id": "research-v2-noauto",
+      "dir": "../research-documentation-v2",
+      "description": "v2 docs with auto-load disabled; the prompt points at AGENTS.md instead. Separates the auto-load effect from the content effect.",
+      "preamble": "Before answering, read AGENTS.md and follow it.",
+      "docsVersion": "v2"
+    }
+  ]
+}

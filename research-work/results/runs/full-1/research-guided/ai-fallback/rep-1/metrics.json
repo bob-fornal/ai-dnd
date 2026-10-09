@@ -1,0 +1,63 @@
+{
+  "inputTokens": 151120,
+  "outputTokens": 1279,
+  "cacheReadTokens": 131086,
+  "cacheWriteTokens": 20022,
+  "reasoningTokens": 54,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 8.90862,
+  "apiDurationMs": 16302,
+  "mainInputTokens": 151120,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 7,
+  "toolCallsByName": {
+    "view": 5,
+    "glob": 2
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3638
+    },
+    {
+      "path": "AGENT.md",
+      "kind": "doc",
+      "tokens": 2322
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1197
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 633
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 4152,
+  "codeTokensRead": 3638,
+  "otherToolTokens": 5,
+  "filesModified": [],
+  "answer": "I have everything needed from `worker/src/services/ai-dm.ts` (and its doc).\n\n## Failure handling in the AI Dungeon Master (`worker/src/services/ai-dm.ts`)\n\n**Main DM turn — `askDM()`:**\n1. Calls primary model `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. If it throws (or returns a `ReadableStream`), catches the error and retries with fallback model `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n2. If the mistral call also throws, `askDM` returns `fallbackNarrative(playerAction)` directly — a hardcoded `AIDMResponse` with generic narrative text, no stat deltas, and default suggested actions.\n3. Whatever raw text is obtained (from either model) is passed to `parseAIResponse(rawText, playerAction)`.\n\n**Invalid/non-JSON output — `parseAIResponse()`:**\n- Returns `fallbackNarrative()` if `raw` is empty/non-string.\n- Strips markdown code fences, then extracts the first `{...}` block if the text doesn't start with `{`; if no JSON object can be found, returns `fallbackNarrative()`.\n- Wraps `JSON.parse(cleaned)` in try/catch — on parse failure, returns `fallbackNarrative()`.\n- On success, still defaults every missing/invalid field individually (e.g., `hpDelta ?? null`, `suggestedActions` falls back to `['Look around', 'Search the area', 'Listen carefully', 'Move on']`, arrays capped at 4 `suggestedActions` / 8 `diceRolls`).\n\nOther AI functions (`generateQuest`, `generateBackstory`, `generateLevelUpNarrative`) each wrap their single llama-3.3 call in try/catch and return their own hardcoded fallback text/quest on any error — they don't use `parseAIResponse`/`fallbackNarrative`.",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

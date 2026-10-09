@@ -1,0 +1,136 @@
+{
+  "inputTokens": 229396,
+  "outputTokens": 5315,
+  "cacheReadTokens": 188290,
+  "cacheWriteTokens": 21467,
+  "reasoningTokens": 1708,
+  "modelRequests": 10,
+  "premiumRequests": 1,
+  "aiCredits": 12.82425,
+  "apiDurationMs": 51193,
+  "mainInputTokens": 192616,
+  "mainRequests": 7,
+  "subagentInputTokens": 36780,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 41,
+  "toolCallsByName": {
+    "view": 8,
+    "search_code_subagent": 1,
+    "read_file": 17,
+    "file_search": 12,
+    "glob": 2,
+    "powershell": 1
+  },
+  "failedToolCalls": 3,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 2679
+    },
+    {
+      "path": "AGENT.md",
+      "kind": "doc",
+      "tokens": 2292
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 1620
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 1281
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1224
+    },
+    {
+      "path": "worker/migrations/0001_initial_schema.sql",
+      "kind": "code",
+      "tokens": 1062
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 932
+    },
+    {
+      "path": "worker/src/services/session.md",
+      "kind": "doc",
+      "tokens": 915
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 894
+    },
+    {
+      "path": "worker/src/routes/shop.md",
+      "kind": "doc",
+      "tokens": 786
+    },
+    {
+      "path": "worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 580
+    },
+    {
+      "path": "worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 572
+    },
+    {
+      "path": "worker/migrations/0001_initial_schema.md",
+      "kind": "doc",
+      "tokens": 537
+    },
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.md",
+      "kind": "doc",
+      "tokens": 523
+    },
+    {
+      "path": "worker/src/db/seed.md",
+      "kind": "doc",
+      "tokens": 517
+    },
+    {
+      "path": "worker/src/routes/action.md",
+      "kind": "doc",
+      "tokens": 503
+    },
+    {
+      "path": "frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 452
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 385
+    }
+  ],
+  "docFilesRead": 17,
+  "codeFilesRead": 1,
+  "docTokensRead": 16692,
+  "codeTokensRead": 1062,
+  "otherToolTokens": 4929,
+  "filesModified": [],
+  "answer": "## Rest at the Inn — files to change\n\n**Worker (`worker/src/`)**\n\n1. **`types/index.ts`** — add `RestBody { sessionId: string; characterId: string }` and a constant `INN_REST_COST` (e.g. `10`).\n2. **`services/character.ts`** — add `restAtInn(db, character, cost)`: checks `character.gold >= cost`, then calls `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })`.\n3. **`routes/rest.ts`** (new file) — `POST /api/rest/inn` handler: loads character via `getCharacter`, validates gold, calls `restAtInn`, appends an `adventure_log` row (\"rested at the inn\"), returns `{ success, updatedCharacter }`; 400 if gold insufficient, 404 if character missing.\n4. **`index.ts`** — mount the new router: `app.route('/api/rest', restRoutes)`.\n5. *(optional)* **`migrations/000X_*.sql`** — only needed if you want a configurable per-inn cost column instead of a hardcoded constant (e.g. add `rest_cost` to `shops`).\n\n**Angular frontend (`frontend/src/app/`)**\n\n6. **`models/game.models.ts`** — mirror `INN_REST_COST` and add `RestResponse` interface (`{ success, updatedCharacter }`).\n7. **`services/game-api.service.ts`** — add `restAtInn(sessionId, characterId)` → `POST /api/rest/inn`.\n8. **`components/game-console/game-console.component.ts`** — add `restAtInn()` method: call the service, then `characterState.setCharacter(updatedCharacter)`; disable when `inCombat()` or `character().gold < INN_REST_COST` or HP already full.\n9. **`components/game-console/game-console.component.html`** — add a \"Rest at the Inn (−10 gold)\" button, likely near the character sidebar/location area, bound to the new method and disabled state.\n10. *(optional)* **`components/game-console/game-console.component.spec.ts`** — add a test for the new button/method, matching existing coverage conventions.\n\nNo change needed to `character-state.service.ts` (existing `setCharacter` already applies the server's authoritative `hp`/`gold`) or the DB schema (`hp`, `max_hp`, `gold` columns already exist on `characters`).",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

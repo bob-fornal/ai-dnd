@@ -1,0 +1,64 @@
+{
+  "inputTokens": 73012,
+  "outputTokens": 1755,
+  "cacheReadTokens": 48223,
+  "cacheWriteTokens": 13373,
+  "reasoningTokens": 35,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 5.04331,
+  "apiDurationMs": 13770,
+  "mainInputTokens": 47890,
+  "mainRequests": 2,
+  "subagentInputTokens": 25122,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 17,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 5,
+    "grep_search": 7,
+    "read_file": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 2675
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 911
+    },
+    {
+      "path": "worker/src/services/session.ts",
+      "kind": "code",
+      "tokens": 741
+    },
+    {
+      "path": "worker/src/routes/session.ts",
+      "kind": "code",
+      "tokens": 196
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 3,
+  "docTokensRead": 2675,
+  "codeTokensRead": 1848,
+  "otherToolTokens": 7248,
+  "filesModified": [],
+  "answer": "## What happens when the KV session expires\n\n**KV TTL:** `worker/src/services/session.ts` — `saveSession()` writes with `expirationTtl: SESSION_TTL_SECONDS` (7 days). After that, `kv.get` returns `null`.\n\n**Frontend resume path:** `frontend/src/app/components/game-console/game-console.component.ts`, in `ngOnInit`, calls `this.api.getSession(this.sessionId)` → `GET /api/session/:id`.\n\n**Worker route `worker/src/routes/session.ts` (`sessionRoutes.get('/:id')`):** calls `loadSession(c.env.SESSION_KV, id)`. If expired/null, it does **not** rebuild — it returns `404 { error: 'Session not found or expired' }`. The frontend's `error:` callback then just pushes a system message `⚠ Could not load session. Is the Worker running?` and never recovers the session — **resume via this specific route fails**.\n\n**However, the action/combat/quest/levelup routes are more resilient:** `worker/src/routes/action.ts`, `combat.ts`, `quest.ts`, `levelup.ts` all do:\n```ts\nlet session = await loadSession(c.env.SESSION_KV, sessionId);\nif (!session) session = await rebuildSession(c.env.DB, characterId, sessionId);\n```\n`rebuildSession()` (in `session.ts`) reconstructs a usable `SessionData` from the D1 `adventure_log` table (last 20 turns), though with `location: 'Unknown — session rebuilt from log'` and `activeQuestId: null`.\n\n**Conclusion:** The initial resume call (`GET /api/session/:id`) hard-fails on expiry since it has no fallback, showing a generic error to the player. But if the player proceeds to take an action anyway (e.g., `POST /api/action`), the Worker transparently rebuilds the session from D1, so gameplay **can** continue — just with degraded context (unknown location, lost active quest) and after an initial confusing error on load.",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

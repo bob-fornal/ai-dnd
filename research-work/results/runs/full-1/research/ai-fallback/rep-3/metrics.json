@@ -1,0 +1,71 @@
+{
+  "inputTokens": 78651,
+  "outputTokens": 1751,
+  "cacheReadTokens": 49133,
+  "cacheWriteTokens": 12417,
+  "reasoningTokens": 31,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 4.64921,
+  "apiDurationMs": 13265,
+  "mainInputTokens": 46929,
+  "mainRequests": 2,
+  "subagentInputTokens": 31722,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 21,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 7,
+    "grep_search": 8,
+    "read_file": 5
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3008
+    },
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 2679
+    },
+    {
+      "path": "AGENT.md",
+      "kind": "doc",
+      "tokens": 2292
+    },
+    {
+      "path": "worker/src/routes/action.ts",
+      "kind": "code",
+      "tokens": 1103
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 932
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 2,
+  "docTokensRead": 5903,
+  "codeTokensRead": 4111,
+  "otherToolTokens": 6634,
+  "filesModified": [],
+  "answer": "All logic lives in `worker/src/services/ai-dm.ts`.\n\n**Models:**\n- Primary: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`\n- Fallback (on primary failure): `@cf/mistral/mistral-7b-instruct-v0.2-lora`\n\n**Flow (`askDM`):**\n1. Calls Llama via `ai.run(...)` inside a `try/catch`. Throws if the result is a `ReadableStream` (unexpected streaming).\n2. On any error, logs it and retries with Mistral in a nested `try/catch`.\n3. If Mistral also throws, returns `fallbackNarrative(playerAction)` directly — no exception propagates to the caller.\n4. Otherwise, whichever model's raw text succeeded is passed to `parseAIResponse(rawText, playerAction)`.\n\n**`parseAIResponse`** handles malformed/non-JSON output:\n- Returns `fallbackNarrative(playerAction)` if `raw` is empty or not a string.\n- Strips markdown ```` ```json ```` fences via regex.\n- If the cleaned text doesn't start with `{`, extracts the first `{...}` block via regex; if none found, logs a warning and returns `fallbackNarrative(playerAction)`.\n- Wraps `JSON.parse(cleaned)` in a `try/catch`; implicitly falls back on parse errors too.\n\nSo both a model-call failure (after exhausting Llama → Mistral) and an invalid/unparseable JSON response funnel into the same safety net: `fallbackNarrative(playerAction)`, ensuring the player always gets some in-character narrative rather than an error.",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "inputTokens": 200228,
+  "outputTokens": 1607,
+  "cacheReadTokens": 183797,
+  "cacheWriteTokens": 16415,
+  "reasoningTokens": 127,
+  "modelRequests": 8,
+  "premiumRequests": 1,
+  "aiCredits": 9.38989,
+  "apiDurationMs": 20923,
+  "mainInputTokens": 200228,
+  "mainRequests": 8,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 11,
+  "toolCallsByName": {
+    "view": 5,
+    "glob": 4,
+    "grep": 2
+  },
+  "failedToolCalls": 3,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENT.md",
+      "kind": "doc",
+      "tokens": 2322
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1197
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 789
+    },
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.md",
+      "kind": "doc",
+      "tokens": 483
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 0,
+  "docTokensRead": 4791,
+  "codeTokensRead": 0,
+  "otherToolTokens": 298,
+  "filesModified": [],
+  "answer": "**Dialog opens in:** `frontend/src/app/components/game-console/game-console.component.ts`, method `openInventory()` (line 237), via `this.dialog.open(InventoryComponent, { data: dialogData, panelClass: 'inv-dialog-panel', maxHeight: '90vh' })`.\n\n**Data passed:** an `InventoryDialogData` object — `{ characterId: this.characterId, sessionId: this.sessionId }` — injected into `InventoryComponent` via `MAT_DIALOG_DATA`.\n\n**API calls the dialog can make** (via `game-api.service.ts`, per `inventory.component.md`):\n- `getInventory` — loads items on open\n- `equipItem` — PATCH equip/unequip for weapon or armor\n- `dropItem` — DELETE one unit, or \"use\" a potion (consumable decrement)\n\nNote: healing from potions is computed client-side and never persisted (bugs.md B-05), and the dialog doesn't render centered (bugs.md B-14).",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8333333333333334,
+    "passed": 5,
+    "total": 6,
+    "missing": [
+      "MatDialog"
+    ]
+  }
+}

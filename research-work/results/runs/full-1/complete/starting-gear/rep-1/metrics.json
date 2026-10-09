@@ -1,0 +1,48 @@
+{
+  "inputTokens": 108923,
+  "outputTokens": 690,
+  "cacheReadTokens": 98359,
+  "cacheWriteTokens": 10554,
+  "reasoningTokens": 64,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 5.29768,
+  "apiDurationMs": 10606,
+  "mainInputTokens": 108923,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "grep": 3,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 1465
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 1465,
+  "otherToolTokens": 149,
+  "filesModified": [],
+  "answer": "A newly created **Fighter** starts with 4 items (ids `[2, 15, 17, 23]`, per the comment): **Longsword, Shield, Potion, Rations**.\n\nDefined in `worker\\src\\services\\character.ts`:\n- `CLASS_STARTING_ITEMS` map (Fighter entry, ~line 68)\n- Granted via `grantStartingEquipment(db, characterId, cls)`, which inserts each item into `character_inventory` (quantity 1, equipped 0)\n- Called from `createCharacter(...)` right after the character row is inserted",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "seed.sql"
+    ]
+  }
+}

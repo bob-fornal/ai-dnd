@@ -1,0 +1,59 @@
+{
+  "inputTokens": 223759,
+  "outputTokens": 2549,
+  "cacheReadTokens": 196956,
+  "cacheWriteTokens": 15723,
+  "reasoningTokens": 122,
+  "modelRequests": 11,
+  "premiumRequests": 1,
+  "aiCredits": 9.42119,
+  "apiDurationMs": 24855,
+  "mainInputTokens": 203451,
+  "mainRequests": 8,
+  "subagentInputTokens": 20308,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 24,
+  "toolCallsByName": {
+    "glob": 3,
+    "search_code_subagent": 1,
+    "file_search": 6,
+    "grep_search": 8,
+    "read_file": 2,
+    "grep": 2,
+    "view": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 5433
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 1209
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 2,
+  "docTokensRead": 0,
+  "codeTokensRead": 6642,
+  "otherToolTokens": 5823,
+  "filesModified": [],
+  "answer": "Confirmed. Here's the answer:\n\n**File:** `worker\\src\\services\\ai-dm.ts`\n\n**Models:** Primary `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, fallback `@cf/mistral/mistral-7b-instruct-v0.2-lora` (both via Cloudflare Workers AI).\n\n**Flow (function `askDM`):**\n1. Calls llama-3.3-70b with `response_format: { type: 'json_object' }`. If the call throws (or response is a `ReadableStream`), it's caught, logged (`console.error('[askDM] llama failed, trying mistral:', err)`), and it retries once with mistral-7b.\n2. If mistral also throws, it's caught and `fallbackNarrative(playerAction)` is returned immediately — no further AI calls.\n3. Otherwise the raw text (from either model) is passed to `parseAIResponse(raw, playerAction)`.\n\n**`parseAIResponse`:**\n- Returns `fallbackNarrative` if `raw` is empty/non-string.\n- Strips markdown fences, then if text doesn't start with `{`, regex-extracts the first `{...}` block; if none found, warns (`console.warn('[parseAIResponse] no JSON object found...')`) and returns `fallbackNarrative`.\n- Wraps `JSON.parse` in try/catch; on parse error (invalid JSON) returns `fallbackNarrative(playerAction)`.\n- On success, each field is defensively defaulted (e.g. missing `suggestedActions` → `['Look around', 'Search the area', 'Listen carefully', 'Move on']`).\n\n**`fallbackNarrative`** returns a hardcoded generic `AIDMResponse` (static narrative text built from `playerAction`, null game-state deltas, default suggested actions, empty dice rolls) so the game never crashes on AI failure.\n\nThe same try/catch-with-static-fallback pattern (no multi-model retry) is reused in `generateQuest`, `generateBackstory`, and `generateLevelUpNarrative` in the same file.",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

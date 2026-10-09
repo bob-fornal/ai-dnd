@@ -1,0 +1,39 @@
+{
+  "inputTokens": 87518,
+  "outputTokens": 1234,
+  "cacheReadTokens": 77417,
+  "cacheWriteTokens": 10093,
+  "reasoningTokens": 78,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 5.30719,
+  "apiDurationMs": 12435,
+  "mainInputTokens": 87518,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "grep": 5
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [],
+  "docFilesRead": 0,
+  "codeFilesRead": 0,
+  "docTokensRead": 0,
+  "codeTokensRead": 0,
+  "otherToolTokens": 958,
+  "filesModified": [],
+  "answer": "Allowed origins are controlled by the `cors()` middleware in `worker/src/index.ts` (lines 19–31). It's a function-based `origin` check (needed because Hono's array matching doesn't support wildcards) that allows:\n\n- `http://localhost:4200` (exact match)\n- any `*.pages.dev` subdomain\n- any `*.workers.dev` subdomain\n\nTo add a new custom domain, edit the `origin` callback in `worker/src/index.ts` (~line 24), adding another condition, e.g.:\n\n```ts\norigin === 'https://your-custom-domain.com' ||\n```\n\n(or an `.endsWith('.your-domain.com')` check for subdomains), inside the `if (...)` block before `return origin;`. This is documented in `docs/DEPLOYMENT_NOTES.md` §4 \"CORS\".",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

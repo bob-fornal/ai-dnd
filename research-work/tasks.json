@@ -1,0 +1,144 @@
+{
+  "$comment": "Read-only questions answerable from either folder. 'expect' is a list of keyword groups; a group passes when the answer contains ANY of its alternatives (case-insensitive). Score = passed groups / total groups.",
+  "tasks": [
+    {
+      "id": "combat-round",
+      "area": "worker",
+      "prompt": "When the player chooses Attack during combat, how is the round resolved? Name the files and functions involved, where the dice are rolled, and what the AI is (and is not) responsible for.",
+      "expect": [
+        ["resolveCombatRound"],
+        ["attackRoll"],
+        ["dice.ts"],
+        ["askDM"],
+        ["contextForDM", "narrat"]
+      ]
+    },
+    {
+      "id": "rest-endpoint-plan",
+      "area": "full-stack",
+      "prompt": "I want to add a 'rest at the inn' feature: the player pays gold to restore HP to full. List every file that would need to change on the Worker and in the Angular frontend, and what each change is. Do not make the changes.",
+      "expect": [
+        ["index.ts"],
+        ["routes/"],
+        ["updateCharacter"],
+        ["game-api.service"],
+        ["game-console"],
+        ["CharacterStateService", "character-state.service", "setCharacter"]
+      ]
+    },
+    {
+      "id": "session-expiry",
+      "area": "worker",
+      "prompt": "What happens when a player resumes a game after the Workers KV session has expired? Trace both the frontend resume path and the Worker routes, and say whether the game can continue.",
+      "expect": [
+        ["rebuildSession"],
+        ["404"],
+        ["session.ts"],
+        ["7 days", "7-day", "TTL", "604800"],
+        ["getSession"]
+      ]
+    },
+    {
+      "id": "inventory-dialog",
+      "area": "frontend",
+      "prompt": "Where is the inventory dialog opened, what data is passed to it, and which API calls can it make?",
+      "expect": [
+        ["openInventory"],
+        ["InventoryDialogData"],
+        ["MatDialog"],
+        ["equipItem"],
+        ["dropItem"],
+        ["getInventory"]
+      ]
+    },
+    {
+      "id": "ai-fallback",
+      "area": "worker",
+      "prompt": "How does the AI Dungeon Master handle a model failure or a response that is not valid JSON? Name the models and functions involved.",
+      "expect": [
+        ["parseAIResponse"],
+        ["fallbackNarrative"],
+        ["mistral"],
+        ["llama-3.3"],
+        ["choices"]
+      ]
+    },
+    {
+      "id": "starting-gear",
+      "area": "data",
+      "prompt": "What items does a newly created Fighter start with, and where is that defined? Give the item names, not just IDs.",
+      "expect": [
+        ["CLASS_STARTING_ITEMS"],
+        ["Longsword"],
+        ["Shield"],
+        ["Potion of Healing", "Potion"],
+        ["seed.sql"]
+      ]
+    },
+    {
+      "id": "cors-origin",
+      "area": "worker",
+      "prompt": "Which browser origins can call the API, and exactly where would I add a new custom domain?",
+      "expect": [
+        ["localhost:4200"],
+        ["pages.dev"],
+        ["workers.dev"],
+        ["index.ts"],
+        ["origin"]
+      ]
+    },
+    {
+      "id": "level-up-flow",
+      "area": "full-stack",
+      "prompt": "Explain the level-up flow end to end: when the UI offers it, which endpoint is called, and what changes on the character.",
+      "expect": [
+        ["shouldLevelUp"],
+        ["XP_THRESHOLDS"],
+        ["/api/levelup", "levelup.ts"],
+        ["+2"],
+        ["abilityChoice", "ability"],
+        ["hit die", "hitDie", "CLASS_HIT_DICE"]
+      ]
+    },
+    {
+      "id": "log-pagination",
+      "area": "full-stack",
+      "heldOut": true,
+      "prompt": "How does the adventure log sidebar load older entries? Describe the endpoint, its paging parameters and limits, the sort order, and how the UI decides there is nothing more to load.",
+      "expect": [
+        ["/api/log", "log.ts"],
+        ["limit"],
+        ["50"],
+        ["created_at"],
+        ["loadMoreLog"],
+        ["total"]
+      ]
+    },
+    {
+      "id": "local-login",
+      "area": "frontend",
+      "heldOut": true,
+      "prompt": "How does login work, where are campaigns stored, and what happens to the server-side character when a campaign slot is deleted?",
+      "expect": [
+        ["localStorage"],
+        ["ai_dnd_user"],
+        ["authGuard"],
+        ["removeCampaign"],
+        ["no password", "name-only", "not deleted", "doesn't delete", "does not delete", "remains"]
+      ]
+    },
+    {
+      "id": "shop-sell",
+      "area": "worker",
+      "heldOut": true,
+      "prompt": "If a player sells two Longswords to Aldric's Armory, how much gold do they receive, which checks run first, and what happens to their inventory row?",
+      "expect": [
+        ["shop.ts", "/api/shop/transaction"],
+        ["0.5", "half"],
+        ["14"],
+        ["quantity"],
+        ["DELETE", "delete", "removed"]
+      ]
+    }
+  ]
+}

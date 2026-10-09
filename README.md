@@ -46,6 +46,7 @@ Cloudflare Worker (Hono router)
 
 ```
 ai-dnd/
+├── bugs.md                   Known bugs (B-01…) in complete/, research-documentation-v1/ and -v2/, and workshop/
 ├── complete/                 The finished, runnable application
 │   ├── PRD.md                Product requirements, data model, API spec, prompt design
 │   ├── SETUP.md              Local dev + deployment guide
@@ -53,6 +54,11 @@ ai-dnd/
 │   │   └── DEPLOYMENT_NOTES.md   Production issues hit while shipping, and their fixes
 │   ├── worker/               Cloudflare Worker (Hono routes, services, D1 migrations, seed data)
 │   └── frontend/             Angular 18 SPA
+│
+├── research-documentation-v1/  v1: copy of complete/ with component docs beside the code (code.md index)
+├── research-documentation-v2/  v2: auto-loaded AGENTS.md routing table, flow docs, symbol index
+├── research-docs/            Write-ups of the documentation research (v2 design and rationale)
+├── research-work/            Copilot CLI harness comparing token usage of the doc styles
 │
 └── workshop/                 The 4-hour workshop
     ├── README.md             Agenda, structure, and how to follow along
@@ -109,7 +115,7 @@ The current documentation is organized the usual way for a project: one big PRD,
 
 ### The experiment
 
-The next phase duplicates the current `complete/` folder into [`documentation-research/`](documentation-research/) and restructures the documentation around **components** rather than **document types**. The application code stays the same, so the only variable is how the docs are organized.
+The next phase duplicates the current `complete/` folder into [`research-documentation-v1/`](research-documentation-v1/) and restructures the documentation around **components** rather than **document types**. The application code stays the same, so the only variable is how the docs are organized.
 
 The plan:
 
@@ -127,6 +133,12 @@ The hypothesis is that component-scoped docs reduce token usage per task without
 - Whether the resulting change is correct and consistent with the rest of the app
 
 If it works, the pattern applies beyond this game: any codebase that leans on AI assistants could organize its docs this way.
+
+### Measuring it
+
+[`research-work/`](research-work/README.md) runs the same read-only questions against `complete/` and `research-documentation-v1/` with the Copilot CLI. It records total input and output tokens, AI credits, which docs and code files the agent read, and a keyword score for each answer, then summarizes the medians for each folder.
+
+The first results showed that cost is driven by the number of model round trips, not by document size. [`research-docs/research-documentation-v2.md`](research-docs/research-documentation-v2.md) describes the resulting v2 design in [`research-documentation-v2/`](research-documentation-v2/): an auto-loaded `AGENTS.md` routing table, flow docs, and a generated symbol index.
 
 ---
 

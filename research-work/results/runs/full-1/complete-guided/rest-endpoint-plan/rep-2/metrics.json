@@ -1,0 +1,96 @@
+{
+  "inputTokens": 508157,
+  "outputTokens": 4841,
+  "cacheReadTokens": 473852,
+  "cacheWriteTokens": 34275,
+  "reasoningTokens": 872,
+  "modelRequests": 15,
+  "premiumRequests": 1,
+  "aiCredits": 22.89279,
+  "apiDurationMs": 54299,
+  "mainInputTokens": 508157,
+  "mainRequests": 15,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 32,
+  "toolCallsByName": {
+    "view": 26,
+    "grep": 6
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 2322
+    },
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 1651
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 1465
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.html",
+      "kind": "code",
+      "tokens": 1236
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 1180
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 1179
+    },
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1128
+    },
+    {
+      "path": "frontend/src/app/models/game.models.ts",
+      "kind": "code",
+      "tokens": 824
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 647
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "worker/src/routes/levelup.ts",
+      "kind": "code",
+      "tokens": 561
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 10,
+  "docTokensRead": 1651,
+  "codeTokensRead": 11107,
+  "otherToolTokens": 574,
+  "filesModified": [],
+  "answer": "I now have the full pattern needed. Here's the complete file list and changes, modeled on the existing `levelup`/`shop` features:\n\n## Worker (`worker/src`)\n\n| File | Change |\n|---|---|\n| **`routes/rest.ts`** (new) | New `restRoutes` Hono router. `POST /api/rest` — validates `{ sessionId, characterId }`, loads character via `getCharacter`, computes cost (e.g. `REST_COST = 10` gold or `(max_hp - hp) * costPerHp`), rejects if `gold < cost` or `hp === max_hp` (400), rejects if in combat, then calls `updateCharacter(db, id, { hp: character.max_hp, gold: character.gold - cost })`. Inserts an `adventure_log` row (`actor: 'system'`, e.g. `\"${name} rests at the inn and recovers to full health.\"`), updates the KV session (`loadSession`/`saveSession`, push `{role:'dm', content: narrative}` similar to `levelup.ts`), returns `{ narrative, updatedCharacter, cost }`. |\n| **`index.ts`** | Import `restRoutes` and add `app.route('/api/rest', restRoutes);`. |\n| **`types/index.ts`** | Add `RestBody { sessionId: string; characterId: string; }` interface; add a `REST_COST` (or `GOLD_PER_HP_HEALED`) constant alongside `XP_THRESHOLDS`. |\n| **`services/character.ts`** (optional) | Optionally add a small `restAtInn(db, character, cost)` helper wrapping the `updateCharacter` call, for symmetry with `levelUp()`. |\n\n## Frontend (`frontend/src/app`)\n\n| File | Change |\n|---|---|\n| **`services/game-api.service.ts`** | Add `restAtInn(sessionId: string, characterId: string): Observable<{ narrative: string; updatedCharacter: Character; cost: number }>` posting to `${API_BASE}/api/rest`. |\n| **`models/game.models.ts`** | Add `REST_COST` constant (mirroring worker) if the UI needs to show/validate cost client-side before calling the API. |\n| **`components/game-console/game-console.component.ts`** | Add `restAtInn()` method (same pattern as `levelUp()`): guard on `loading()`/combat, call `api.restAtInn`, then `charSvc.setCharacter(res.updatedCharacter)`, `pushEntry('system', ...)`. |\n| **`components/game-console/game-console.component.html`** | Add a \"Rest at the Inn\" button in `sidebar-actions` (next to the Inventory button), disabled when `charSvc.inCombat()` or gold `< REST_COST` or `hp === max_hp`. |\n| **`services/character-state.service.ts`** | No change needed — `setCharacter` already updates `hp`/`gold` and derived `hpPercent`. |\n\nNo DB migration is required since `hp`/`gold` columns already exist on `characters`.",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

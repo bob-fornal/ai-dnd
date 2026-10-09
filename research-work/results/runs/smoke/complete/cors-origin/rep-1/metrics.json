@@ -1,0 +1,46 @@
+{
+  "inputTokens": 128746,
+  "outputTokens": 1004,
+  "cacheReadTokens": 119792,
+  "cacheWriteTokens": 8942,
+  "reasoningTokens": 146,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 5.63774,
+  "apiDurationMs": 14031,
+  "mainInputTokens": 128746,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "grep": 4,
+    "view": 1
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 565,
+  "otherToolTokens": 29,
+  "filesModified": [],
+  "answer": "Allowed origins: `http://localhost:4200`, any `*.pages.dev`, and any `*.workers.dev` subdomain.\n\nConfigured in `worker/src/index.ts`, in the CORS middleware (`app.use('*', cors({...}))`), specifically the `origin` callback function (lines ~20–29).\n\nTo add a new custom domain, edit that callback — add a check like `origin === 'https://yourdomain.com'` or `origin.endsWith('.yourdomain.com')` inside the `if (...)` condition, returning `origin` when matched.",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

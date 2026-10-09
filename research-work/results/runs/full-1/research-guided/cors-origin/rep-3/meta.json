@@ -1,0 +1,35 @@
+{
+  "arm": {
+    "id": "research-guided",
+    "dir": "../research-documentation",
+    "description": "Component docs, told to follow AGENT.md's context-gathering steps.",
+    "preamble": "Before answering, read AGENT.md and follow its 'How to gather context for a task' steps: start from code.md, then the relevant component docs, then only the code you need."
+  },
+  "task": {
+    "id": "cors-origin",
+    "area": "worker",
+    "prompt": "Which browser origins can call the API, and exactly where would I add a new custom domain?",
+    "expect": [
+      [
+        "localhost:4200"
+      ],
+      [
+        "pages.dev"
+      ],
+      [
+        "workers.dev"
+      ],
+      [
+        "index.ts"
+      ],
+      [
+        "origin"
+      ]
+    ]
+  },
+  "rep": 3,
+  "prompt": "Before answering, read AGENT.md and follow its 'How to gather context for a task' steps: start from code.md, then the relevant component docs, then only the code you need.\n\nWhich browser origins can call the API, and exactly where would I add a new custom domain?\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T14:39:57.429Z"
+}

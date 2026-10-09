@@ -1,0 +1,107 @@
+{
+  "inputTokens": 311536,
+  "outputTokens": 4370,
+  "cacheReadTokens": 269711,
+  "cacheWriteTokens": 25021,
+  "reasoningTokens": 629,
+  "modelRequests": 12,
+  "premiumRequests": 1,
+  "aiCredits": 14.82817,
+  "apiDurationMs": 42624,
+  "mainInputTokens": 280605,
+  "mainRequests": 9,
+  "subagentInputTokens": 30931,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 36,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "read_file": 8,
+    "file_search": 7,
+    "grep_search": 5,
+    "view": 9,
+    "glob": 2,
+    "grep": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 2675
+    },
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 2285
+    },
+    {
+      "path": "worker/src/routes/action.ts",
+      "kind": "code",
+      "tokens": 2169
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 1495
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 1209
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 1179
+    },
+    {
+      "path": "worker/src/services/session.ts",
+      "kind": "code",
+      "tokens": 741
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 647
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    },
+    {
+      "path": "worker/src/routes/levelup.ts",
+      "kind": "code",
+      "tokens": 561
+    },
+    {
+      "path": "frontend/src/app/components/character-sheet/character-sheet.component.ts",
+      "kind": "code",
+      "tokens": 268
+    },
+    {
+      "path": "frontend/src/app/app.routes.ts",
+      "kind": "code",
+      "tokens": 234
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 11,
+  "docTokensRead": 2675,
+  "codeTokensRead": 11353,
+  "otherToolTokens": 7123,
+  "filesModified": [],
+  "answer": "Here's the full file list, modeled on the existing `/api/levelup` and `/api/shop` patterns (deterministic DB transaction, not routed through the AI DM):\n\n**Worker (backend)**\n\n1. **`worker/src/types/index.ts`** — add `RestBody { sessionId: string; characterId: string; innId?: number }` interface (and optionally a configurable `cost` if per-inn pricing is wanted).\n2. **`worker/src/routes/rest.ts`** *(new file)* — `restRoutes = new Hono()`; `POST /` handler that: parses body, loads character via `getCharacter`, computes `const cost = <flat fee, e.g. 10>` (or looks up an `inns` table rate), checks `character.gold < cost` → 400 \"Not enough gold\", else calls `updateCharacter(db, id, { gold: character.gold - cost, hp: character.max_hp })`, writes an `adventure_log` entry, and returns `{ success: true, updatedCharacter }`.\n3. **`worker/src/index.ts`** — import `restRoutes` and add `app.route('/api/rest', restRoutes)`.\n4. *(Optional)* **`worker/src/db/schema.sql`** / migrations — only needed if adding an `inns` table for variable pricing; otherwise skip and hardcode the gold cost in `rest.ts`.\n\n**Angular (frontend)**\n\n5. **`frontend/src/app/models/game.models.ts`** — add a `RestResponse` interface (e.g. `{ success: boolean; updatedCharacter: Character; cost: number }`).\n6. **`frontend/src/app/services/game-api.service.ts`** — add `restAtInn(sessionId, characterId): Observable<RestResponse>` calling `POST ${API_BASE}/api/rest`, same pattern as `levelUp()`.\n7. **`frontend/src/app/components/game-console/game-console.component.ts`** — add a `restAtInn()` method that calls the service, on success calls `this.charSvc.setCharacter(res.updatedCharacter)` and pushes a narrative/log line; wire a button/condition (e.g. show only when `location` includes \"inn\").\n8. **`frontend/src/app/components/game-console/game-console.component.html`** — add a \"Rest at the Inn (💰 cost gp)\" button, disabled when `character().gold < cost` or `hp === max_hp`.\n9. **`frontend/src/app/services/character-state.service.ts`** — no new state needed; `setCharacter` already updates `hp`/`gold`, and `hpPercent` computed will reflect the full heal automatically.\n\nNo other files require changes.",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "inputTokens": 113056,
+  "outputTokens": 2190,
+  "cacheReadTokens": 79167,
+  "cacheWriteTokens": 14683,
+  "reasoningTokens": 52,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 6.17621,
+  "apiDurationMs": 19057,
+  "mainInputTokens": 76502,
+  "mainRequests": 3,
+  "subagentInputTokens": 36554,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 22,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 6,
+    "grep_search": 6,
+    "read_file": 8,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 2679
+    },
+    {
+      "path": "AGENT.md",
+      "kind": "doc",
+      "tokens": 2292
+    },
+    {
+      "path": "worker/src/services/combat.ts",
+      "kind": "code",
+      "tokens": 1864
+    },
+    {
+      "path": "worker/src/routes/combat.ts",
+      "kind": "code",
+      "tokens": 1158
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 932
+    },
+    {
+      "path": "worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 598
+    },
+    {
+      "path": "worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 580
+    },
+    {
+      "path": "worker/src/services/dice.ts",
+      "kind": "code",
+      "tokens": 512
+    },
+    {
+      "path": "worker/src/routes/combat.md",
+      "kind": "doc",
+      "tokens": 501
+    }
+  ],
+  "docFilesRead": 6,
+  "codeFilesRead": 3,
+  "docTokensRead": 7582,
+  "codeTokensRead": 3534,
+  "otherToolTokens": 8158,
+  "filesModified": [],
+  "answer": "## Attack Resolution Flow\n\n**Entry point:** `POST /api/combat/resolve` in `worker/src/routes/combat.ts` → handler calls `resolveCombatRound(character, combatState, 'attack')` from `worker/src/services/combat.ts`.\n\n**Dice are rolled entirely in code**, never by the AI (per the explicit comment in `worker/src/services/dice.ts`: *\"All random number generation happens here — never delegated to the AI\"*):\n- `roll(sides)` — basic `Math.random()`-based die roll\n- `attackRoll(attackBonus, targetAC)` — rolls d20, adds bonus, checks crit (nat 20)/fumble(nat 1)/hit vs AC\n- `rollExpression(diceString)` — rolls damage dice like `1d8+STR`\n- `modifier(score)` — 5e ability modifier math\n\n**In `resolveCombatRound`** (attack branch):\n1. Computes player's attack bonus (STR or DEX + proficiency based on class).\n2. Calls `attackRoll()` vs `monster.ac`; records a `DiceRoll` entry.\n3. On hit, picks weapon damage dice via `getPlayerDamageDice(character.class)`, rolls damage with `rollExpression`, applies ability mod, doubles on crit.\n4. Updates monster HP, checks for monster death → sets `victory`/`xpGained`.\n5. If combat continues, resolves the **enemy's turn** the same way (`attackRoll` vs player AC, `rollExpression` for monster damage), checks for player death.\n6. Builds a `contextForDM` log string summarizing numeric outcomes.\n\nBack in `combat.ts` (route), the result's HP/XP deltas are persisted to D1 (`updateCharacter`), loot is rolled (`rollLoot`/`grantLoot`) on victory, and session/combat state is updated.\n\n**AI's role (`askDM` in `worker/src/services/ai-dm.js`/ts):** Only called *after* all dice/math are resolved. It receives `contextForDM` (the factual outcome: hit/miss, damage, crit, HP, victory/defeat) and generates narrative flavor text + `suggestedActions`. The AI does **not** roll dice, compute hit/damage, modify HP/XP, or decide combat outcomes — it purely narrates deterministic results already computed server-side.",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

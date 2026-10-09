@@ -1,0 +1,3 @@
+# Raw Copilot output is large; keep usage.json, meta.json, metrics.json, summary.md, runs.csv.
+results/runs/**/events.jsonl
+results/runs/**/stderr.txt

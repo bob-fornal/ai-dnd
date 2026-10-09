@@ -1,0 +1,58 @@
+{
+  "inputTokens": 249588,
+  "outputTokens": 3257,
+  "cacheReadTokens": 232439,
+  "cacheWriteTokens": 17129,
+  "reasoningTokens": 95,
+  "modelRequests": 10,
+  "premiumRequests": 1,
+  "aiCredits": 12.19203,
+  "apiDurationMs": 32899,
+  "mainInputTokens": 249588,
+  "mainRequests": 10,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 17,
+  "toolCallsByName": {
+    "view": 5,
+    "grep": 12
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/routes/levelup.ts",
+      "kind": "code",
+      "tokens": 561
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 555
+    },
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 180
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 2,
+  "docTokensRead": 180,
+  "codeTokensRead": 1116,
+  "otherToolTokens": 2511,
+  "filesModified": [],
+  "answer": "**Level-up flow:**\n\n1. **Trigger (UI offer):** `CharacterStateService.checkLevelUp()` (`frontend/src/app/services/character-state.service.ts`) sets the `_canLevelUp` signal when `character.xp >= XP_THRESHOLDS[character.level]` (and level < 10). The combat/action responses also push `canLevelUp` from the backend via `charSvc.setCanLevelUp(res.canLevelUp)` in `game-console.component.ts` (after combat victory or actions). When `canLevelUp()` is true, `game-console.component.html` (`@if (charSvc.canLevelUp())`) shows ability-choice buttons, each calling `levelUp(key)`.\n\n2. **Endpoint call:** `GameConsoleComponent.levelUp(ability)` → `GameApiService.levelUp(sessionId, characterId, abilityChoice)` (`game-api.service.ts`) → `POST /api/levelup` with body `{ sessionId, characterId, abilityChoice }`.\n\n3. **Backend (`worker/src/routes/levelup.ts`):** validates `abilityChoice` (one of str/dex/con/int/wis/cha), loads character, re-checks `shouldLevelUp(character)` (XP ≥ `XP_THRESHOLDS[character.level]`, level < 10), then calls `levelUp(db, character, abilityChoice)` in `worker/src/services/character.ts`.\n\n4. **Character changes (`levelUp` in `character.ts`):**\n   - `level` += 1\n   - `max_hp` += roll(hitDie for class) + CON modifier (hitDie from `CLASS_HIT_DICE`)\n   - `hp` = min(current hp + hpGain, new max_hp)\n   - chosen ability score += 2\n   - Persisted via `updateCharacter`, then character reloaded from D1.\n\n5. Route also generates an AI narrative (`generateLevelUpNarrative` in `ai-dm.ts`), logs a `[Level Up]` entry to `adventure_log`, appends to session history, and returns `{ narrative, updatedCharacter, abilityImproved, newLevel }`. Frontend then resets `canLevelUp` to false, displays the narrative, and updates the campaign slot's stored level.",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8333333333333334,
+    "passed": 5,
+    "total": 6,
+    "missing": [
+      "+2"
+    ]
+  }
+}

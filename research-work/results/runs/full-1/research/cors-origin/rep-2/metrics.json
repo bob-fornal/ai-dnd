@@ -1,0 +1,46 @@
+{
+  "inputTokens": 128910,
+  "outputTokens": 1040,
+  "cacheReadTokens": 119917,
+  "cacheWriteTokens": 8981,
+  "reasoningTokens": 144,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 5.68599,
+  "apiDurationMs": 14469,
+  "mainInputTokens": 128910,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "grep": 4,
+    "view": 1
+  },
+  "failedToolCalls": 1,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 565
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 565,
+  "otherToolTokens": 48,
+  "filesModified": [],
+  "answer": "**Allowed origins:** `http://localhost:4200`, any `*.pages.dev`, and any `*.workers.dev` subdomain.\n\n**Where:** `research-documentation\\worker\\src\\index.ts`, in the `cors()` middleware's `origin` callback (lines ~20–28), inside the `app.use('*', cors({ origin: (origin) => {...} }))` block.\n\n**To add a custom domain:** add a new condition inside that callback, e.g.:\n```ts\norigin === 'https://your-custom-domain.com' ||\n```\n(or `origin.endsWith('.your-custom-domain.com')` for subdomain wildcards) before the final `return null;`.",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

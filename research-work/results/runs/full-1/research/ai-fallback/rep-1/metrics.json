@@ -1,0 +1,63 @@
+{
+  "inputTokens": 165422,
+  "outputTokens": 2406,
+  "cacheReadTokens": 135204,
+  "cacheWriteTokens": 15362,
+  "reasoningTokens": 74,
+  "modelRequests": 9,
+  "premiumRequests": 1,
+  "aiCredits": 7.46586,
+  "apiDurationMs": 20951,
+  "mainInputTokens": 131990,
+  "mainRequests": 5,
+  "subagentInputTokens": 33432,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 28,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 10,
+    "grep_search": 11,
+    "read_file": 3,
+    "grep": 2,
+    "view": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3690
+    },
+    {
+      "path": "AGENT.md",
+      "kind": "doc",
+      "tokens": 2292
+    },
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 392
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 2684,
+  "codeTokensRead": 3690,
+  "otherToolTokens": 9506,
+  "filesModified": [],
+  "answer": "All logic lives in `worker/src/services/ai-dm.ts`.\n\n**Models:** primary `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; on failure, fallback to `@cf/mistral/mistral-7b-instruct-v0.2-lora` (used in `askDM`).\n\n**Flow:**\n1. `askDM()` calls the llama model; if the call throws (model error/stream), it catches and retries with mistral. If mistral also throws, it returns `fallbackNarrative(playerAction)` directly.\n2. Whatever raw text is obtained goes to `parseAIResponse(raw, playerAction)`, which:\n   - Returns `fallbackNarrative()` if `raw` is empty/non-string.\n   - Strips markdown fences, then regex-extracts a `{...}` block (`/\\{[\\s\\S]*\\}/`) if the text doesn't start with `{`; if none found, returns `fallbackNarrative()`.\n   - `JSON.parse()`s the cleaned text in a try/catch; on parse error, returns `fallbackNarrative()`.\n   - Missing/invalid fields get safe defaults (e.g. narrative default string, empty arrays, `null` deltas, default `suggestedActions`).\n\n**`fallbackNarrative(playerAction)`** returns a hardcoded `AIDMResponse` with a generic narrative, no stat changes, default suggested actions, and empty dice rolls — ensuring the game never crashes on bad/missing AI output. Similar try/catch-with-hardcoded-fallback patterns exist in `generateQuest()` and `generateBackstory()`/`generateLevelUpNarrative()`.",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

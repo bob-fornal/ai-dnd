@@ -1,0 +1,38 @@
+{
+  "arm": {
+    "id": "research-guided",
+    "dir": "../research-documentation",
+    "description": "Component docs, told to follow AGENT.md's context-gathering steps.",
+    "preamble": "Before answering, read AGENT.md and follow its 'How to gather context for a task' steps: start from code.md, then the relevant component docs, then only the code you need."
+  },
+  "task": {
+    "id": "inventory-dialog",
+    "area": "frontend",
+    "prompt": "Where is the inventory dialog opened, what data is passed to it, and which API calls can it make?",
+    "expect": [
+      [
+        "openInventory"
+      ],
+      [
+        "InventoryDialogData"
+      ],
+      [
+        "MatDialog"
+      ],
+      [
+        "equipItem"
+      ],
+      [
+        "dropItem"
+      ],
+      [
+        "getInventory"
+      ]
+    ]
+  },
+  "rep": 3,
+  "prompt": "Before answering, read AGENT.md and follow its 'How to gather context for a task' steps: start from code.md, then the relevant component docs, then only the code you need.\n\nWhere is the inventory dialog opened, what data is passed to it, and which API calls can it make?\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T14:31:08.757Z"
+}

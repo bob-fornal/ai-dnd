@@ -1,0 +1,64 @@
+{
+  "inputTokens": 61501,
+  "outputTokens": 1461,
+  "cacheReadTokens": 47919,
+  "cacheWriteTokens": 8889,
+  "reasoningTokens": 15,
+  "modelRequests": 6,
+  "premiumRequests": 1,
+  "aiCredits": 3.44477,
+  "apiDurationMs": 10462,
+  "mainInputTokens": 43379,
+  "mainRequests": 2,
+  "subagentInputTokens": 18122,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 25,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "file_search": 9,
+    "grep_search": 11,
+    "read_file": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 488
+    },
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 288
+    },
+    {
+      "path": "frontend/src/environments/environment.prod.ts",
+      "kind": "code",
+      "tokens": 92
+    },
+    {
+      "path": "frontend/src/environments/environment.ts",
+      "kind": "code",
+      "tokens": 54
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 3,
+  "docTokensRead": 288,
+  "codeTokensRead": 634,
+  "otherToolTokens": 1810,
+  "filesModified": [],
+  "answer": "Allowed origins are controlled in `worker\\src\\index.ts` (Hono app), via the `cors()` middleware's `origin` callback:\n\n- Currently allows: `http://localhost:4200`, any `*.pages.dev`, and any `*.workers.dev` subdomain.\n- Logic (lines ~17-27): checks `origin === 'http://localhost:4200' || origin.endsWith('.pages.dev') || origin.endsWith('.workers.dev')`, returning the origin string to allow it or `null` to reject.\n\n**To add a new custom domain:** edit that same `origin` function in `worker\\src\\index.ts` and add another condition, e.g. `|| origin === 'https://yourdomain.com'` (or an `.endsWith()` check for a wildcard subdomain), inside the `if (...)` block. Note: Hono's string-array form doesn't support wildcards — hence the function is used instead of a plain `origin: [...]` list.",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

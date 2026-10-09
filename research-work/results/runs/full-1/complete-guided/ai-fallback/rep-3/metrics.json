@@ -1,0 +1,48 @@
+{
+  "inputTokens": 88676,
+  "outputTokens": 1002,
+  "cacheReadTokens": 61727,
+  "cacheWriteTokens": 26941,
+  "reasoningTokens": 14,
+  "modelRequests": 4,
+  "premiumRequests": 1,
+  "aiCredits": 8.97339,
+  "apiDurationMs": 11706,
+  "mainInputTokens": 88676,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "view": 3,
+    "grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3638
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 3638,
+  "otherToolTokens": 211,
+  "filesModified": [],
+  "answer": "All logic lives in `worker/src/services/ai-dm.ts`.\n\n**Main turn flow — `askDM()`:**\n1. Calls primary model `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (with `response_format: json_object`).\n2. If that call throws, falls back to `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n3. If both model calls throw, returns `fallbackNarrative(playerAction)` — a hardcoded generic narrative response (no AI involved).\n4. Whatever raw text is obtained is passed to `parseAIResponse(raw, playerAction)`, which:\n   - Returns `fallbackNarrative()` if `raw` isn't a non-empty string.\n   - Strips markdown code fences, then regex-extracts a `{...}` block if the text doesn't start with `{`; if no JSON object is found, returns `fallbackNarrative()`.\n   - Wraps `JSON.parse(cleaned)` in try/catch; on parse failure, returns `fallbackNarrative()`.\n   - On success, builds a sanitized `AIDMResponse` with per-field defaults (e.g., `null`/`[]`/default suggested actions) for any missing/invalid properties.\n\n**Other generators with their own try/catch fallbacks (same model, `@cf/meta/llama-3.3-70b-instruct-fp8-fast`):**\n- `generateQuest()` → catch returns a hardcoded default quest object (\"Blood on the Road\").\n- `generateBackstory()` → catch returns a default backstory string.\n- `generateLevelUpNarrative()` → catch returns a default level-up sentence.\n\nEach of these has no secondary model fallback or JSON-extraction logic—only `askDM`/`parseAIResponse` has the multi-model retry plus JSON-cleanup pipeline.",
+  "exitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

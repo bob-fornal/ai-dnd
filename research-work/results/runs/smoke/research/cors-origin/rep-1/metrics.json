@@ -1,0 +1,79 @@
+{
+  "inputTokens": 76922,
+  "outputTokens": 1133,
+  "cacheReadTokens": 36022,
+  "cacheWriteTokens": 26169,
+  "reasoningTokens": 15,
+  "modelRequests": 5,
+  "premiumRequests": 1,
+  "aiCredits": 7.46819,
+  "apiDurationMs": 9293,
+  "mainInputTokens": 46980,
+  "mainRequests": 2,
+  "subagentInputTokens": 29942,
+  "subagentRuns": 1,
+  "models": [
+    "claude-sonnet-5",
+    "copilot-search-a"
+  ],
+  "toolCalls": 17,
+  "toolCallsByName": {
+    "search_code_subagent": 1,
+    "read_file": 7,
+    "file_search": 4,
+    "grep_search": 5
+  },
+  "failedToolCalls": 0,
+  "toolset": "read_file",
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 2679
+    },
+    {
+      "path": "AGENT.md",
+      "kind": "doc",
+      "tokens": 2292
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1224
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 932
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 595
+    },
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 485
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 415
+    }
+  ],
+  "docFilesRead": 6,
+  "codeFilesRead": 1,
+  "docTokensRead": 8027,
+  "codeTokensRead": 595,
+  "otherToolTokens": 5271,
+  "filesModified": [],
+  "answer": "Currently allowed origins: `http://localhost:4200`, any `*.pages.dev`, and any `*.workers.dev` subdomain.\n\n**Where it's defined:** `worker/src/index.ts`, in the `cors({ origin: (origin) => {...} })` function (lines ~20-31) — Hono's CORS middleware requires a function here because its string-array matching is exact-only, not wildcard-aware.\n\n**To add a new custom domain:** add another condition inside that same `origin` function in `worker/src/index.ts`, e.g.:\n```ts\nif (\n  origin === 'http://localhost:4200' ||\n  origin === 'https://your-custom-domain.com' ||   // add here\n  origin.endsWith('.pages.dev') ||\n  origin.endsWith('.workers.dev')\n) { return origin; }\n```\nAlso update the matching note in `docs/DEPLOYMENT_NOTES.md` §4 (CORS) and `worker/src/index.md`, which document this same logic.",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

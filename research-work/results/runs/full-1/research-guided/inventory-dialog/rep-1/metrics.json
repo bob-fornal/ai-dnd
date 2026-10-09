@@ -1,0 +1,62 @@
+{
+  "inputTokens": 239545,
+  "outputTokens": 1539,
+  "cacheReadTokens": 224288,
+  "cacheWriteTokens": 15237,
+  "reasoningTokens": 125,
+  "modelRequests": 10,
+  "premiumRequests": 1,
+  "aiCredits": 9.83801,
+  "apiDurationMs": 20012,
+  "mainInputTokens": 239545,
+  "mainRequests": 10,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5"
+  ],
+  "toolCalls": 11,
+  "toolCallsByName": {
+    "view": 5,
+    "glob": 3,
+    "grep": 3
+  },
+  "failedToolCalls": 2,
+  "toolset": "view",
+  "filesRead": [
+    {
+      "path": "AGENT.md",
+      "kind": "doc",
+      "tokens": 2322
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 789
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 622
+    },
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.md",
+      "kind": "doc",
+      "tokens": 483
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 0,
+  "docTokensRead": 4216,
+  "codeTokensRead": 0,
+  "otherToolTokens": 195,
+  "filesModified": [],
+  "answer": "**Where it's opened:** `GameConsoleComponent.openInventory()` in `frontend/src/app/components/game-console/game-console.component.ts`, via `MatDialog.open(InventoryComponent, ...)`.\n\n**Data passed:** `InventoryDialogData = { characterId, sessionId }`, injected into the dialog as `MAT_DIALOG_DATA`.\n\n**API calls the dialog can make** (via `game-api.service.ts`, `frontend/src/app/services/game-api.service.ts`):\n- `getInventory(id)` → `GET /api/character/:id` (loaded on init)\n- `equipItem(id, itemId, equipped)` → `PATCH /api/character/:id/equip` (equip/unequip weapon or armor)\n- `dropItem(id, itemId)` → `DELETE /api/character/:id/inventory/:itemId` (drop, and also used to \"consume\" potions on Use)\n\nNote: \"Use Potion\" heals HP client-side only (dice rolled in browser, not persisted) — a known bug (bugs.md B-05).",
+  "exitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

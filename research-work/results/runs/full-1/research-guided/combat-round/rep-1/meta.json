@@ -1,0 +1,36 @@
+{
+  "arm": {
+    "id": "research-guided",
+    "dir": "../research-documentation",
+    "description": "Component docs, told to follow AGENT.md's context-gathering steps.",
+    "preamble": "Before answering, read AGENT.md and follow its 'How to gather context for a task' steps: start from code.md, then the relevant component docs, then only the code you need."
+  },
+  "task": {
+    "id": "combat-round",
+    "area": "worker",
+    "prompt": "When the player chooses Attack during combat, how is the round resolved? Name the files and functions involved, where the dice are rolled, and what the AI is (and is not) responsible for.",
+    "expect": [
+      [
+        "resolveCombatRound"
+      ],
+      [
+        "attackRoll"
+      ],
+      [
+        "dice.ts"
+      ],
+      [
+        "askDM"
+      ],
+      [
+        "contextForDM",
+        "narrat"
+      ]
+    ]
+  },
+  "rep": 1,
+  "prompt": "Before answering, read AGENT.md and follow its 'How to gather context for a task' steps: start from code.md, then the relevant component docs, then only the code you need.\n\nWhen the player chooses Attack during combat, how is the round resolved? Name the files and functions involved, where the dice are rolled, and what the AI is (and is not) responsible for.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "model": "claude-sonnet-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-09T13:27:22.875Z"
+}
