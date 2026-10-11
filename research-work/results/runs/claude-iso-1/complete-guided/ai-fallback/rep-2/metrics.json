@@ -1,0 +1,65 @@
+{
+  "agent": "claude",
+  "inputTokens": 51942,
+  "outputTokens": 1576,
+  "cacheReadTokens": 28179,
+  "cacheWriteTokens": 23757,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.1164358,
+  "apiDurationMs": 12247,
+  "mainInputTokens": 51942,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "Read": 4,
+    "Glob": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 5956
+    },
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3940
+    },
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 1944
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 914
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 8814,
+  "codeTokensRead": 3940,
+  "otherToolTokens": 133,
+  "filesModified": [],
+  "answer": "All of this is in `worker/src/services/ai-dm.ts`. The main entry point is `askDM()`.\n\n**Model failure (`askDM`)**\n1. The primary model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It is called with `max_tokens: 1024`, `temperature: 0.85` and `response_format: { type: 'json_object' }`. A streaming response also counts as a failure, because the code throws on it.\n2. If that call throws, the `catch` block retries with the fallback model, `@cf/mistral/mistral-7b-instruct-v0.2-lora`. The same prompt is used, and there is no `response_format` and no temperature setting.\n3. If Mistral also throws, `askDM()` returns `fallbackNarrative(playerAction)` straight away.\n\nBoth models' output goes through the same text extraction. It tries `choices[0].message.content`, then `.response`, then the raw string, then `''`. An empty string isn't a thrown error, so it goes on to the parse step.\n\n**Invalid or non-JSON output (`parseAIResponse(raw, playerAction)`)**\n- **Empty or non-string input:** returns `fallbackNarrative()`.\n- **Markdown fences:** strips the leading and trailing ```` ```json ```` fences.\n- **Text around the JSON:** if the result doesn't start with `{`, it extracts the first `{…}` block with `/\\{[\\s\\S]*\\}/`. If there is no match, it logs a warning and returns `fallbackNarrative()`.\n- **`JSON.parse` failure:** the `catch` returns `fallbackNarrative()`.\n- **Valid JSON with missing or bad fields:** the fields are normalized rather than rejected.\n  - `narrative` defaults to \"The world holds its breath as your words echo into the shadows.\"\n  - `gameStateChanges` fields default to `null`, `[]` or `false`. `combatInitiated` and `combatEnded` are only true if they are exactly `true`.\n  - `suggestedActions` is capped at 4, with a default list of Look around / Search the area / Listen carefully / Move on.\n  - `diceRolls` is capped at 8.\n\n**`fallbackNarrative(playerAction)`**\n- It builds a generic atmospheric paragraph that echoes the player's action.\n- It makes no state changes: all deltas are null, items are empty, and both combat flags are false.\n- It returns the suggested actions Look around / Proceed carefully / Listen for sounds / Rest a moment.\n\n**Docs versus code**\n- The PRD (F-07, §13) matches this fallback design. However, the PRD says \"retry with stricter prompt\", and the code doesn't do that. A parse failure goes straight to the fallback with no retry.\n- The PRD architecture diagram still shows `llama-3.1-8b-instruct`. `docs/DEPLOYMENT_NOTES.md` §6 says that model was deprecated on 2026-05-30, and the code uses the 70b model.\n- The other helpers (`generateQuest`, `generateBackstory`, `generateLevelUpNarrative`) use only the Llama model. They have no Mistral fallback and fall back to hardcoded text on any error.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

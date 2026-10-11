@@ -1,0 +1,50 @@
+{
+  "agent": "claude",
+  "inputTokens": 19773,
+  "outputTokens": 958,
+  "cacheReadTokens": 16590,
+  "cacheWriteTokens": 3177,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.025618000000000002,
+  "apiDurationMs": 7705,
+  "mainInputTokens": 19773,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Grep": 1,
+    "Read": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 527
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 527,
+  "otherToolTokens": 425,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set by the `origin` function passed to `cors()` in `worker/src/index.ts:19-35`. It echoes the request origin back if any of these match:\n\n- `http://localhost:4200`, an exact match (the Angular dev server).\n- Any origin ending in `.pages.dev`, at any subdomain depth.\n- Any origin ending in `.workers.dev`, at any subdomain depth. This covers the deployed frontend, `https://ai-dnd-frontend.ai-dnd.workers.dev`.\n\nRequests with no `Origin` header, and any other origin, get `null`, so no CORS headers are sent. The same middleware also allows methods `GET, POST, PATCH, DELETE, OPTIONS`, headers `Content-Type` and `Authorization`, and `maxAge: 86400`.\n\n**Adding a custom domain:** edit the `if (...)` condition inside that `origin` function, at `worker/src/index.ts:23-27`. Add one more `||` clause:\n\n- For an exact origin, use `origin === 'https://app.example.com'`.\n- For a whole domain, use `origin.endsWith('.example.com')`.\n\nDon't add it as an array entry to `origin`. Hono treats array entries as literal strings, so wildcards never match there (see `docs/DEPLOYMENT_NOTES.md` §4).\n\nAn `endsWith` check on a bare suffix such as `.example.com` is safe because of the leading dot. Without the dot, `evilexample.com` would match.\n\nTwo follow-ups:\n\n- **Frontend API URL:** if the Worker is also served from a new domain, update the Worker URL in `frontend/src/environments/environment.prod.ts`. This is not needed for CORS.\n- **Docs:** `worker/src/index.md` (lines 7 and 25) describes the allowed origins, so update it alongside the code.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

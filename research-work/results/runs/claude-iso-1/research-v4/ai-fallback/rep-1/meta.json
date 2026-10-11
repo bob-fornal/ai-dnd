@@ -1,0 +1,61 @@
+{
+  "agent": "claude",
+  "arm": {
+    "id": "research-v4",
+    "dir": "../research-documentation-v4",
+    "description": "v4 = v3 content with component docs moved to docs/code/ (mirrored paths) and Code: links back to the source. AGENTS.md auto-loaded, no preamble.",
+    "preamble": "",
+    "removeArgs": [
+      "--no-custom-instructions"
+    ],
+    "docsVersion": "v4"
+  },
+  "task": {
+    "id": "ai-fallback",
+    "area": "worker",
+    "prompt": "How does the AI Dungeon Master handle a model failure or a response that is not valid JSON? Name the models and functions involved.",
+    "expect": [
+      [
+        "parseAIResponse"
+      ],
+      [
+        "fallbackNarrative"
+      ],
+      [
+        "mistral"
+      ],
+      [
+        "llama-3.3"
+      ],
+      [
+        "choices"
+      ]
+    ]
+  },
+  "rep": 1,
+  "prompt": "How does the AI Dungeon Master handle a model failure or a response that is not valid JSON? Name the models and functions involved.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\claude-iso-1\\research-documentation-v4",
+  "isolated": true,
+  "cliArgs": [
+    "-p",
+    "--model",
+    "claude-sonnet-5-5",
+    "--effort",
+    "medium",
+    "--tools",
+    "Read,Grep,Glob",
+    "--permission-mode",
+    "dontAsk",
+    "--no-session-persistence",
+    "--strict-mcp-config",
+    "--disable-slash-commands",
+    "--setting-sources",
+    "project,local",
+    "--output-format",
+    "stream-json",
+    "--verbose"
+  ],
+  "model": "claude-sonnet-5-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-10T13:26:43.367Z"
+}

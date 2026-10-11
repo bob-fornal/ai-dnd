@@ -1,0 +1,50 @@
+{
+  "agent": "claude",
+  "inputTokens": 40841,
+  "outputTokens": 1345,
+  "cacheReadTokens": 32861,
+  "cacheWriteTokens": 7972,
+  "reasoningTokens": 167,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0519262,
+  "apiDurationMs": 9986,
+  "mainInputTokens": 40841,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 1,
+    "Grep": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/flows/character-creation.md",
+      "kind": "doc",
+      "tokens": 773
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 773,
+  "codeTokensRead": 0,
+  "otherToolTokens": 1087,
+  "filesModified": [],
+  "answer": "A new Fighter starts with four items:\n\n| ID | Item | Seed row |\n|---|---|---|\n| 2 | Longsword (weapon, 1d8, +2 attack) | `'Longsword'` |\n| 15 | Shield (armor, +2 AC) | `'Shield'` |\n| 17 | Potion of Healing (heals 2d4+2) | `'Potion of Healing'` |\n| 23 | Torchx5 (misc) | `'Torchx5'` |\n\n**Where it's defined**\n- **Item IDs:** `CLASS_STARTING_ITEMS` in `worker/src/services/character.ts:65`. The Fighter entry is `[2, 15, 17, 23]` at line 66.\n- **Item names:** the `items` inserts in `worker/src/db/seed.sql`. The IDs come from insert order: weapons are 1–10, armor 11–16, potions 17–21, and misc 22–28.\n- **Inserting the gear:** the code at `character.ts:75` loops over these IDs and inserts them into `character_inventory`.\n- **Flow doc:** `docs/flows/character-creation.md` lists the same values in its class table.\n\n**Item 23 mismatch:** the code comment on line 66 calls item 23 \"Rations\", but ID 23 in the seed is \"Torchx5\". \"Rations (1 day)\" is actually ID 24. The docs track this as bug B-09, so Fighters get torches, not rations.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

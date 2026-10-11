@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "inputTokens": 27795,
+  "outputTokens": 1489,
+  "cacheReadTokens": 19496,
+  "cacheWriteTokens": 8293,
+  "reasoningTokens": 27,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.051973200000000004,
+  "apiDurationMs": 11135,
+  "mainInputTokens": 27795,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 3,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1532
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1072
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 726
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1798,
+  "codeTokensRead": 1532,
+  "otherToolTokens": 603,
+  "filesModified": [],
+  "answer": "All of this is in `worker/src/services/ai-dm.ts`, in `askDM` (line 81) and the functions it calls.\n\n**Model failure**\n- `askDM` first calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It requests `response_format: json_object`, with temperature 0.85 and `max_tokens` 1024.\n- A streaming response is treated as an error and thrown.\n- If llama throws, the `catch` at line 115 logs the error and retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. That call uses the same prompts and `max_tokens` 1024, but no `response_format`.\n- If mistral also throws, `askDM` returns `fallbackNarrative(playerAction)` at line 135.\n- Text is read from `choices[0].message.content`, then from the legacy `response` field, then from the raw value if it is a string. If none of those has text, `rawText` is `''`.\n\n**Invalid JSON or empty output**\nWhatever text results goes to `parseAIResponse(rawText, playerAction)` at line 143. It returns `fallbackNarrative` in these cases:\n- **Empty or non-string input:** the check at line 145 catches it.\n- **No `{…}` block:** the code strips code fences, then tries to extract the first `{…}` block with a regex. If there is none, it logs a warning and falls back (line 163).\n- **`JSON.parse` throws:** the `catch` at line 192 falls back.\n\n**Valid JSON with missing fields**\nMissing fields are filled with defaults rather than failing:\n- `narrative` defaults to \"The world holds its breath…\".\n- `gameStateChanges` fields default to `null`, `[]` or `false`.\n- `suggestedActions` defaults to four stock actions.\n- `diceRolls` defaults to `[]`.\n- `suggestedActions` is capped at 4 entries and `diceRolls` at 8.\n\n**What the fallback returns**\n`fallbackNarrative` (line 198) returns generic narrative text that includes the player's action. It makes no state changes: all deltas are `null`, no items change, and `combatInitiated` and `combatEnded` are `false`. It also offers four stock `suggestedActions` and an empty `diceRolls`. The Worker therefore keeps control of the rules, and the turn still returns a normal response.\n\n**Other AI functions**\n`generateQuest`, `generateBackstory` and `generateLevelUpNarrative` have their own `catch` blocks (lines 263, 298 and 325). They read only the legacy `response` field, so with llama-3.3 they tend to return canned text or an empty string (`bugs.md` B-03).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

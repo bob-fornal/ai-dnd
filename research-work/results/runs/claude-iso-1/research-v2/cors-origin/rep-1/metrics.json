@@ -1,0 +1,55 @@
+{
+  "agent": "claude",
+  "inputTokens": 33422,
+  "outputTokens": 1226,
+  "cacheReadTokens": 28466,
+  "cacheWriteTokens": 4948,
+  "reasoningTokens": 0,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.037761199999999995,
+  "apiDurationMs": 10017,
+  "mainInputTokens": 33422,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 2,
+    "Grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 414
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 160
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 414,
+  "codeTokensRead": 160,
+  "otherToolTokens": 232,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set by the `origin` function passed to `cors()` in `worker/src/index.ts:19-35`. A request origin is echoed back (allowed) only if it is one of these:\n- exactly `http://localhost:4200`\n- anything ending in `.pages.dev`\n- anything ending in `.workers.dev`\n\nAnything else gets `null`, so no CORS headers are sent. A request with no `Origin` header also gets `null`. Allowed methods are GET, POST, PATCH, DELETE and OPTIONS. Allowed headers are `Content-Type` and `Authorization`. `maxAge` is 86400.\n\n**Adding a custom domain:** add a condition to the `||` chain inside that function, at `worker/src/index.ts:24-26`. For example:\n\n```ts\norigin === 'https://play.example.com' ||\n```\n\nUse the full origin: scheme and host, no trailing slash, and the port if it isn't the default. An `endsWith` check would also cover subdomains. It is looser, though. `endsWith('example.com')` would also match `evilexample.com`, so use `endsWith('.example.com')` instead.\n\nDon't add the domain to an array form of `origin`, and don't use a wildcard string like `'https://*.example.com'`. Hono matches array entries as literal strings, which is why the code uses a function. `docs/DEPLOYMENT_NOTES.md` §4 explains this.\n\nNothing else in the Worker needs to change for CORS. The Worker's bindings in `worker/wrangler.toml` don't affect it. You would still need to point the frontend's API base URL at the Worker, which is separate from this CORS check.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

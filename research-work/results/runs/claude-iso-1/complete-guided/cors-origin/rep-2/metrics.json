@@ -1,0 +1,61 @@
+{
+  "agent": "claude",
+  "inputTokens": 23989,
+  "outputTokens": 1189,
+  "cacheReadTokens": 18704,
+  "cacheWriteTokens": 5279,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0367588,
+  "apiDurationMs": 9038,
+  "mainInputTokens": 23989,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "Read": 3,
+    "Glob": 1,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 914
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 608
+    },
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 390
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1304,
+  "codeTokensRead": 608,
+  "otherToolTokens": 255,
+  "filesModified": [],
+  "answer": "**Allowed origins** come from the `cors()` middleware in `worker/src/index.ts:19-35`. Its `origin` callback returns the request origin, which allows it, only if one of these is true:\n- It is exactly `http://localhost:4200`.\n- It ends with `.pages.dev`.\n- It ends with `.workers.dev`.\n\nAny other origin, and any request with no `Origin` header, gets `null`, so no CORS headers are sent. The same middleware also sets:\n- `allowMethods`: GET, POST, PATCH, DELETE, OPTIONS.\n- `allowHeaders`: Content-Type, Authorization.\n- `maxAge`: 86400.\n\nThis applies to every route through `app.use('*', ...)`.\n\n**To add a custom domain**, edit the `if (...)` condition inside that `origin` function at `worker/src/index.ts:23-27`. Add one of these:\n- An exact match for a single host: `origin === 'https://play.example.com'`.\n- A suffix check for all subdomains: `origin.endsWith('.example.com')`.\n\nPrefer the exact match. `endsWith('.example.com')` allows every subdomain, and a loose suffix such as `endsWith('example.com')` would also match `evilexample.com`. Then redeploy the Worker with `npm run deploy` from `worker/`.\n\n`docs/DEPLOYMENT_NOTES.md` §4 shows a copy of this same snippet. It is documentation only, so update it too if you want it to stay accurate.\n\n**If the custom domain goes on the Pages frontend,** the setup in `SETUP.md` §4 proxies `/api/*` to the Worker through a Pages service binding. In that setup the browser calls the API same-origin and CORS doesn't apply. The allowlist matters only when the browser calls the Worker's URL directly, as the localhost dev setup does, with the frontend at `:4200` calling `:8787`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

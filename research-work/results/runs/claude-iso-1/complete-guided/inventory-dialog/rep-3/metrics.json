@@ -1,0 +1,68 @@
+{
+  "agent": "claude",
+  "inputTokens": 79407,
+  "outputTokens": 2027,
+  "cacheReadTokens": 55825,
+  "cacheWriteTokens": 23574,
+  "reasoningTokens": 0,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.125747,
+  "apiDurationMs": 13153,
+  "mainInputTokens": 79407,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 9,
+  "toolCallsByName": {
+    "Read": 4,
+    "Glob": 1,
+    "Grep": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 5956
+    },
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 1944
+    },
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.ts",
+      "kind": "code",
+      "tokens": 1707
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 914
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 8814,
+  "codeTokensRead": 1707,
+  "otherToolTokens": 2235,
+  "filesModified": [],
+  "answer": "**Where it opens**\n- The sidebar \"Inventory\" button in `frontend/src/app/components/game-console/game-console.component.html:9` calls `openInventory()`.\n- `openInventory()` is at `game-console.component.ts:237`. It calls `this.dialog.open(InventoryComponent, {...})` with `panelClass: 'inv-dialog-panel'` and `maxHeight: '90vh'`.\n- `afterClosed()` has an empty handler, because the dialog already updates `CharacterStateService`.\n\n**Data passed in**\n- The data is an `InventoryDialogData` object, defined in `inventory.component.ts:19`: `{ characterId: this.characterId, sessionId: this.sessionId }`.\n- `InventoryComponent` reads it through `MAT_DIALOG_DATA`.\n- Only `characterId` is used. `sessionId` is passed but never read in the component.\n- The dialog also reads the shared character signal (`charSvc.character`) for HP when using potions.\n\n**API calls it can make** (`InventoryComponent` → `GameApiService`, `game-api.service.ts:90-102` → worker `routes/character.ts`)\n\n| Trigger | Service method | HTTP request | Worker handler |\n|---|---|---|---|\n| `ngOnInit` → `loadInventory()` | `getInventory(characterId)` | `GET /api/character/:id` (uses only `.inventory` from the response) | `characterRoutes.get('/:id')`, line 72 |\n| `toggleEquip(entry)` | `equipItem(characterId, itemId, equipped)` | `PATCH /api/character/:id/equip` with body `{ itemId, equipped }` | line 93 |\n| `dropItem(entry)` (after `confirm`) | `dropItem(characterId, itemId)` | `DELETE /api/character/:id/inventory/:itemId` | line 137 |\n| `usePotion(entry)` | `dropItem(...)`, the same call as drop | `DELETE /api/character/:id/inventory/:itemId` | line 137 |\n\n- Equip and drop both return `{ success, inventory }`, and the dialog replaces its list and calls `charSvc.setInventory`.\n- `usePotion` does not call a use-item endpoint.\n  - It rolls the `effect.heal` dice in the browser and computes the new HP, capped at `max_hp`.\n  - It then deletes one unit of the item through the drop endpoint.\n  - Finally it updates HP locally with `charSvc.setCharacter`.\n  - The HP change is never sent to the server, so a reload would lose it. The PRD's `use_item` action on `/api/combat/resolve` isn't used here.\n- The dialog makes no shop or buy/sell calls.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8333333333333334,
+    "passed": 5,
+    "total": 6,
+    "missing": [
+      "MatDialog"
+    ]
+  }
+}

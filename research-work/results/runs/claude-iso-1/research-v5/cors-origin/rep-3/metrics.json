@@ -1,0 +1,55 @@
+{
+  "agent": "claude",
+  "inputTokens": 34390,
+  "outputTokens": 1147,
+  "cacheReadTokens": 31804,
+  "cacheWriteTokens": 2578,
+  "reasoningTokens": 0,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.028158799999999998,
+  "apiDurationMs": 10019,
+  "mainInputTokens": 34390,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 2,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 229
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 429,
+  "codeTokensRead": 229,
+  "otherToolTokens": 85,
+  "filesModified": [],
+  "answer": "**Allowed origins**\n\nCORS is set up in `worker/src/index.ts:19-35`. It uses `cors()` from `hono/cors` with an `origin` function (lines 21-31). The function echoes back the request origin if it matches one of these:\n- `http://localhost:4200` is an exact match, for the Angular dev server.\n- Any origin that ends with `.pages.dev` matches, for Cloudflare Pages.\n- Any origin that ends with `.workers.dev` matches.\n\nRequests with no `Origin` header, and any other origin, get `null`, so no CORS headers are sent. The same middleware also sets these:\n- `allowMethods`: GET, POST, PATCH, DELETE, OPTIONS\n- `allowHeaders`: Content-Type, Authorization\n- `maxAge`: 86400\n\n**Adding a custom domain**\n\nAdd a condition to the `||` chain inside that `origin` function, between lines 24 and 26. For example, add `origin === 'https://play.example.com' ||` for one exact origin. Include the scheme, and don't add a trailing slash or a path.\n\nDon't add the domain to an array. As the comment on line 20 says, Hono matches array entries as exact strings. That is also why the wildcard suffix checks are written as a function.\n\nTwo caveats:\n- `endsWith('.pages.dev')` also matches look-alikes such as `https://evil.pages.dev`, which is the same pattern as a legitimate project subdomain. That is existing behavior.\n- If you use a suffix check for your own domain, prefer `endsWith('.example.com')` with the leading dot. Without the dot, `evilexample.com` would match.\n\nAfter the edit, redeploy the Worker. `docs/code/worker/src/index.md` and DEPLOYMENT_NOTES §4 mention the CORS rule. If you change the allowed origins, update that doc too.\n\nI didn't check the frontend's API base URL. The domain only needs a CORS entry if the browser calls the Worker from a different origin.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

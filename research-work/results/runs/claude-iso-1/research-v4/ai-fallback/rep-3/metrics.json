@@ -1,0 +1,59 @@
+{
+  "agent": "claude",
+  "inputTokens": 31661,
+  "outputTokens": 1438,
+  "cacheReadTokens": 24012,
+  "cacheWriteTokens": 7643,
+  "reasoningTokens": 60,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0497664,
+  "apiDurationMs": 10496,
+  "mainInputTokens": 31661,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2466
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 726
+    },
+    {
+      "path": "docs/flows/action-loop.md",
+      "kind": "doc",
+      "tokens": 566
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1292,
+  "codeTokensRead": 2466,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "All of this is in `worker/src/services/ai-dm.ts`. The functions are `askDM` (line 81), `parseAIResponse` (line 143) and `fallbackNarrative` (line 198).\n\n**Model failure (`askDM`)**\n1. `askDM` first calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It uses `response_format: json_object`, temperature 0.85 and `max_tokens` 1024.\n2. If that call throws, the `catch` block retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. The retry uses the same prompts and `max_tokens`, but no `response_format` and no temperature.\n   - A streaming response from llama is treated as a throw, so it also triggers the Mistral retry.\n3. If Mistral also throws, `askDM` returns `fallbackNarrative(playerAction)` and never calls `parseAIResponse`.\n4. Text is read from `choices[0].message.content`, then the legacy `response` field, then the response itself if it is a string. If none of these yields text, `rawText` stays an empty string.\n\n**Invalid JSON (`parseAIResponse`)**\n- **Empty or non-string text:** returns `fallbackNarrative`.\n- **Code fences:** a leading or trailing ```` ```json ```` fence is stripped.\n- **Text around the JSON:** if the cleaned text doesn't start with `{`, it extracts the first `{…}` block with a regex. If there is no block, it logs a warning and returns `fallbackNarrative`.\n- **`JSON.parse` throws:** the `catch` returns `fallbackNarrative`.\n- **Valid JSON with missing fields:** each field gets a default.\n  - `narrative` becomes \"The world holds its breath…\".\n  - `hpDelta`, `xpGained`, `goldDelta`, `locationChange` and `questUpdate` become `null`.\n  - `itemsAdded` and `itemsRemoved` become `[]`.\n  - `combatInitiated` and `combatEnded` are true only if the value is exactly `true`.\n  - `suggestedActions` defaults to four generic actions and is capped at 4.\n  - `diceRolls` defaults to `[]` and is capped at 8.\n\n**Gap between the two paths**\n- Mistral is tried only when llama throws. If llama returns text that isn't valid JSON, `parseAIResponse` goes straight to `fallbackNarrative` and Mistral is never tried.\n- Likewise, a Mistral response that parses badly also ends in `fallbackNarrative`.\n\n**What `fallbackNarrative` returns**\n- Generic prose built from the player's action (\"You attempt to …\").\n- No state changes: every delta is `null`, the item arrays are empty, and both combat flags are `false`.\n- Four canned suggested actions and no dice rolls.\n\nThe game keeps working with no HP, XP or gold change. This fits the project rule that the Worker owns the mechanics and the AI only narrates.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

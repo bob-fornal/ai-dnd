@@ -1,0 +1,54 @@
+{
+  "agent": "claude",
+  "inputTokens": 28130,
+  "outputTokens": 1394,
+  "cacheReadTokens": 22356,
+  "cacheWriteTokens": 5770,
+  "reasoningTokens": 52,
+  "modelRequests": 2,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0414992,
+  "apiDurationMs": 10148,
+  "mainInputTokens": 28130,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "Bash": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 709
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 652
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1361,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "I took this from the project's own recipe, `docs/flows/add-endpoint.md`, which uses this exact feature as its example. I haven't opened the source files, so line numbers come from the docs and may have drifted.\n\n## Worker\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add a `RestBody { sessionId, characterId }` type and an inn-cost constant, e.g. `INN_REST_COST`. The cost has to live in the Worker because the Worker owns the rules. |\n| `worker/src/routes/rest.ts` (new) | Export `restRoutes = new Hono<{ Bindings: Env }>()` with a `POST /`. It validates the body and calls `getCharacter`. It rejects if `gold < cost` or HP is already full. Then it calls `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (`services/character.ts:94`, which only accepts whitelisted fields). It returns `{ updatedCharacter }`. Optionally it also calls `askDM` for narration, `appendHistory` + `saveSession`, and inserts an `adventure_log` row, following `routes/action.ts`. |\n| `worker/src/index.ts` (~lines 41-48) | Add `app.route('/api/rest', restRoutes)` and the import. No CORS change is needed unless there is a new origin. |\n| `worker/src/services/*.ts` | Only if the logic is shared with another route, e.g. a `restAtInn` helper. Otherwise skip. |\n| `worker/migrations/` | Nothing needed. `gold` and `hp` already exist. If you add a schema change, make it a new `000N_*.sql` and never edit `0001`. |\n\n## Frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add a `RestResponse` interface mirroring the Worker response. |\n| `frontend/src/app/services/game-api.service.ts` | Add `rest(sessionId, characterId)`, which posts to `${API_BASE}/api/rest`. |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add a `rest()` handler. It calls the API, then `CharacterStateService.setCharacter(res.updatedCharacter)` so the sheet updates. It pushes a system or narrative entry, and handles an insufficient-gold error. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at Inn (N gold)\" button next to the Inventory button (line ~9). Disable it when gold is too low, HP is full, or combat is active. |\n| `frontend/src/app/components/game-console/game-console.component.css` | Style the button if needed. |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add tests with `GameApiService` as a Jasmine spy. |\n\n## Docs to update in the same change\n- Update the doc beside each changed file under `docs/code/...`, and add one for `rest.ts`. Link both ends, per `docs/AUTHORING.md` §3.\n- Add the new doc to `code.md`, then re-run `research-work/scripts/build-symbol-index.mjs`.\n- Update the PRD §9 API spec, and `docs/flows/` if you add a dedicated flow. Add an `AGENTS.md` routing row only if this counts as a new feature area.\n\n## Things to watch\n- **Combat state:** decide whether resting is blocked mid-combat, and enforce it in the Worker.\n- **Session HP copy:** potion HP is only set locally and never saved (B-05). Check that `rest` doesn't leave a stale HP value in the KV session.\n- **Shop bug:** B-02 breaks shop buying, but it doesn't affect this feature.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

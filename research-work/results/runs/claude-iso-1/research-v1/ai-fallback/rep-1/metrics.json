@@ -1,0 +1,50 @@
+{
+  "agent": "claude",
+  "inputTokens": 22668,
+  "outputTokens": 1477,
+  "cacheReadTokens": 16950,
+  "cacheWriteTokens": 5712,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.04102,
+  "apiDurationMs": 10461,
+  "mainInputTokens": 22668,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Grep": 2,
+    "Read": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1577
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 1577,
+  "otherToolTokens": 713,
+  "filesModified": [],
+  "answer": "All of this is in `worker/src/services/ai-dm.ts`.\n\n**Model failure: `askDM()` (lines 85–140)**\n- The primary model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It is called with `max_tokens: 1024`, `temperature: 0.85` and `response_format: { type: 'json_object' }`.\n- A streaming `ReadableStream` response is treated as an error. So is any exception from the call.\n- On either, the `catch` logs `[askDM] llama failed, trying mistral` and retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. The retry uses the same prompts and `max_tokens`, but no `response_format`.\n- If Mistral also throws, `askDM()` logs the error and returns `fallbackNarrative(playerAction)` directly.\n- Otherwise the text from whichever model answered goes to `parseAIResponse(rawText, playerAction)`. The text is taken from `choices[0].message.content`, then `.response`, then the raw string, and is `''` if none of those is a non-empty string.\n\n**Invalid JSON: `parseAIResponse()` (lines 143–195)**\n1. If the text is empty or not a string, it returns `fallbackNarrative()`.\n2. It strips markdown fences (```` ```json ````).\n3. If the result doesn't start with `{`, it extracts the first `{...}` block with a regex. If there is none, it logs a warning and returns `fallbackNarrative()`.\n4. It runs `JSON.parse`. If that throws, the `catch` returns `fallbackNarrative()`.\n5. If parsing succeeds, each field gets a default when it is missing or malformed:\n   - **`narrative`:** \"The world holds its breath…\".\n   - **`suggestedActions`:** capped at 4, defaulting to `['Look around', 'Search the area', 'Listen carefully', 'Move on']`.\n   - **`diceRolls`:** capped at 8, defaulting to `[]`.\n   - **`itemsAdded` and `itemsRemoved`:** default to `[]`.\n   - **`combatInitiated` and `combatEnded`:** true only when strictly `=== true`.\n   - **Other `gameStateChanges` fields:** default to `null`.\n\n**`fallbackNarrative(playerAction)` (lines 198–210)**\nIt returns a generic atmospheric narrative that echoes the player's action. All state changes are null or empty, combat flags are false, and `suggestedActions` is `['Look around', 'Proceed carefully', 'Listen for sounds', 'Rest a moment']`. Game state is never changed on a failure, and no error reaches the player.\n\nThe other Llama call sites, at lines 237–325, each have their own bare `catch`. The quest generator also does its own `JSON.parse` at line 253.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

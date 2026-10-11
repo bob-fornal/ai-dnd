@@ -1,0 +1,69 @@
+{
+  "agent": "claude",
+  "inputTokens": 30001,
+  "outputTokens": 824,
+  "cacheReadTokens": 24981,
+  "cacheWriteTokens": 5016,
+  "reasoningTokens": 63,
+  "modelRequests": 2,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0333082,
+  "apiDurationMs": 6547,
+  "mainInputTokens": 30001,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "Bash": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 753
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 605
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 529
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 462
+    },
+    {
+      "path": "docs/code/frontend/src/app/app.routes.md",
+      "kind": "doc",
+      "tokens": 294
+    }
+  ],
+  "docFilesRead": 5,
+  "codeFilesRead": 0,
+  "docTokensRead": 2643,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Login**\n\n- Login is local only. There is no server authentication.\n- `AuthService.login(username)` in `frontend/src/app/services/auth.service.ts:16` loads `ai_dnd_user_<lowercase name>` from `localStorage`, or creates an empty profile if none exists.\n- The active profile is stored under `ai_dnd_user` and restored on reload.\n- `isLoggedIn()` is `profile() !== null`.\n- `authGuard` protects `characters` and `game/:sessionId` in `app.routes.ts`.\n- `logout()` clears the active profile but keeps the per-user copy.\n\n**Where campaigns are stored**\n\n- Campaigns are `CampaignSlot`s inside the `UserProfile` in the browser's `localStorage`, under the two keys above.\n- `addCampaign` is called from character creation, `updateCampaign` from the game console, and `removeCampaign` deletes a slot.\n- Each slot holds a `sessionId` and a `characterId` that point to server data. The slot's `location` is set once at creation and never updated.\n- Server-side, the character data (`characters`, `character_inventory`, `adventure_log`) is in D1 and permanent.\n- The session is in Workers KV at `session:<sessionId>`, with a 7-day TTL (`SESSION_TTL_SECONDS = 604800`) that resets on each `saveSession`. It keeps the last 20 history turns (`MAX_HISTORY`).\n- Clearing browser storage loses the links to the server sessions. The D1 data stays, but nothing points to it.\n\n**Deleting a campaign slot**\n\n- `AuthService.removeCampaign` (`auth.service.ts:54`) only removes the slot from the local profile.\n- It makes no API call, so the server-side character is not deleted. The D1 rows (`characters`, `character_inventory`, `adventure_log`) remain as orphans.\n- The KV session is not cleaned up either. It just expires after 7 days.\n\nThis comes from the project docs (`auth.service.md`, `resume-session.md`). I did not open the source files to check it.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

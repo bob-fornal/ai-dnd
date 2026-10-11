@@ -1,0 +1,54 @@
+{
+  "agent": "claude",
+  "inputTokens": 16902,
+  "outputTokens": 847,
+  "cacheReadTokens": 11590,
+  "cacheWriteTokens": 5308,
+  "reasoningTokens": 0,
+  "modelRequests": 2,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.032028,
+  "apiDurationMs": 5528,
+  "mainInputTokens": 16902,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Read": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 709
+    },
+    {
+      "path": "docs/flows/action-loop.md",
+      "kind": "doc",
+      "tokens": 564
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1273,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Source: `worker/src/services/ai-dm.md` and `docs/flows/action-loop.md`. I didn't open `ai-dm.ts` itself, so this comes from the docs and I haven't checked it against the code.\n\n**Model failure (`askDM`, `ai-dm.ts:81`)**\n1. `askDM` first calls the primary model, `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It requests `json_object` format with temperature 0.85 and 1024 tokens.\n2. If that call throws, it retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n3. If both models fail, it returns `fallbackNarrative`. That is a canned response, so the game loop keeps going.\n\n**Response that isn't valid JSON (`parseAIResponse`)**\n- It strips code fences and extracts the first `{…}` block.\n- It fills in defaults for every field, so the result is always a validated `AIDMResponse`.\n- It caps `suggestedActions` at 4 and `diceRolls` at 8.\n- It reads text from both `choices[0].message.content` (OpenAI-style) and the legacy `response` field.\n\n**Downstream clamping**\n`routes/action.ts:57-69` clamps what the AI returns, because the Worker owns the rules:\n- `hpDelta` is clamped to 0..max HP.\n- `xpGained` is applied only when positive.\n- `goldDelta` is floored at 0.\n- `itemsAdded` and `itemsRemoved` are ignored.\n\n**Known gaps**\n- `generateQuest`, `generateBackstory` and `generateLevelUpNarrative` read only the legacy `response` field. With llama-3.3 they fall back to canned text or an empty string (bugs.md B-03).\n- `wrangler dev` without `--remote` stubs the AI, so you always get the fallback text locally.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

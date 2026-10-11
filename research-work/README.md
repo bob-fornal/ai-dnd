@@ -77,6 +77,41 @@ Arms can change the shared Copilot flags with `removeArgs` and `extraArgs` in `c
 
 **Cost:** the original suite was 8 tasks × 4 arms × 3 repeats = **96 Copilot sessions**; with 11 tasks and 6 arms a full run is 198. In the smoke test each session cost about 5–8 AI credits and one premium request. Use `--tasks`, `--arms`, and `--repeats` to start small.
 
+## Running with Claude Code
+
+The same tasks, arms, isolation, grading, and analysis run against the Claude Code CLI with `--agent claude`:
+
+```bash
+node scripts/run.mjs --agent claude --dry-run
+```
+
+```bash
+node scripts/run.mjs --agent claude --label claude-iso-1
+```
+
+```bash
+node scripts/analyze.mjs results/runs/claude-iso-1
+```
+
+Settings live in the `claude` block of `config.json` (default model `claude-sonnet-5-5`, effort `medium`, tools `Read`, `Grep`, `Glob`). Each arm keeps its meaning:
+
+| Arm property | Copilot | Claude Code |
+|---|---|---|
+| Read-only | `--allow-all-tools --deny-tool=write --deny-tool=shell` | `--tools Read,Grep,Glob --permission-mode dontAsk` (anything else is denied) |
+| Auto-load `AGENTS.md` | remove `--no-custom-instructions` | default (project instructions load) |
+| No auto-load | `--no-custom-instructions` | `--settings '{"claudeMdExcludes":["**/AGENTS.md"]}'` |
+| Node-only shell (v6) | `--allow-tool=shell(node:*)` | adds `Bash`/`PowerShell` with `--allowedTools "Bash(node *),PowerShell(node *)"` |
+| No personal config | `--disable-builtin-mcps`, no user instructions exist | `--setting-sources project,local` (no global `CLAUDE.md`, hooks, or plugins), `--disable-slash-commands`, `--strict-mcp-config`, `--no-session-persistence` |
+| Subagents | Copilot may use a search subagent | not available (not in `--tools`) |
+
+Parsing (`parseClaudeRun` in `lib.mjs`) reads `--output-format stream-json --verbose`. Input tokens are the sum of fresh input, cache reads, and cache writes from the final `result.modelUsage`, matching Copilot's figure. Round trips are unique assistant message IDs, and cost comes from `total_cost_usd` (the **Cost in USD** row). `reparse.mjs` picks the parser from `meta.json`.
+
+**Pitfall found while building this:** a `claudeMdExcludes` pattern for `**/CLAUDE.md` also stops `AGENTS.md` from loading, which silently turned the auto-load arms into no-routing arms. The user-level `CLAUDE.md` is excluded with `--setting-sources project,local` instead. Verify with a no-tools prompt that asks the model to quote the routing table.
+
+**Smoke test** (`results/runs/claude-smoke`, `level-up-flow`, 1 run each): `complete` 3 round trips / 25.3K input / $0.054; `research-v4` 2 / 15.9K / $0.031; `research-v4-noauto` 3 / 23.2K / $0.038; `research-v6` 2 / 26.8K / $0.034, using one `tools/read.mjs` call. Claude's fixed context per request (~8K) is much smaller than Copilot's (~23K).
+
+**Full run** (`results/runs/claude-iso-1`, 462 runs, 0 failures): routed auto-load arms beat the baseline by 15–25% in input and ~20–25% in cost (best: v3, 270K vs 360K, $0.46 vs $0.61). That's the same ranking as Copilot with smaller savings, because Claude's unguided baseline is already lean. Guided-without-routing is still the most expensive arm (+122%), and held-out tasks favor the baseline. v6's shell tool raises cached context per request, so its total input is high (+37%) while its dollar cost ties for lowest. Full write-up: `research-docs/agentic-ai-token-usage-talk.md` Stage 12.
+
 ## Isolation
 
 By default (`"isolate": true`), `run.mjs` copies each arm folder to `<workspaceRoot>/<label>/<folder>` (default `../../ai-dnd-research-workspaces`, outside this repository and outside the system temp folder) and runs `git init` there. Each arm is then its own project root:

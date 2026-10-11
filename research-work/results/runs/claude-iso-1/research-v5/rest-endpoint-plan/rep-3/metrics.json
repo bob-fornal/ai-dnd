@@ -1,0 +1,84 @@
+{
+  "agent": "claude",
+  "inputTokens": 26049,
+  "outputTokens": 2544,
+  "cacheReadTokens": 12012,
+  "cacheWriteTokens": 14033,
+  "reasoningTokens": 128,
+  "modelRequests": 2,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.08398240000000001,
+  "apiDurationMs": 16323,
+  "mainInputTokens": 26049,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "Read": 8
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/code/frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 1033
+    },
+    {
+      "path": "docs/code/worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 784
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 763
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 720
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 658
+    },
+    {
+      "path": "docs/code/frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 581
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 532
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    }
+  ],
+  "docFilesRead": 8,
+  "codeFilesRead": 0,
+  "docTokensRead": 5500,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "The project's own recipe in `docs/flows/add-endpoint.md` uses \"rest at the inn\" as its worked example. I built this list from that recipe plus the route, service and component docs. I didn't open the source files, so the line numbers come from the docs' anchors and may have drifted.\n\n## Worker\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add `RestBody { sessionId, characterId }` next to the other `*Body` types, which sit around lines 139–168. Add a cost constant such as `INN_REST_COST`. The cost is a rule, so it belongs on the Worker. |\n| `worker/src/routes/rest.ts` (new) | Export `restRoutes = new Hono<{ Bindings: Env }>()` with `POST /`. The handler does the following: <br>• Validate the body. <br>• Call `getCharacter`. <br>• Return 400 if `gold < cost`. <br>• Return 400 if HP is already full, so the player isn't charged for nothing. <br>• Return 400 if the session's `combatState` is active. I couldn't confirm that the session stores `combatState` this way. <br>• Call `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })`. <br>• Return `{ updatedCharacter, cost, narrative? }`. <br>• Optionally call `askDM` for narration, then `appendHistory`, `saveSession` and an `adventure_log` insert, following `routes/action.ts`. |\n| `worker/src/index.ts` (around lines 41–48) | Import `restRoutes` and add `app.route('/api/rest', restRoutes)`. |\n| `worker/src/services/character.ts` | Probably no change. `updateCharacter` (around line 94) whitelists fields, so confirm that `hp` and `gold` are on the whitelist. |\n| `worker/migrations/` | No change. `characters` already has `hp`, `max_hp` and `gold`. |\n\n## Frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add a `RestResponse` interface, `{ updatedCharacter: Character; cost: number; narrative?: string }`. Put it near `ActionResponse` and `CombatResponse`. |\n| `frontend/src/app/services/game-api.service.ts` | Add `rest(sessionId, characterId)`, which posts to `${API_BASE}/api/rest`. |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add a `rest()` handler next to `levelUp()` and `combatAction()`: <br>• Call `api.rest`. <br>• Call `CharacterStateService.setCharacter(res.updatedCharacter)`. <br>• Push a system or narrative entry. <br>• Show `err.error.error` on failure. <br>• Update the campaign slot through `auth.updateCampaign` if you want it to match the other handlers. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at Inn (N gp)\" button in the left column near the Inventory button. Disable it when `inCombat()`, when `gold < cost`, or when HP is full. |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add tests with `GameApiService` as a Jasmine spy: <br>• Success updates the character. <br>• The error path shows a message. <br>• The button is disabled in combat. |\n| `game-console.component.css` | Optional styling. |\n\n`CharacterStateService` needs no change. The new HTTP method is the only addition on the client side.\n\n## Docs to update in the same change\n- `docs/code/worker/src/routes/rest.md` (new).\n- The doc beside every other changed file, with links on both ends.\n- `code.md`, then re-run `research-work/scripts/build-symbol-index.mjs`.\n- `docs/PRD.md` §9, the API spec.\n- `docs/flows/add-endpoint.md` and possibly a new flow doc.\n- The routing table in `AGENTS.md`.\n\n## Things to watch\n- The server must recheck gold and HP. The client checks are only for the UI.\n- The use-potion flow only changes HP locally and never saves it (B-05). Don't copy that pattern. Rest must save the change through `updateCharacter`.\n- After a death, HP stays at 0 and input stays enabled (B-10). Resting at the inn could become the recovery path. If so, decide whether resting from 0 HP is allowed.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

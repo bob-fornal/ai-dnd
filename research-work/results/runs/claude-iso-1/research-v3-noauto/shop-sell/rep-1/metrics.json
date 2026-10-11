@@ -1,0 +1,65 @@
+{
+  "agent": "claude",
+  "inputTokens": 34864,
+  "outputTokens": 1540,
+  "cacheReadTokens": 27323,
+  "cacheWriteTokens": 7533,
+  "reasoningTokens": 21,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0510126,
+  "apiDurationMs": 11991,
+  "mainInputTokens": 34864,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "Read": 4,
+    "Grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 996
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 852
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 655
+    },
+    {
+      "path": "worker/src/routes/shop.md",
+      "kind": "doc",
+      "tokens": 421
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 1928,
+  "codeTokensRead": 996,
+  "otherToolTokens": 114,
+  "filesModified": [],
+  "answer": "**Payout:** the player gets **14 gp**. Longsword has `value` 15 in `worker/src/db/seed.sql:6`, and `shopRoutes.post('/transaction')` in `worker/src/routes/shop.ts:88` computes `Math.floor(15 * 0.5) * 2 = 7 * 2`. The floor is applied per unit before multiplying by quantity. The response is `{ success, action: 'sell', item, quantity: 2, earned: 14, updatedGold }`.\n\n**Checks, in order** (`worker/src/routes/shop.ts:27-96`):\n1. The body must parse as JSON, otherwise 400 `Invalid JSON body`.\n2. `characterId`, `shopId`, `action`, `itemId` and `quantity` must all be present, otherwise 400 `Missing required fields`.\n3. `getCharacter` must find the character, otherwise 404.\n4. The `items` row must exist for `itemId`, otherwise 404.\n5. The sell branch looks up the `character_inventory` row. If the row is missing or `inv.quantity < 2`, it returns 400 `You do not have enough of this item to sell`.\n\n**Gaps in the checks:**\n- The route never validates that `shopId` exists, and it doesn't check what the shop stocks.\n- It doesn't check whether the item is equipped, and it doesn't restock the shop. Shop 1 is Aldric's Armory, and the seed lists a Longsword at `shop_inventory` stock -1 (`seed.sql:121`).\n- A `quantity` that is zero fails the required-fields check, since it is falsy. Other invalid values aren't checked.\n\n**Inventory row:** a single `DB.batch` (`shop.ts:98-107`) runs two statements:\n- It runs `UPDATE characters SET gold = gold + 14`.\n- If `inv.quantity === 2`, it runs `DELETE FROM character_inventory WHERE character_id = ? AND item_id = ?`, so the row is removed.\n- If the player owned more than 2, it runs `UPDATE character_inventory SET quantity = quantity - 2` instead, and the row stays.\n\nI answered from `AGENTS.md`, `docs/flows/inventory.md` and `worker/src/routes/shop.md`, then confirmed against `shop.ts` and `seed.sql`. The sell path doesn't use the `ON CONFLICT` upsert that breaks buying (B-02), so selling isn't affected by that bug.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

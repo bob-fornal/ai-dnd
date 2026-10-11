@@ -1,0 +1,64 @@
+{
+  "agent": "claude",
+  "inputTokens": 36209,
+  "outputTokens": 1518,
+  "cacheReadTokens": 27462,
+  "cacheWriteTokens": 8739,
+  "reasoningTokens": 51,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0556444,
+  "apiDurationMs": 11037,
+  "mainInputTokens": 36209,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1695
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 948
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 726
+    },
+    {
+      "path": "docs/flows/action-loop.md",
+      "kind": "doc",
+      "tokens": 566
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 2240,
+  "codeTokensRead": 1695,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Failures are handled in `worker/src/services/ai-dm.ts`. Nothing is thrown to the caller, and `askDM` always returns a valid `AIDMResponse`.\n\n**Model failure: `askDM` (`ai-dm.ts:81`)**\n1. The primary model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It is called with `response_format: json_object`, temperature 0.85 and `max_tokens` 1024. A streaming response is treated as an error.\n2. If that call throws, the `catch` at `:115` retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. The retry uses the same prompt and `max_tokens` 1024, with no `json_object` format and no temperature.\n3. If Mistral also throws (`:133`), `askDM` returns `fallbackNarrative(playerAction)` directly.\n4. The response text is read from `choices[0].message.content`, then from the legacy `response` field, then from a bare string. If none of them has content, `rawText` is `''`.\n\n**Invalid JSON: `parseAIResponse` (`:143`)**\n- If `rawText` is empty or not a string, it returns `fallbackNarrative`.\n- It strips markdown code fences. If the text doesn't start with `{`, it extracts the first `{…}` block by regex. If there is no block, it logs a warning and returns `fallbackNarrative`.\n- If `JSON.parse` throws, the `catch` at `:192` returns `fallbackNarrative`.\n- If the JSON parses but is incomplete, each field gets a default:\n  - Missing or empty `narrative` becomes \"The world holds its breath…\".\n  - `suggestedActions` defaults to four generic actions and is capped at 4.\n  - `diceRolls` defaults to `[]` and is capped at 8.\n  - The numeric deltas become `null`, the item arrays become `[]`, and the combat flags are true only if they are exactly `true`.\n\n**`fallbackNarrative` (`:198`)**\nIt returns a canned narrative that echoes the player's action. It makes no state changes: `hpDelta`, `xpGained` and `goldDelta` are `null`, and `combatInitiated` and `combatEnded` are `false`. Its suggested actions are \"Look around\", \"Proceed carefully\", \"Listen for sounds\" and \"Rest a moment\".\n\n**Caller side**\n`routes/action.ts:51` calls `askDM` and applies the result normally. A fallback has no mechanical effect because all its deltas are null. The combat route also calls `askDM`, so it gets the same fallback.\n\n**Other AI functions**\n`generateQuest`, `generateBackstory` and `generateLevelUpNarrative` read only the legacy `response` field. With llama-3.3 they fall back to canned text or an empty string (`bugs.md` B-03). That is documented in `docs/code/worker/src/services/ai-dm.md`, and I didn't check those functions in the code.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

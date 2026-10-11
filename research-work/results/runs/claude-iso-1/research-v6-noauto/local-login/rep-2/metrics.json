@@ -1,0 +1,81 @@
+{
+  "agent": "claude",
+  "inputTokens": 59578,
+  "outputTokens": 1285,
+  "cacheReadTokens": 50021,
+  "cacheWriteTokens": 9549,
+  "reasoningTokens": 62,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.06106620000000001,
+  "apiDurationMs": 9688,
+  "mainInputTokens": 59578,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 1,
+    "Bash": 2,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 2,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1063
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 604
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 529
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 462
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.ts",
+      "kind": "code",
+      "tokens": 421
+    },
+    {
+      "path": "docs/code/frontend/src/app/app.routes.md",
+      "kind": "doc",
+      "tokens": 294
+    },
+    {
+      "path": "frontend/src/app/components/login/login.component.ts",
+      "kind": "code",
+      "tokens": 278
+    }
+  ],
+  "docFilesRead": 5,
+  "codeFilesRead": 2,
+  "docTokensRead": 2952,
+  "codeTokensRead": 699,
+  "otherToolTokens": 312,
+  "filesModified": [],
+  "answer": "**Login**\n- Login is local and name-only, with no password and no server call. `LoginComponent.login()` (`login.component.ts:33`) calls `AuthService.login(username)` (`auth.service.ts:16`).\n- `AuthService.login` trims the name. It loads the saved profile with `loadProfileByName`, or creates `{ username, campaigns: [] }` and persists it.\n- A user with no campaigns is routed to `/characters`. A user with campaigns stays on the login page and sees their campaign slots.\n- `authGuard` protects the `characters` and `game/:sessionId` routes (`app.routes.ts`). It only checks `isLoggedIn()`, which means `profile() !== null`.\n- `logout()` clears the active profile and removes the `ai_dnd_user` key, but keeps the per-user copy.\n\n**Where campaigns are stored**\n- Campaigns are `CampaignSlot`s in the browser's `localStorage`, inside the `UserProfile.campaigns` array.\n- There are two keys. `ai_dnd_user` holds the active profile. `ai_dnd_user_<lowercase name>` holds each user's saved profile.\n- Each slot holds the `sessionId` and `characterId` that point at server data. `addCampaign`, `updateCampaign` and `removeCampaign` manage the slots.\n- Resuming a slot navigates to `/game/<sessionId>` (`resumeCampaign`, `login.component.ts:51`).\n- The server side lives in two places:\n  - **KV:** `session:<id>`, with a 7-day TTL (`SESSION_TTL_SECONDS = 604800`).\n  - **D1:** the `characters`, `character_inventory` and `adventure_log` tables, which are permanent.\n\n**Deleting a campaign slot**\n- `LoginComponent.deleteCampaign` (`login.component.ts:55`) calls only `auth.removeCampaign(slotId)`.\n- `removeCampaign` (`auth.service.ts:54`) filters the slot out of `p.campaigns` and persists the profile. It makes no API call.\n- The server-side character is therefore left in place. The D1 character, inventory and log rows stay, and the KV session lingers until it expires after 7 days.\n- Once the slot is gone, nothing in the browser points at that data, so it is orphaned.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

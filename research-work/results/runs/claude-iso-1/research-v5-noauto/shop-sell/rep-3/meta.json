@@ -1,0 +1,65 @@
+{
+  "agent": "claude",
+  "arm": {
+    "id": "research-v5-noauto",
+    "dir": "../research-documentation-v5",
+    "description": "v5 docs with auto-load disabled; the prompt points at AGENTS.md instead.",
+    "preamble": "Before answering, read AGENTS.md and follow it.",
+    "docsVersion": "v5"
+  },
+  "task": {
+    "id": "shop-sell",
+    "area": "worker",
+    "heldOut": true,
+    "prompt": "If a player sells two Longswords to Aldric's Armory, how much gold do they receive, which checks run first, and what happens to their inventory row?",
+    "expect": [
+      [
+        "shop.ts",
+        "/api/shop/transaction"
+      ],
+      [
+        "0.5",
+        "half"
+      ],
+      [
+        "14"
+      ],
+      [
+        "quantity"
+      ],
+      [
+        "DELETE",
+        "delete",
+        "removed"
+      ]
+    ]
+  },
+  "rep": 3,
+  "prompt": "Before answering, read AGENTS.md and follow it.\n\nIf a player sells two Longswords to Aldric's Armory, how much gold do they receive, which checks run first, and what happens to their inventory row?\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\claude-iso-1\\research-documentation-v5",
+  "isolated": true,
+  "cliArgs": [
+    "-p",
+    "--model",
+    "claude-sonnet-5-5",
+    "--effort",
+    "medium",
+    "--tools",
+    "Read,Grep,Glob",
+    "--permission-mode",
+    "dontAsk",
+    "--no-session-persistence",
+    "--strict-mcp-config",
+    "--disable-slash-commands",
+    "--setting-sources",
+    "project,local",
+    "--settings",
+    "{\"claudeMdExcludes\":[\"**/AGENTS.md\"]}",
+    "--output-format",
+    "stream-json",
+    "--verbose"
+  ],
+  "model": "claude-sonnet-5-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-10T16:02:58.006Z"
+}

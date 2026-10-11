@@ -1,0 +1,71 @@
+{
+  "agent": "claude",
+  "inputTokens": 39951,
+  "outputTokens": 2698,
+  "cacheReadTokens": 29956,
+  "cacheWriteTokens": 9987,
+  "reasoningTokens": 135,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0729352,
+  "apiDurationMs": 17602,
+  "mainInputTokens": 39951,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "Read": 5,
+    "Glob": 1,
+    "Grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 948
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 720
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 658
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 608
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 352
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 2,
+  "docTokensRead": 2326,
+  "codeTokensRead": 960,
+  "otherToolTokens": 1277,
+  "filesModified": [],
+  "answer": "I read AGENTS.md and followed it. It routes this task to `docs/flows/add-endpoint.md`, which uses \"rest at the inn\" as its worked example. `docs/flows/inventory.md` covers shops and gold. I checked the anchors against the code. I changed no files.\n\n## Worker\n\n1. **`worker/src/types/index.ts`**\n   - Add `RestBody { sessionId: string; characterId: string }`.\n   - Add a cost constant, e.g. `INN_REST_COST`. The cost is a rule, so it lives in Worker code.\n   - `Character` already has `hp`, `max_hp` and `gold` (lines 31–33), so no new fields are needed.\n\n2. **`worker/src/routes/rest.ts`** (new)\n   - Export `restRoutes = new Hono<{ Bindings: Env }>()` with `POST /`.\n   - Validate the body.\n   - Call `getCharacter(db, id)` (`services/character.ts:86`).\n   - Return 404 if the character is missing.\n   - Return 400 if `gold < cost`, or if `hp === max_hp` so the player isn't charged for nothing.\n   - Call `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (`services/character.ts:94`). The whitelist already allows `hp` and `gold`, so that function needs no change.\n   - Return `{ updatedCharacter, goldSpent }`.\n   - Optionally add `appendHistory` and `saveSession`, plus an `adventure_log` insert, following `routes/action.ts`.\n\n3. **`worker/src/index.ts`**\n   - Add `import { restRoutes } from './routes/rest.js';` next to lines 5–12.\n   - Add `app.route('/api/rest', restRoutes);` in the block at lines 41–48.\n   - CORS needs no change, because POST is already allowed.\n\n4. **`worker/migrations/`**\n   - No new migration is needed: HP and gold are existing columns.\n   - Don't edit `0001`.\n\n## Frontend\n\n5. **`frontend/src/app/models/game.models.ts`**\n   - Add a `RestResponse { updatedCharacter: Character; goldSpent: number }` interface. The existing `updatedCharacter: Character` fields are at lines 100 and 116.\n\n6. **`frontend/src/app/services/game-api.service.ts`**\n   - Add `rest(sessionId, characterId)`. It posts to `` `${API_BASE}/api/rest` `` and returns `Observable<RestResponse>`.\n   - Follow the pattern of the existing methods around lines 42–86.\n\n7. **`frontend/src/app/components/game-console/game-console.component.ts`**\n   - Add a `restAtInn()` handler. It calls `api.rest(...)`, then `this.charSvc.setCharacter(res.updatedCharacter)`, the same call used at lines 126, 153 and 190.\n   - It then pushes a system entry such as \"You rest and recover to full HP for N gold\".\n   - On error, show the \"not enough gold\" message.\n\n8. **`frontend/src/app/components/game-console/game-console.component.html`**\n   - Add a \"Rest at Inn\" button next to the Inventory button at line 9.\n   - Disable it while the request is in flight.\n   - Optionally disable it when `hp === max_hp` or gold is below the cost.\n\n9. **`game-console.component.css`**\n   - Optional styling for the button.\n   - AGENTS.md says components are split into `.ts`, `.html`, `.css` and `.spec.ts`, with no inline templates.\n\n10. **`game-console.component.spec.ts`**\n    - Add tests with `GameApiService` as a Jasmine spy.\n    - Cover success (the character is updated) and the insufficient-gold error.\n\n`CharacterStateService.setCharacter` (`character-state.service.ts:50`) already exists, so the service needs no change. The character sheet updates through it.\n\n## Docs to update in the same change\n- The doc beside each changed file under `docs/code/...`, with links on both ends.\n- A new doc for `routes/rest.ts`, with an entry in `code.md`. Then re-run `research-work/scripts/build-symbol-index.mjs`.\n- `docs/PRD.md` §9, the API spec.\n- `docs/flows/inventory.md`, or a new flow doc, if you want the feature documented as its own flow.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

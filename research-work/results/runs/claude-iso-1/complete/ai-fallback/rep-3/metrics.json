@@ -1,0 +1,50 @@
+{
+  "agent": "claude",
+  "inputTokens": 23801,
+  "outputTokens": 1207,
+  "cacheReadTokens": 16868,
+  "cacheWriteTokens": 6927,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0431636,
+  "apiDurationMs": 8844,
+  "mainInputTokens": 23801,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Grep": 1,
+    "Read": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 2633
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 2633,
+  "otherToolTokens": 603,
+  "filesModified": [],
+  "answer": "All of this is in `worker/src/services/ai-dm.ts`.\n\n**Model failure, in `askDM()` (lines 85–140)**\n1. The primary model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It is called with `response_format: { type: 'json_object' }`, `max_tokens: 1024` and `temperature: 0.85`. A streaming response (`ReadableStream`) is treated as an error.\n2. If the call throws, the `catch` at line 115 tries `@cf/mistral/mistral-7b-instruct-v0.2-lora`. This call has the same prompts and `max_tokens`, but no `response_format`.\n3. If Mistral also throws (line 133), `askDM()` returns `fallbackNarrative(playerAction)` immediately.\n4. Whichever model answers, its text is read from `choices[0].message.content`, then the legacy `.response`, then the raw string, then `''`. The text goes to `parseAIResponse()`.\n\n**Invalid or empty JSON, in `parseAIResponse()` (lines 143–195)**\n- **Empty or non-string text:** returns `fallbackNarrative()`.\n- **Markdown fences:** a leading or trailing ` ```json ` fence is stripped.\n- **Text around the JSON:** if the text doesn't start with `{`, the first `{...}` block is extracted by regex. If there is none, it logs a warning and returns `fallbackNarrative()`.\n- **Parse failure:** `JSON.parse` is wrapped in a `try`. If it throws, the `catch` returns `fallbackNarrative()`.\n- **Valid JSON with missing fields:** each field is defaulted. These are:\n  - `narrative`: \"The world holds its breath…\".\n  - `gameStateChanges`: nulls, empty arrays and `false` flags.\n  - `suggestedActions`: four default actions, capped at 4.\n  - `diceRolls`: `[]`, capped at 8.\n\n**`fallbackNarrative()` (lines 198–210)**\nIt returns a canned narrative built from the player's action: \"You attempt to …\". It makes no state changes: all deltas are null, the item lists are empty, and `combatInitiated` and `combatEnded` are false. It also returns four default suggested actions and no dice rolls.\n\nThe same file has similar `catch` fallbacks for `generateQuest()` (hardcoded \"Blood on the Road\" quest), `generateBackstory()` and `generateLevelUpNarrative()`. These call only Llama, with no Mistral retry.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

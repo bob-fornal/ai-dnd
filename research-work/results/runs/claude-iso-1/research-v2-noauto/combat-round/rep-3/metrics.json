@@ -1,0 +1,59 @@
+{
+  "agent": "claude",
+  "inputTokens": 22776,
+  "outputTokens": 1518,
+  "cacheReadTokens": 17720,
+  "cacheWriteTokens": 5050,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.038936,
+  "apiDurationMs": 10537,
+  "mainInputTokens": 22776,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 806
+    },
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 743
+    },
+    {
+      "path": "worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 642
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2191,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Per the docs in AGENTS.md's combat routing batch (`docs/flows/combat.md`, `worker/src/services/combat.md`). I did not open the code to check line numbers.\n\n**Flow when the player clicks Attack**\n1. **Frontend:** `game-console.component.html:83-92` calls `combatAction(action)` (`game-console.component.ts:144`). That calls `GameApiService.resolveCombat` (`game-api.service.ts:50`).\n2. **Route:** `POST /api/combat/resolve` is in `worker/src/routes/combat.ts:11`. It loads the character and session, and returns 400 if the session isn't in combat.\n3. **Mechanics:** `routes/combat.ts:38` calls `resolveCombatRound` (`worker/src/services/combat.ts:50`). The attack branch is at `:81`.\n4. **Persistence:**\n   - `updateCharacter` (`routes/combat.ts:51`) clamps HP to 0..max and adds XP on a victory.\n   - On a victory, `rollLoot` and `grantLoot` run (`:56-57`). Loot never drops because of bug B-01.\n5. **Narration:** `askDM(..., result.contextForDM)` (`routes/combat.ts:68`).\n6. **Session and log:**\n   - The route clears `combatState` if combat ended. Otherwise it increments `round` and saves monster HP, then calls `saveSession` (`:80-95`).\n   - It writes two `adventure_log` rows, with the player row prefixed `[Combat]` (`:100-103`).\n7. **UI:** `game-console.component.ts:149-175` updates state and shows the victory, fled or died messages. It also shows the level-up prompt when `canLevelUp` is set.\n\n**Where the dice are rolled**\n- All rolls happen in the Worker, in `services/combat.ts`, through helpers in `services/dice.ts`: `attackRoll` (`dice.ts:55`), `rollExpression`, `modifier` and `roll`.\n- **To hit:** d20 + ability modifier + proficiency vs the monster's AC.\n  - The ability is DEX for Rogue and Ranger, STR for everyone else.\n  - Proficiency is `ceil(level/4)+1`.\n  - A natural 20 is a crit, and a natural 1 is a miss.\n- **Damage:** the class die from `getPlayerDamageDice` (`:222`) plus a modifier.\n  - The die is 1d8 for Fighter, Cleric and Bard, and 1d6 for the others.\n  - The modifier is INT for Wizard and Bard.\n  - Damage is at least 1 and doubles on a crit.\n- **Monster's counterattack:** it happens in the same call if combat hasn't ended. Monster death is at `:121` and player death at `:152`.\n- `resolveCombatRound` doesn't mutate state. The route applies the HP and round changes.\n\n**What the AI is responsible for**\n- **Only narration.** `askDM` receives `contextForDM` (built at `:160`), which is the already-resolved round log. It turns that into prose.\n- (Earlier, a free-text action lets the AI set `combatInitiated: true`. After that the Worker picks the monster in `routes/action.ts:79-80`.)\n\n**What the AI is not responsible for**\n- Dice, hit or miss, damage, HP, XP, gold, loot, and whether combat ends. The Worker owns all of these.\n\n**Known gaps**\n- Equipment is ignored in damage (B-08).\n- Loot never drops (B-01).\n- Use Item has no effect (B-04).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

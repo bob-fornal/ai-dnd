@@ -1,0 +1,64 @@
+{
+  "agent": "claude",
+  "inputTokens": 20185,
+  "outputTokens": 2043,
+  "cacheReadTokens": 13714,
+  "cacheWriteTokens": 6467,
+  "reasoningTokens": 167,
+  "modelRequests": 2,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.04904879999999999,
+  "apiDurationMs": 13286,
+  "mainInputTokens": 20185,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 767
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 737
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 717
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 655
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 0,
+  "docTokensRead": 2876,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "These file lists come from the docs (`docs/flows/add-endpoint.md`, `inventory.md`, `types/index.md`, `game-api.service.md`). I haven't opened the code, so line numbers are the docs' anchors and might be stale.\n\n## Worker\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add `RestBody { sessionId, characterId }` beside `LevelUpBody` (around line 168). Add a cost constant such as `INN_REST_COST`. Use a flat cost, or scale it by level in the route. |\n| `worker/src/routes/rest.ts` (new) | Export `restRoutes = new Hono<{ Bindings: Env }>()` with `POST /`. It should:<br>- Validate the body.<br>- Call `getCharacter`.<br>- Return 400 if `hp === max_hp` or `gold < cost`.<br>- Call `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (`services/character.ts:94`, whitelisted fields only).<br>- Return `{ updatedCharacter, cost }`.<br>- Optionally call `askDM` for narration, then `appendHistory` and `saveSession`, and insert an `adventure_log` row, following `routes/action.ts`. |\n| `worker/src/index.ts` (lines 41-48) | Import `restRoutes` and add `app.route('/api/rest', restRoutes)`. CORS and bindings need no change. |\n| `worker/src/services/*.ts` | Only needed if the cost logic is shared with another route. Otherwise nothing. |\n| `worker/migrations/` | No change, because `hp`, `max_hp` and `gold` already exist on `characters`. |\n\nTwo things to check before writing the route:\n- **Combat:** reject rest while the session has an active `CombatState`, which is stored in the KV session. Read it with `services/session.ts`.\n- **Session copy of HP:** if the session or history holds an HP copy, it needs updating too. See `docs/flows/resume-session.md` and `combat.md` for this.\n\n## Frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add a `RestResponse { updatedCharacter: Character; cost: number }` interface. Add `RestBody` if you want it typed. |\n| `frontend/src/app/services/game-api.service.ts` | Add `rest(sessionId, characterId)` that posts to `${API_BASE}/api/rest`, placed after `levelUp()` (line 74). |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add a `restAtInn()` handler that:<br>- Calls `gameApi.rest`.<br>- Calls `CharacterStateService.setCharacter(res.updatedCharacter)`.<br>- Pushes a system or narrative entry such as \"You rest and pay N gold\".<br>- Reads `err.error.error` for \"not enough gold\" and \"already at full HP\".<br>- Is disabled while in combat. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at Inn\" button next to the Inventory button (line 9). Disable it when `hp === max_hp`, gold is below the cost, or combat is active. |\n| `game-console.component.spec.ts` | Test the handler with `GameApiService` as a Jasmine spy. It should cover success, insufficient gold, and the in-combat case. |\n| `game-api.service.spec.ts` (if present) | Test that `rest` posts to the right URL. |\n\n`character-state.service.ts` and `inventory.component.*` don't change. Don't put the rest button in the inventory dialog, which still has the B-05 local-only HP bug.\n\n## Docs to update in the same change\nThese follow `docs/AUTHORING.md`:\n- New `worker/src/routes/rest.md`.\n- Updates to the docs beside every changed file (`types/index.md`, `index.md`, `game-api.service.md`, `game.models.md`, `game-console.component.md`).\n- A `code.md` entry, then re-run `research-work/scripts/build-symbol-index.mjs`.\n- `docs/PRD.md` §9 (API spec).\n- A new `docs/flows/` entry or a routing-table row in `AGENTS.md`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "inputTokens": 23339,
+  "outputTokens": 1125,
+  "cacheReadTokens": 17874,
+  "cacheWriteTokens": 5459,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.036672800000000005,
+  "apiDurationMs": 8811,
+  "mainInputTokens": 23339,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 3,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1072
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 527
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1501,
+  "codeTokensRead": 527,
+  "otherToolTokens": 25,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set by the `origin` callback passed to `cors({...})` in `worker/src/index.ts:19-35`. It echoes the request origin back only if the origin is one of these:\n- exactly `http://localhost:4200`\n- anything ending in `.pages.dev`, at any depth\n- anything ending in `.workers.dev`, at any depth\n\nA request with no `Origin` header gets `null`, so no CORS headers are sent. Every other origin is also rejected with `null`.\n\nThe same middleware allows methods `GET, POST, PATCH, DELETE, OPTIONS` and headers `Content-Type, Authorization`, with `maxAge: 86400`. It applies to all routes (`'*'`), including `/api/health`.\n\n**Adding a custom domain:** edit the `if (...)` condition inside that `origin` function at `worker/src/index.ts:23-27`. Add one more `||` clause with the full origin, for example `origin === 'https://app.example.com'`. Use an exact match with the scheme included, not a bare hostname.\n\nDon't add it to an array. The comment at line 20 says Hono matches array entries as exact strings only. `docs/code/worker/src/index.md` says the same and points to DEPLOYMENT_NOTES §4.\n\nAvoid a loose `endsWith('example.com')` check, because it would also match `evilexample.com`. If you need wildcard subdomains, use `endsWith('.example.com')`.\n\nRedeploy the Worker after the change. `worker/wrangler.toml` holds only bindings (`AI`, `SESSION_KV`, `DB`, `ENVIRONMENT`), not CORS settings.\n\nI read only `AGENTS.md`, the `index.md` doc and `index.ts`. I didn't check whether the frontend has its own API base URL setting that would also need updating for the new domain.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

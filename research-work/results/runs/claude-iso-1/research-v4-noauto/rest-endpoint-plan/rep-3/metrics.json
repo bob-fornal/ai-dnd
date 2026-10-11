@@ -1,0 +1,71 @@
+{
+  "agent": "claude",
+  "inputTokens": 57370,
+  "outputTokens": 2730,
+  "cacheReadTokens": 45972,
+  "cacheWriteTokens": 11388,
+  "reasoningTokens": 133,
+  "modelRequests": 5,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.08206640000000001,
+  "apiDurationMs": 18715,
+  "mainInputTokens": 57370,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 9,
+  "toolCallsByName": {
+    "Read": 5,
+    "Glob": 2,
+    "Grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 948
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 763
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 720
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 658
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    }
+  ],
+  "docFilesRead": 5,
+  "codeFilesRead": 0,
+  "docTokensRead": 3518,
+  "codeTokensRead": 0,
+  "otherToolTokens": 1422,
+  "filesModified": [],
+  "answer": "Per AGENTS.md and `docs/flows/add-endpoint.md` (the recipe uses \"rest at the inn\" as its example), I checked the anchors against the code. I changed nothing.\n\n## Worker\n\n1. **`worker/src/types/index.ts`**\n   - Add `RestBody { sessionId: string; characterId: string }`.\n   - Add a cost constant, e.g. `REST_COST_GOLD` (value is your call; the docs define none).\n\n2. **`worker/src/routes/rest.ts`** (new)\n   - Export `restRoutes = new Hono<{ Bindings: Env }>()` with `POST /`.\n   - Validate the body, then call `getCharacter` from `services/character.js`.\n   - Return 400 if `gold < REST_COST_GOLD`. Optionally return a \"already full HP\" response so the player isn't charged for nothing.\n   - Call `updateCharacter(c.env.DB, characterId, { hp: character.max_hp, gold: character.gold - REST_COST_GOLD })`. `updateCharacter` is at `services/character.ts:94` and only accepts whitelisted fields.\n   - Return `{ updatedCharacter, cost, ... }`.\n   - Optionally add `appendHistory` + `saveSession` and an `adventure_log` insert, modelled on `routes/action.ts`. Optionally call `askDM` for narration. The Worker does the gold and HP math, and the AI only narrates.\n\n3. **`worker/src/index.ts:41-48`**\n   - Import `restRoutes`.\n   - Add `app.route('/api/rest', restRoutes);` after the `/api/quest` line (`:48`).\n   - CORS (`:19-35`) needs no change, since the origins are the same.\n\n4. **`worker/src/services/character.ts`** (only if shared logic emerges)\n   - Put any reusable heal or charge helper here, not in the route.\n\n5. **Migrations:** none. `hp`, `max_hp` and `gold` already exist, so no schema change is needed.\n\n## Angular frontend\n\n6. **`frontend/src/app/models/game.models.ts`**\n   - Add a `RestResponse` interface, e.g. `{ updatedCharacter: Character; cost: number; narrative?: string }`, mirroring the Worker response.\n\n7. **`frontend/src/app/services/game-api.service.ts`** (methods end around `:109`)\n   - Add `rest(sessionId, characterId): Observable<RestResponse>` that POSTs to `${API_BASE}/api/rest`.\n\n8. **`frontend/src/app/components/game-console/game-console.component.ts`**\n   - Add a `rest()` handler, modelled on `levelUp()` at `:183`.\n   - It calls `this.api.rest(...)`, then `this.charSvc.setCharacter(res.updatedCharacter)` so the sheet updates, as at `:126`, `:153` and `:190`.\n   - It pushes a system or narrative log entry.\n   - On error, read `err.error.error`, since there is no error mapping in the API service.\n   - Consider disabling the button during combat.\n\n9. **`frontend/src/app/components/game-console/game-console.component.html`**\n   - Add a \"Rest at Inn (N gold)\" button next to the Inventory button (`:9`), bound to `rest()`.\n   - Optionally disable it when gold is below the cost or HP is already full.\n\n10. **`frontend/src/app/components/game-console/game-console.component.css`**\n    - Only if the button needs styling.\n\n11. **`frontend/src/app/components/game-console/game-console.component.spec.ts`**\n    - Add tests with `GameApiService` as a Jasmine spy, covering success and insufficient gold.\n\n12. **`frontend/src/app/services/character-state.service.ts`**\n    - No change. `setCharacter` (`:50`) already handles the update.\n\n## Docs to update in the same change\n\n- Add `docs/code/worker/src/routes/rest.md`.\n- Update the docs beside each changed file: `index.md`, the types doc, `game-api.service.md`, `game.models.md` and `game-console.component.md`.\n- Add the new doc to `code.md`, then re-run `research-work/scripts/build-symbol-index.mjs`.\n- Update the PRD §9 API spec.\n- Optionally update `docs/flows/inventory.md`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

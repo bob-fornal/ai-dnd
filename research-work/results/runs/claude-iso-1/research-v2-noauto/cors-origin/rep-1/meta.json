@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "arm": {
+    "id": "research-v2-noauto",
+    "dir": "../research-documentation-v2",
+    "description": "v2 docs with auto-load disabled; the prompt points at AGENTS.md instead. Separates the auto-load effect from the content effect.",
+    "preamble": "Before answering, read AGENTS.md and follow it.",
+    "docsVersion": "v2"
+  },
+  "task": {
+    "id": "cors-origin",
+    "area": "worker",
+    "prompt": "Which browser origins can call the API, and exactly where would I add a new custom domain?",
+    "expect": [
+      [
+        "localhost:4200"
+      ],
+      [
+        "pages.dev"
+      ],
+      [
+        "workers.dev"
+      ],
+      [
+        "index.ts"
+      ],
+      [
+        "origin"
+      ]
+    ]
+  },
+  "rep": 1,
+  "prompt": "Before answering, read AGENTS.md and follow it.\n\nWhich browser origins can call the API, and exactly where would I add a new custom domain?\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\claude-iso-1\\research-documentation-v2",
+  "isolated": true,
+  "cliArgs": [
+    "-p",
+    "--model",
+    "claude-sonnet-5-5",
+    "--effort",
+    "medium",
+    "--tools",
+    "Read,Grep,Glob",
+    "--permission-mode",
+    "dontAsk",
+    "--no-session-persistence",
+    "--strict-mcp-config",
+    "--disable-slash-commands",
+    "--setting-sources",
+    "project,local",
+    "--settings",
+    "{\"claudeMdExcludes\":[\"**/AGENTS.md\"]}",
+    "--output-format",
+    "stream-json",
+    "--verbose"
+  ],
+  "model": "claude-sonnet-5-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-10T13:38:23.409Z"
+}

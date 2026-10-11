@@ -1,0 +1,61 @@
+{
+  "agent": "claude",
+  "inputTokens": 50258,
+  "outputTokens": 2642,
+  "cacheReadTokens": 40368,
+  "cacheWriteTokens": 9880,
+  "reasoningTokens": 125,
+  "modelRequests": 5,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0740336,
+  "apiDurationMs": 18654,
+  "mainInputTokens": 50258,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "Read": 3,
+    "Glob": 1,
+    "Grep": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 806
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 717
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 655
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2178,
+  "codeTokensRead": 0,
+  "otherToolTokens": 1837,
+  "filesModified": [],
+  "answer": "The anchors in `docs/flows/add-endpoint.md` match the code. I read that doc and `docs/flows/inventory.md`, and spot-checked the key line numbers. I changed no files.\n\n## Worker\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add `RestBody { sessionId, characterId }`. Add a cost constant such as `REST_COST_GOLD`, since no cost value exists yet. The `Character` type already has `hp`, `max_hp` and `gold` (`max_hp` is at `:31`). |\n| `worker/src/routes/rest.ts` (new) | Export `restRoutes = new Hono<{ Bindings: Env }>()` with `POST /`. It validates the body and calls `getCharacter`. It returns 400 if `gold < cost`, or if `hp === max_hp` so the player isn't charged for nothing. Then it calls `updateCharacter(db, id, { hp: character.max_hp, gold: character.gold - cost })`. It returns `{ updatedCharacter }`. Optionally add `appendHistory`, `saveSession` and an `adventure_log` insert, following `routes/action.ts`. |\n| `worker/src/index.ts:41-48` | Import `restRoutes` and add `app.route('/api/rest', restRoutes)` alongside the other mounts. |\n\n- **No change needed** to `worker/src/services/character.ts`. `updateCharacter` (`:94`) already whitelists `hp` and `gold`.\n- **No schema migration** is needed, because `hp`, `max_hp` and `gold` are existing columns.\n- **Rules stay in the Worker.** The cost and HP math live there, and the AI only narrates. If narration is wanted, call `askDM` from the route.\n\n## Frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add a `RestResponse { updatedCharacter: Character }` interface mirroring the Worker response. |\n| `frontend/src/app/services/game-api.service.ts` | Add `rest(sessionId, characterId)` that POSTs to `${API_BASE}/api/rest`. Place it near `shopTransaction()` (`:109`). |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add a `rest()` handler next to `openInventory()` (`:237`). It calls `api.rest(...)`, then `CharacterStateService.setCharacter(res.updatedCharacter)`, then pushes a system or narrative entry. It handles errors such as not enough gold. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at Inn (N gp)\" button near the Inventory button (`:9`). Disable it while loading or in combat. |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add `'rest'` to the `jasmine.createSpyObj` method list (`:24`), then add tests for success and for insufficient gold. |\n\n- The `.css` file is only needed if the button needs styling. Templates stay out of the `.ts` file.\n\n## Docs to update in the same change\nPer `docs/AUTHORING.md` and the recipe:\n- A new `worker/src/routes/rest.md`, and updates to the docs beside each changed file.\n- A `code.md` entry, plus a re-run of `research-work/scripts/build-symbol-index.mjs`.\n- `docs/PRD.md` §9 (API spec).\n- Optionally a new `docs/flows/` doc and a row in the `AGENTS.md` routing table.\n\nTwo bugs are worth knowing about:\n- **B-05:** potion healing is never saved. Rest avoids this because it persists HP through `updateCharacter`.\n- **B-14:** dialogs open at the bottom of the page. This only matters if you build the rest prompt as a dialog rather than a button.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

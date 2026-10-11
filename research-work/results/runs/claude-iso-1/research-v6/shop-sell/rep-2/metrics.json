@@ -1,0 +1,55 @@
+{
+  "agent": "claude",
+  "inputTokens": 60326,
+  "outputTokens": 1135,
+  "cacheReadTokens": 52968,
+  "cacheWriteTokens": 7350,
+  "reasoningTokens": 174,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.051359600000000005,
+  "apiDurationMs": 10258,
+  "mainInputTokens": 60326,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Bash": 2,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 2,
+  "filesRead": [
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1326
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 652
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 652,
+  "codeTokensRead": 1326,
+  "otherToolTokens": 66,
+  "filesModified": [],
+  "answer": "**They receive 14 gp.** The sell branch is in `worker/src/routes/shop.ts:87-111`, inside `POST /api/shop/transaction`.\n\n**Gold**\n- The Longsword has `value` 15 (`worker/src/db/seed.sql:6`). Its item id is 2, per the Armory stock row at `seed.sql:121`.\n- The price is `Math.floor(item.value * 0.5) * quantity` (`shop.ts:88`), which is `floor(7.5) * 2 = 7 * 2 = 14`.\n- The floor is applied per unit, so the player gets 14 gp, not 15 gp.\n- The Armory's stock and the `shopId` are never checked on a sell. Any valid item sells at half value, and `shopId` only has to be non-zero.\n\n**Checks, in order**\n1. The body must contain `characterId`, `shopId`, `action`, `itemId` and `quantity`, or the Worker returns 400 (`shop.ts:36`).\n2. `getCharacter` must find the character, or 404 (`:40`).\n3. The `items` row must exist, or 404 (`:44-47`).\n4. For a sell, the player must own the item. It selects the `character_inventory` row and requires `inv.quantity >= quantity`, otherwise 400 \"You do not have enough of this item to sell\" (`:91-96`).\n\n**Inventory row** (one `DB.batch`, `:98-107`)\n- The batch first runs `UPDATE characters SET gold = gold + 14`.\n- If the player owns exactly 2, the `character_inventory` row is deleted. Any `equipped` flag goes with it.\n- If the player owns more than 2, the row stays and `quantity = quantity - 2`. The `equipped` flag is untouched.\n- The response is `{ success, action: 'sell', item, quantity, earned: 14, updatedGold }`.\n\nThe buy path is broken by bug B-02, but the sell path doesn't use the `ON CONFLICT` upsert, so it isn't affected.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

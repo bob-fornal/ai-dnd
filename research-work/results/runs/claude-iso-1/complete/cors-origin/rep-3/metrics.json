@@ -1,0 +1,50 @@
+{
+  "agent": "claude",
+  "inputTokens": 18431,
+  "outputTokens": 826,
+  "cacheReadTokens": 15950,
+  "cacheWriteTokens": 2475,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.021362,
+  "apiDurationMs": 7085,
+  "mainInputTokens": 18431,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Grep": 1,
+    "Read": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 471
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 471,
+  "otherToolTokens": 125,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set by the `origin` callback passed to `cors({...})` in `worker/src/index.ts:19-35`. It echoes the origin back only if it is one of these:\n\n- exactly `http://localhost:4200`\n- any origin ending in `.pages.dev`\n- any origin ending in `.workers.dev`\n\nEverything else gets `null`, so the browser blocks it. A request with no `Origin` header also gets `null`. Non-browser clients aren't affected, because CORS is only enforced by browsers.\n\nOther CORS settings in the same block:\n- Methods: `GET`, `POST`, `PATCH`, `DELETE`, `OPTIONS`.\n- Headers: `Content-Type`, `Authorization`.\n- `maxAge`: 86400.\n\n**To add a custom domain**, edit the condition at `worker/src/index.ts:23-27`. Add one of these inside the `if (...)`:\n\n- For an exact origin, add `|| origin === 'https://app.example.com'`. Include the scheme and no trailing slash.\n- For all subdomains, add `|| origin.endsWith('.example.com')`.\n\nThe `endsWith` form is looser than it looks. `.example.com` matches any subdomain, and the existing `.pages.dev` and `.workers.dev` checks are broad in the same way. Prefer the exact match for a single custom domain.\n\nI only searched `worker/` for origin and CORS handling, so I haven't checked whether the frontend has its own API base URL that also needs updating. Redeploy the worker after the change.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "agent": "claude",
+  "inputTokens": 44725,
+  "outputTokens": 2955,
+  "cacheReadTokens": 28237,
+  "cacheWriteTokens": 16482,
+  "reasoningTokens": 169,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.1011374,
+  "apiDurationMs": 19079,
+  "mainInputTokens": 44725,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 10,
+  "toolCallsByName": {
+    "Read": 10
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/code/frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 1033
+    },
+    {
+      "path": "docs/code/worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 784
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 763
+    },
+    {
+      "path": "docs/code/worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 726
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 720
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 658
+    },
+    {
+      "path": "docs/code/frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 581
+    },
+    {
+      "path": "docs/code/worker/src/routes/action.md",
+      "kind": "doc",
+      "tokens": 535
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 532
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    }
+  ],
+  "docFilesRead": 10,
+  "codeFilesRead": 0,
+  "docTokensRead": 6761,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "This is based on the project docs only. I didn't open any source files, so line numbers come from the docs' anchors and may have drifted. Nothing was modified.\n\n## Worker\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` (near `ShopTransactionBody:159`) | Add `RestBody { sessionId: string; characterId: number }`. Add a cost constant, e.g. `INN_REST_COST` (flat), or a per-level formula such as `level * N`. The Worker owns this value. |\n| `worker/src/routes/rest.ts` (**new**) | `export const restRoutes = new Hono<{ Bindings: Env }>()` with `POST /`. Steps: validate the body (400), then `getCharacter` (404). Load the session with `loadSession`, falling back to `rebuildSession` if KV has expired. Return 400 with `inCombat: true` if `session.inCombat`, as `routes/action.ts` does. Return 400 if `hp >= max_hp` (nothing to restore) or `gold < cost` (insufficient gold). Then call `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })`, which is on the whitelist. Optionally append a history turn and call `saveSession`, then insert an `adventure_log` row. Respond with `{ narrative, updatedCharacter, cost }`. |\n| `worker/src/index.ts` (route mounts, about lines 41-48) | Import `restRoutes` and add `app.route('/api/rest', restRoutes)`. CORS needs no change. |\n\n`services/character.ts` needs no change, since `updateCharacter` already handles `hp` and `gold`. Only extract a service function if more than one route will share the logic. No schema change or migration is needed, because `hp`, `max_hp` and `gold` already exist on `characters`.\n\nAn optional `askDM` call would only narrate the stay. HP and gold must be computed in the route.\n\n## Frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` (near `ActionResponse:95`) | Add a `RestResponse { narrative: string; updatedCharacter: Character; cost: number }`. |\n| `frontend/src/app/services/game-api.service.ts` (after `levelUp():74`) | Add `rest(sessionId, characterId)`, which posts to `${API_BASE}/api/rest` and returns `Observable<RestResponse>`. |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add a `rest()` handler (near `levelUp():183`). It calls `api.rest`, then `CharacterStateService.setCharacter(res.updatedCharacter)`, and pushes a narrative or system entry. It also updates the campaign slot via `auth.updateCampaign`, like `levelUp` does. Errors are read from `err.error.error`. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at Inn (N gold)\" button in the left column beside Inventory. Disable it when `inCombat()`, when HP is full, or when gold is below the cost. |\n| `frontend/src/app/components/game-console/game-console.component.css` | Style the button if needed. |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add tests with `GameApiService` as a Jasmine spy: success updates the character, an error shows a message, and the button is disabled in combat. |\n\n`character-state.service.ts` needs no change, because `setCharacter` already refreshes the sheet and HP bar. The `hpPercent` computed value updates on its own.\n\n## Docs (same change, per `AGENTS.md` / `docs/AUTHORING.md`)\n- New: `docs/code/worker/src/routes/rest.md`.\n- Update:\n  - `types/index.md`\n  - `worker/src/index.md` (route mounts table)\n  - `game-api.service.md`\n  - `game.models.md`\n  - `game-console.component.md`\n  - `docs/flows/add-endpoint.md` (it already uses this example)\n  - `docs/PRD.md` §9 (API spec)\n  - `code.md` (doc index, then re-run `build-symbol-index.mjs`)\n\n## Things to watch\n- **Combat:** block rest while `inCombat`, otherwise the player could heal for free mid-fight. Check that the session flag is the source of truth.\n- **Death (B-10):** a character at 0 HP can still act. Decide whether resting is allowed at 0 HP. It's probably fine and even useful.\n- **Potions (B-05):** potion healing is browser-only and never saved, so the Worker's HP can be stale relative to the UI. Rest sets HP from the server, which would overwrite that.\n- **Where it's offered:** do you want rest available anywhere, or only at an inn location? Gating on location would need the session's location, which only the AI sets via `locationChange`. That's fragile, so I'd recommend allowing it anywhere outside combat.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

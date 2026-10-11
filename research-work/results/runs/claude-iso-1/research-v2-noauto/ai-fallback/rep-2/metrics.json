@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "inputTokens": 27517,
+  "outputTokens": 1595,
+  "cacheReadTokens": 18911,
+  "cacheWriteTokens": 8600,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0541442,
+  "apiDurationMs": 10782,
+  "mainInputTokens": 27517,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 3,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1494
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 806
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 709
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1515,
+  "codeTokensRead": 1494,
+  "otherToolTokens": 827,
+  "filesModified": [],
+  "answer": "Failures are handled in `askDM` and `parseAIResponse` in `worker/src/services/ai-dm.ts`. Neither the model call nor the parse ever throws to the caller. Every failure ends in a canned response.\n\n**Model failure (`askDM`, line 81 on)**\n1. The primary model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It is called with `response_format: { type: 'json_object' }`, `temperature` 0.85 and `max_tokens` 1024.\n2. A thrown error, including an unexpected `ReadableStream` response (lines 103–105), goes to the `catch` at line 115. That retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. The retry has `max_tokens` 1024 and no `response_format` or `temperature`.\n3. If Mistral also throws, line 135 returns `fallbackNarrative(playerAction)`.\n4. For each model, text is read from `choices[0].message.content`, then the legacy `response` field, then the bare string, then `''`.\n\n**Invalid or empty JSON (`parseAIResponse`, line 143 on)**\n- Empty or non-string text returns `fallbackNarrative`.\n- Markdown code fences are stripped. If the text doesn't start with `{`, the first `{…}` block is extracted with a regex. If there is no such block, it logs a warning and returns `fallbackNarrative` (lines 157–165).\n- `JSON.parse` failures hit the `catch` at line 192 and return `fallbackNarrative`.\n- If the JSON parses, missing fields get defaults instead of failing:\n  - `narrative` defaults to \"The world holds its breath…\".\n  - The `gameStateChanges` fields default to `null`, `[]` or `false`.\n  - `suggestedActions` defaults to four generic actions and is capped at 4.\n  - `diceRolls` defaults to `[]` and is capped at 8.\n\n**`fallbackNarrative` (line 198)**\nIt returns generic \"You attempt to …\" prose with no state changes: all deltas are `null`, no items change, and both combat flags are `false`. The suggested actions are \"Look around\", \"Proceed carefully\", \"Listen for sounds\" and \"Rest a moment\". The dice rolls are empty. This fits the AGENTS.md rule that the Worker owns the mechanics and the AI only narrates, so a failed AI call can't change game state.\n\n**Related**\n- If the model returns a valid but empty `narrative`, the Mistral retry is not triggered. Only a thrown error from Llama triggers it. Parse failures go straight to the fallback.\n- `generateQuest`, `generateBackstory` and `generateLevelUpNarrative` read only the legacy `response` field. With llama-3.3 they fall back to canned or empty text, as noted for bug B-03 in `ai-dm.md`.\n- Locally, `wrangler dev` without `--remote` stubs the AI, so you always get the fallback text.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

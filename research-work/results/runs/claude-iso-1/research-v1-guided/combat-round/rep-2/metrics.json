@@ -1,0 +1,70 @@
+{
+  "agent": "claude",
+  "inputTokens": 47132,
+  "outputTokens": 1906,
+  "cacheReadTokens": 36128,
+  "cacheWriteTokens": 10996,
+  "reasoningTokens": 84,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0702856,
+  "apiDurationMs": 13297,
+  "mainInputTokens": 47132,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "Read": 5,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 2447
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1238
+    },
+    {
+      "path": "worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 592
+    },
+    {
+      "path": "worker/src/routes/combat.md",
+      "kind": "doc",
+      "tokens": 492
+    },
+    {
+      "path": "worker/src/services/dice.md",
+      "kind": "doc",
+      "tokens": 284
+    }
+  ],
+  "docFilesRead": 5,
+  "codeFilesRead": 0,
+  "docTokensRead": 5053,
+  "codeTokensRead": 0,
+  "otherToolTokens": 362,
+  "filesModified": [],
+  "answer": "An Attack round is resolved entirely in Worker code, and the AI only narrates the result. I followed the AGENTS.md order: `code.md`, then the combat and dice docs, then a grep of `combat.ts` to confirm the attack lines.\n\n**Request path**\n- The frontend calls `resolveCombat` in `game-api.service.ts`. That sends `POST /api/combat/resolve` with `{ sessionId, characterId, action: 'attack' }`.\n- The handler is in `worker/src/routes/combat.ts`. Its flow is:\n  1. It calls `resolveCombatRound`.\n  2. It persists HP (clamped 0..max) and XP on a victory.\n  3. On a victory it calls `rollLoot` and then `grantLoot`.\n  4. It calls `askDM` to narrate.\n  5. It then either clears `combatState` or increments the round and saves the monster's HP.\n  6. Finally it saves the session and logs both turns.\n\n**Where the mechanics and dice live**\n- `resolveCombatRound(char, state, action)` in `worker/src/services/combat.ts` does the resolution. It doesn't mutate state; the route applies the changes.\n- **Player to-hit** (`combat.ts:85-94`):\n  - The bonus is the DEX modifier for Rogue and Ranger, otherwise the STR modifier, plus proficiency `ceil(level/4)+1`.\n  - `attackRoll(bonus, monster.ac)` in `worker/src/services/dice.ts` rolls the d20, which comes from `roll(20)`.\n  - A natural 20 always hits and crits. A natural 1 always misses.\n- **Player damage** (`combat.ts:98-107`):\n  - `getPlayerDamageDice(class)` supplies the dice, and `rollExpression` rolls them.\n  - The modifier is INT for Wizard and Bard, with a minimum of 1 damage.\n  - A crit doubles the damage.\n- **Monster counter-attack** (`combat.ts:131-142`):\n  - It only happens if combat hasn't ended.\n  - It uses `attackRoll(monster.attack_bonus, character.ac)`, then `rollExpression(monster.damage_dice)`.\n  - If player HP reaches 0 or below, combat ends in defeat.\n- Every roll is pushed into `diceRolls`. The function also builds `contextForDM`, a text summary of the round, and returns both in `CombatRoundResult`.\n- All of this randomness uses `Math.random()` inside `dice.ts`.\n\n**What the AI does**\n- `askDM` in `worker/src/services/ai-dm.ts` receives `contextForDM` with the updated HP. It writes the narrative and the `suggestedActions`.\n\n**What the AI does not do**\n- It doesn't roll dice or decide hit, miss or crit.\n- It doesn't calculate damage, HP, XP, loot or gold.\n- It doesn't decide whether combat ends.\n- This is the core rule in AGENTS.md §9: the Worker owns the rules and the AI owns the prose.\n\n**Known gotchas**\n- The damage die comes from the class, not the equipped weapon (bugs.md B-08).\n- Loot never drops because every seeded monster has a null `loot_table_id` (B-01).\n\nI took the loot and weapon gotchas from the docs and didn't check them in code.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

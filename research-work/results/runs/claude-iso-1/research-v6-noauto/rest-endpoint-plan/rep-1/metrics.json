@@ -1,0 +1,75 @@
+{
+  "agent": "claude",
+  "inputTokens": 42889,
+  "outputTokens": 1544,
+  "cacheReadTokens": 33295,
+  "cacheWriteTokens": 9588,
+  "reasoningTokens": 142,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.060463,
+  "apiDurationMs": 12475,
+  "mainInputTokens": 42889,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Read": 1,
+    "Bash": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1063
+    },
+    {
+      "path": "docs/code/worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 771
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 753
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 709
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 653
+    },
+    {
+      "path": "docs/code/frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 576
+    }
+  ],
+  "docFilesRead": 6,
+  "codeFilesRead": 0,
+  "docTokensRead": 4525,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "I read `AGENTS.md` and ran `node tools/read.mjs new-feature inventory types http`. `docs/flows/add-endpoint.md` uses this exact feature as its worked example. I didn't open the source files, so line numbers come from the docs and may have drifted.\n\n## Worker\n\n1. **`worker/src/types/index.ts`**\n   - Add `RestBody { sessionId, characterId }` next to the other `*Body` types, which start around `ActionBody:146`.\n   - Add a cost constant, for example `REST_COST`. The value is your call, since no existing constant covers it.\n2. **`worker/src/routes/rest.ts`** (new file)\n   - Export `restRoutes = new Hono<{ Bindings: Env }>()`.\n   - The `POST` handler validates the body and calls `getCharacter`.\n   - It rejects the request if `gold < REST_COST`.\n   - It calls `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })`. That function is at `services/character.ts:94` and only accepts whitelisted fields.\n   - Optionally, call `askDM` for narration, then `appendHistory` and `saveSession`, and insert an `adventure_log` row. `routes/action.ts` is the template for this.\n   - Keep the cost and HP math in the Worker. The AI only narrates.\n3. **`worker/src/index.ts`**\n   - Add `app.route('/api/rest', restRoutes)` in the route mounts at lines 41-48.\n   - CORS (lines 19-35) needs no change unless there's a new origin.\n4. **`worker/src/services/*.ts`**: only if logic is shared with other routes.\n5. **`worker/migrations/000N_*.sql`**: not needed. `hp`, `max_hp` and `gold` already exist. If you do add one, never edit `0001`.\n\n## Angular frontend\n\n6. **`frontend/src/app/models/game.models.ts`**\n   - Add a `RestResponse` interface, for example `{ updatedCharacter: Character, … }`.\n   - Mirror the Worker types by hand, because nothing enforces that the two match.\n7. **`frontend/src/app/services/game-api.service.ts`**\n   - Add `rest(sessionId, characterId)` that posts to `${API_BASE}/api/rest`.\n   - The existing methods end at `shopTransaction():109`.\n8. **`frontend/src/app/components/game-console/game-console.component.ts` and `.html`**\n   - Add a Rest button. The Inventory button at `.html:9` is the model.\n   - Add a handler that calls `GameApiService.rest`, then `CharacterStateService.setCharacter(res.updatedCharacter)` so the sheet updates.\n   - The handler also pushes a system or narrative entry, and shows `err.error.error` on failure, such as not enough gold.\n   - Keep the template in the `.html` file, not inline.\n9. **`frontend/src/app/components/game-console/game-console.component.spec.ts`**: add tests with `GameApiService` as a Jasmine spy.\n10. **`frontend/src/app/services/character-state.service.ts`**: no change. It already has `setCharacter`.\n\n## Docs to update in the same change\n\n- Update the doc beside each changed file under `docs/code/…`. Add `docs/code/worker/src/routes/rest.md`, with links on both ends (AUTHORING §3).\n- Add the new doc to `code.md`, then re-run `research-work/scripts/build-symbol-index.mjs`.\n- Add the endpoint to `docs/PRD.md` §9.\n- Update the `AGENTS.md` routing table only if a new feature area appears.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

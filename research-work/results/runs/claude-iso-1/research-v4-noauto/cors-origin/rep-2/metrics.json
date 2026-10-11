@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "inputTokens": 23182,
+  "outputTokens": 1077,
+  "cacheReadTokens": 17828,
+  "cacheWriteTokens": 5348,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.035739599999999996,
+  "apiDurationMs": 8045,
+  "mainInputTokens": 23182,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 3,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 948
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 471
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1377,
+  "codeTokensRead": 471,
+  "otherToolTokens": 125,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set by the `origin` callback passed to `cors({...})` in `worker/src/index.ts:19-35`. It returns the origin if it matches one of these, and `null` otherwise, which means no CORS headers:\n\n- `http://localhost:4200`, an exact match.\n- Any origin ending in `.pages.dev`, at any subdomain depth.\n- Any origin ending in `.workers.dev`, at any subdomain depth.\n- A request with no `Origin` header gets `null` (`if (!origin) return null`, line 22).\n\nOther CORS settings in the same block:\n- `allowMethods`: GET, POST, PATCH, DELETE, OPTIONS.\n- `allowHeaders`: Content-Type, Authorization.\n- `maxAge`: 86400.\n\n**Adding a custom domain:** edit the `if (...)` condition at `worker/src/index.ts:23-27`. Add another `||` clause with the full origin, scheme included and no trailing slash. For example, `origin === 'https://app.example.com'`.\n\nDon't put the domain in an array form of `origin`. Hono treats array entries as exact strings, so wildcards won't work there. The code comment on line 20 and `docs/code/worker/src/index.md:26-27` both say this. For a wildcard such as all subdomains of a domain, use `origin.endsWith('.example.com')`. That also matches lookalike hosts if you drop the leading dot, so keep the dot.\n\n`docs/code/worker/src/index.md` points to DEPLOYMENT_NOTES §4 (CORS) for more background. I didn't open it.\n\nI changed nothing.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

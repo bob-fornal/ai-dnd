@@ -1,0 +1,101 @@
+{
+  "agent": "claude",
+  "inputTokens": 140671,
+  "outputTokens": 3716,
+  "cacheReadTokens": 103531,
+  "cacheWriteTokens": 37130,
+  "reasoningTokens": 230,
+  "modelRequests": 5,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.20640620000000004,
+  "apiDurationMs": 24236,
+  "mainInputTokens": 140671,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 18,
+  "toolCallsByName": {
+    "Read": 11,
+    "Glob": 3,
+    "Grep": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 5956
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 2556
+    },
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 1944
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 1602
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 1362
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 1272
+    },
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1216
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 914
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 608
+    },
+    {
+      "path": "worker/src/routes/levelup.ts",
+      "kind": "code",
+      "tokens": 603
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.html",
+      "kind": "code",
+      "tokens": 278
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 8,
+  "docTokensRead": 8814,
+  "codeTokensRead": 9497,
+  "otherToolTokens": 799,
+  "filesModified": [],
+  "answer": "The inn rest is a new Worker route plus a small Angular button wired to it. Nothing needs a D1 migration. I read the PRD, SETUP.md, `docs/DEPLOYMENT_NOTES.md`, the shop and level-up routes, the character service, `game-api.service.ts` and the game-console component. The new route copies the level-up route's structure.\n\n## Worker\n\n**`worker/src/types/index.ts`**\n- Add `InnRestBody { sessionId: string; characterId: string }`.\n- Add a constant such as `INN_REST_COST = 10` next to the other rule constants (`XP_THRESHOLDS`, `CLASS_HIT_DICE`). The PRD gives no price, so 10 gp is my placeholder. A level-scaled price would be computed in the route instead.\n\n**`worker/src/routes/inn.ts`** (new file, `innRoutes = new Hono<{ Bindings: Env }>()`)\n- Add `POST /rest` that validates the JSON body and requires `sessionId` and `characterId`, like `levelup.ts:18-20`.\n- Load the character with `getCharacter(c.env.DB, characterId)` and return 404 if missing.\n- Reject with 400 if `character.hp >= character.max_hp`, so the player isn't charged for nothing.\n- Reject with 400 if `character.gold < INN_REST_COST`, using the same message style as `shop.ts:52`.\n- Load the session with `loadSession`, falling back to `rebuildSession`, as `levelup.ts:47-48` does. Reject with 400 if `session.inCombat`.\n- Call `updateCharacter(db, id, { hp: character.max_hp, gold: character.gold - cost })`. To avoid a race on gold, you could instead run one `UPDATE characters SET hp = max_hp, gold = gold - ? WHERE id = ? AND gold >= ?`.\n- Insert an `adventure_log` row with actor `'system'`, as `levelup.ts:42-44` does.\n- Push a `dm` turn onto `session.history` and call `saveSession`.\n- Return `{ success, cost, updatedCharacter, narrative }`. A static narrative string is enough, so no AI call is needed.\n\n**`worker/src/index.ts`**\n- Import `innRoutes` and add `app.route('/api/inn', innRoutes);` beside the other routes at lines 41-48. CORS already allows POST, so it needs no change.\n\n`worker/src/services/character.ts` already has everything needed (`updateCharacter` accepts `hp` and `gold`). You could add a `restAtInn()` helper there, but it isn't required.\n\n## Angular frontend\n\n**`frontend/src/app/models/game.models.ts`**\n- Add an `InnRestResponse` interface: `{ success; cost; updatedCharacter: Character; narrative }`.\n\n**`frontend/src/app/services/game-api.service.ts`**\n- Add `restAtInn(sessionId, characterId): Observable<InnRestResponse>` that POSTs to `${API_BASE}/api/inn/rest`. Put it in a new `// ── Inn ──` section, like the shop one.\n\n**`frontend/src/app/components/game-console/game-console.component.ts`**\n- Add `restLoading = signal(false)`, modelled on `luLoading`.\n- Add `restAtInn()`:\n  - It guards on `restLoading()`.\n  - On success it calls `this.charSvc.setCharacter(res.updatedCharacter)` and `this.pushEntry('system', ...)` with the narrative and the gold spent.\n  - On error it calls `this.pushEntry('system', ...)` with `err?.error?.error`, as `sendAction` does.\n\n**`frontend/src/app/components/game-console/game-console.component.html`**\n- Add a \"Rest at Inn (10g)\" `mat-stroked-button` in the `.sidebar-actions` div, under the Inventory button at lines 8-16.\n- Bind `(click)=\"restAtInn()\"`.\n- Set `[disabled]` to `restLoading() || charSvc.inCombat()`. You can also disable it when HP is full or gold is below the cost. Check the actual signal names in `character-state.service.ts` for that.\n\n`CharacterStateService.setCharacter()` already updates the HP bar and gold in the character sheet, so no sheet changes are needed.\n\n## Optional\n\n- **`PRD.md`:** add `POST /api/inn/rest` to the section 9 API spec and the section 6 route diagram, and note the cost.\n- **`*.spec.ts`:** add a test for the new API method and the component handler, if you want coverage.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

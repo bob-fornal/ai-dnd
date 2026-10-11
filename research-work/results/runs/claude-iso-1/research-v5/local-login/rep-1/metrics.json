@@ -1,0 +1,70 @@
+{
+  "agent": "claude",
+  "inputTokens": 32042,
+  "outputTokens": 1708,
+  "cacheReadTokens": 23312,
+  "cacheWriteTokens": 8724,
+  "reasoningTokens": 125,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.056650400000000004,
+  "apiDurationMs": 11145,
+  "mainInputTokens": 32042,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "Read": 5,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "frontend/src/app/services/auth.service.ts",
+      "kind": "code",
+      "tokens": 688
+    },
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 610
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 532
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 470
+    },
+    {
+      "path": "docs/code/frontend/src/app/app.routes.md",
+      "kind": "doc",
+      "tokens": 300
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 1,
+  "docTokensRead": 1912,
+  "codeTokensRead": 688,
+  "otherToolTokens": 100,
+  "filesModified": [],
+  "answer": "**Login**\n- Login is local to the browser. There is no password and no Worker call.\n- `AuthService.login(username)` in `frontend/src/app/services/auth.service.ts:16` trims the name. It then loads `localStorage[\"ai_dnd_user_<lowercase name>\"]`, or creates `{ username, campaigns: [] }` if none exists.\n- `persist()` writes the profile to that per-user key. It also writes it to `ai_dnd_user` (`STORAGE_KEY`), which is the active profile restored on reload.\n- `logout()` (`:31`) clears the signal and removes `ai_dnd_user`. The per-user copy stays.\n- `authGuard` on the `characters` and `game/:sessionId` routes (`app.routes.ts`) only checks that a local profile exists.\n\n**Where campaigns are stored**\n- Campaigns are `CampaignSlot`s in `UserProfile.campaigns`, held in the browser's `localStorage` under the keys above. They are managed by `addCampaign`, `updateCampaign` and `removeCampaign`.\n- Each slot holds a `sessionId` and a `characterId`. Resuming (`login.component.ts:51-52`, `resumeCampaign`) navigates to `/game/<sessionId>`.\n- The game state itself is on the server:\n  - **Workers KV:** key `session:<sessionId>`, with a 7-day TTL (`SESSION_TTL_SECONDS = 604800` in `services/session.ts`).\n  - **D1:** the `characters`, `character_inventory` and `adventure_log` tables, which are permanent.\n\n**Deleting a campaign slot**\n- `login.component.ts:57` calls `auth.removeCampaign(slotId)`. That filters the slot out of `p.campaigns` and re-persists the profile (`auth.service.ts:54-60`).\n- Nothing on the server is touched. I grepped `frontend/src` and `worker/src` and found no character-delete call or route. The only `.delete` route is `DELETE /:id/inventory/:itemId` in `worker/src/routes/character.ts:137`, which removes an inventory item.\n- The D1 character, inventory and log rows stay as orphans. The KV session expires on its own after 7 days. Nothing in the app references them any more.\n\nOne related bug: the docs say `GET /api/session/:id` doesn't call `rebuildSession` after the KV session expires (B-07). So an expired campaign can't be resumed from the UI, even though its D1 data still exists.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

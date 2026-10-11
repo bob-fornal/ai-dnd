@@ -1,0 +1,50 @@
+{
+  "agent": "claude",
+  "inputTokens": 25137,
+  "outputTokens": 876,
+  "cacheReadTokens": 20461,
+  "cacheWriteTokens": 4670,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0315442,
+  "apiDurationMs": 7702,
+  "mainInputTokens": 25137,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Read": 1,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 429,
+  "codeTokensRead": 0,
+  "otherToolTokens": 229,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set by the `origin` function passed to `cors({...})` in `worker/src/index.ts`, around lines 19–31. It applies to all routes via `app.use('*', ...)`. It echoes the request's `Origin` back if it is one of these:\n\n- `http://localhost:4200`, an exact match (the Angular dev server).\n- Any origin ending in `.pages.dev` (Cloudflare Pages, any subdomain depth).\n- Any origin ending in `.workers.dev`.\n\nA request with no `Origin` header, or with any other origin, gets `null`, so no CORS headers are sent. The allowed methods are `GET`, `POST`, `PATCH`, `DELETE` and `OPTIONS`.\n\n**To add a custom domain**, edit that same function. Add another condition to the `if` block, for example `origin === 'https://play.example.com'`, alongside the `localhost:4200` check. Use an exact full-origin match, including the scheme and with no trailing slash. Don't use `endsWith` for a domain you own, because `evil-example.com` would match it. Don't put the domain in an array. Hono compares array entries as exact strings, which is why the code uses a function. This is also noted in `docs/code/worker/src/index.md` and `DEPLOYMENT_NOTES §4`.\n\nNo change to `wrangler.toml` is needed for CORS. After editing, redeploy the Worker. If you want the docs to stay accurate, update the CORS line in `docs/code/worker/src/index.md` too.\n\nI didn't check the frontend's API base URL setting. If the new domain hosts the frontend, that setting must point at the Worker. That is separate from CORS.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

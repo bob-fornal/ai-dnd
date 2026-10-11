@@ -1,0 +1,94 @@
+{
+  "agent": "claude",
+  "inputTokens": 47015,
+  "outputTokens": 3017,
+  "cacheReadTokens": 32971,
+  "cacheWriteTokens": 14038,
+  "reasoningTokens": 164,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0929282,
+  "apiDurationMs": 19182,
+  "mainInputTokens": 47015,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 10,
+  "toolCallsByName": {
+    "Read": 10
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/code/frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 1033
+    },
+    {
+      "path": "docs/code/worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 784
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 763
+    },
+    {
+      "path": "docs/code/worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 726
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 720
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 658
+    },
+    {
+      "path": "docs/code/frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 581
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 532
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    },
+    {
+      "path": "docs/code/worker/src/routes/levelup.md",
+      "kind": "doc",
+      "tokens": 421
+    }
+  ],
+  "docFilesRead": 10,
+  "codeFilesRead": 0,
+  "docTokensRead": 6647,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Based on `docs/flows/add-endpoint.md` (which uses this exact feature as its example) and the related code docs. I haven't opened the source files, so line numbers come from the docs' anchors.\n\n## Worker\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add `RestBody { sessionId: string; characterId: number }`, next to `LevelUpBody:168`. Add a cost constant such as `INN_REST_COST` (a flat value, or a per-level formula). The Worker owns the rule, so the cost lives here and not in the frontend. |\n| `worker/src/routes/rest.ts` (new) | `export const restRoutes = new Hono<{ Bindings: Env }>()` with `POST /`. The handler does the following: validate the body (400); `getCharacter` (404 if missing); reject with 400 if `hp >= max_hp` (nothing to restore) or `gold < cost`; reject if the character is in combat or at 0 HP (see below); then `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })`. Return `{ narrative, updatedCharacter, cost }`. Optionally add a fixed narrative string, or `askDM` for flavor (the level-up flavor text is almost always the fallback anyway). Follow `routes/levelup.ts` and `routes/action.ts` for `appendHistory`, `loadSession`/`rebuildSession`/`saveSession`, and an `adventure_log` insert with a `system` entry such as `[Rest] …`. |\n| `worker/src/index.ts:41-48` | Import `restRoutes` and add `app.route('/api/rest', restRoutes)`. No CORS change is needed. |\n| `worker/src/services/character.ts` | No change. `updateCharacter:94` already whitelists `hp` and `gold`. If the rest logic is shared with other routes, extract it into a service here or in a new `services/*.ts`. |\n| `worker/migrations/` | No change. `hp`, `max_hp` and `gold` already exist in `characters`. |\n\n**Combat check:** the in-combat state lives in the KV session (`CombatState`), so the route needs `loadSession` to refuse resting mid-fight. Without that check, a player could rest to full HP during a fight.\n\n## Frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add `RestResponse { narrative: string; updatedCharacter: Character; cost: number }`, next to `CombatResponse:106`. Keep it in step with the Worker types by hand. |\n| `frontend/src/app/services/game-api.service.ts` | Add `rest(sessionId, characterId)` that posts to `${API_BASE}/api/rest`, in the same style as `levelUp():74`. |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add `rest()`, modeled on `levelUp():183`. It calls `api.rest`, then `CharacterStateService.setCharacter(res.updatedCharacter)`, pushes a narrative or system entry, and updates the campaign slot level if you mirror `levelUp`. Show errors from `err.error.error`. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at the Inn (N gold)\" button in the left column beside the Inventory button (`:9`). Disable it when `inCombat()`, when `hp === max_hp`, or when `gold < cost`. |\n| `frontend/src/app/components/game-console/game-console.component.css` | Style the button, if the existing button styles don't fit. |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add tests with `GameApiService` as a Jasmine spy. Check that `rest` is called and that the character state updates. Also check the disabled states and the error path. |\n\nNo change is needed in `character-state.service.ts`: `setCharacter` already takes the server's character. No change is needed in the character sheet either, because it renders from the same signal.\n\n## Docs to update in the same change\n- New `docs/code/worker/src/routes/rest.md`.\n- Update `docs/code/worker/src/index.md` (route mounts table), `docs/code/worker/src/types/index.md`, `docs/code/frontend/src/app/models/game.models.md`, `docs/code/frontend/src/app/services/game-api.service.md`, and `docs/code/frontend/src/app/components/game-console/game-console.component.md`. Add links on both ends.\n- Add the new doc to `code.md` and re-run `research-work/scripts/build-symbol-index.mjs`.\n- Add the endpoint to PRD §9. Optionally add a routing-table row in `AGENTS.md`.\n\n## Gotchas\n- The doc says the shop has no UI and that buying fails (B-02), so don't reuse the shop route for the inn.\n- B-10: on death, HP stays at 0 and input stays enabled. Decide whether resting should be allowed at 0 HP. It would work as a recovery path, but it is a design choice.\n- Narrative entries live only in memory on the frontend, so a reload loses the rest message. The `adventure_log` insert is what persists it.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

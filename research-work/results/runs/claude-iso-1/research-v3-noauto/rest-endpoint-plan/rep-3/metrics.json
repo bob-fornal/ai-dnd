@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "inputTokens": 24874,
+  "outputTokens": 1782,
+  "cacheReadTokens": 18314,
+  "cacheWriteTokens": 6554,
+  "reasoningTokens": 126,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0477108,
+  "apiDurationMs": 12871,
+  "mainInputTokens": 24874,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 3,
+    "Glob": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 852
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 717
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 655
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2224,
+  "codeTokensRead": 0,
+  "otherToolTokens": 566,
+  "filesModified": [],
+  "answer": "Nothing needs a schema change, so there are no migrations. This comes from `docs/flows/add-endpoint.md`, which uses this exact feature as its example. I didn't open the code, so the line numbers are the docs' anchors and I haven't checked them.\n\n## Worker (`worker/`)\n\n| File | Change |\n|---|---|\n| `src/types/index.ts` | Add a `RestBody { sessionId, characterId }` type. Add a cost constant such as `REST_COST`. The value is yours to pick, because the docs don't define one. |\n| `src/routes/rest.ts` (new) | Export `restRoutes = new Hono<{ Bindings: Env }>()` with a `POST /`. The handler does the following: <br>• Validates the body. <br>• Calls `getCharacter`. <br>• Rejects the request if `gold < cost`. <br>• Calls `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })`. `services/character.ts:94` whitelists fields, and `hp` and `gold` are the ones needed. <br>• Returns `updatedCharacter`. <br>• Optionally calls `askDM` for narration, then `appendHistory` and `saveSession`, and inserts an `adventure_log` row. Use `routes/action.ts` as the template. |\n| `src/index.ts` (lines 41-48) | Import `restRoutes` and add `app.route('/api/rest', restRoutes)`. CORS (lines 19-35) only changes if there is a new frontend origin, which there isn't. |\n| `src/services/*.ts` | Only if other routes will share the rest logic. Otherwise keep it in the route. |\n\n## Frontend (`frontend/src/app/`)\n\n| File | Change |\n|---|---|\n| `models/game.models.ts` | Add a `RestResponse` interface that mirrors the Worker's response, including `updatedCharacter`. |\n| `services/game-api.service.ts` | Add `rest(sessionId, characterId)`, which POSTs to `${API_BASE}/api/rest`. |\n| `components/game-console/game-console.component.ts` and `.html` | Add a \"Rest at Inn\" button and a handler. The handler calls `rest()`, then `CharacterStateService.setCharacter(res.updatedCharacter)` so the sheet updates, then pushes a system or narrative entry. It should also show an error such as \"not enough gold\". Templates stay in the `.html` file, not inline. |\n| `components/game-console/game-console.component.spec.ts` | Add tests with `GameApiService` as a Jasmine spy: success, and insufficient gold. |\n\n`character-state.service.ts` shouldn't need changes, since `setCharacter` already exists.\n\n## Docs to update in the same change (per `docs/AUTHORING.md`)\n- **New doc:** `worker/src/routes/rest.md`.\n- **Doc beside each changed file:** `types/index.md`, `worker/src/index.md`, `game.models.md`, `game-api.service.md` and `game-console.component.md`.\n- **`code.md`:** add the new doc, then re-run `research-work/scripts/build-symbol-index.mjs`.\n- **`docs/PRD.md` §9:** add the API spec.\n- **`docs/flows/inventory.md`:** possibly, if you want a rest flow documented.\n\n## Things to watch\n- **Rules in the Worker:** the cost and the HP math stay there, and the AI only narrates.\n- **B-05:** potion healing is client-side only and never saved. Don't copy that pattern, because rest must persist through `updateCharacter`.\n- **Gold race:** the `gold` check and the write should happen in one handler, so the player can't double-spend.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

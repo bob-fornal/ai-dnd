@@ -1,0 +1,72 @@
+{
+  "agent": "claude",
+  "inputTokens": 55319,
+  "outputTokens": 1322,
+  "cacheReadTokens": 47481,
+  "cacheWriteTokens": 7830,
+  "reasoningTokens": 65,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0540522,
+  "apiDurationMs": 11238,
+  "mainInputTokens": 55319,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 1,
+    "Bash": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 2,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1624
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1063
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 711
+    },
+    {
+      "path": "worker/src/services/ai-dm.ts#fallbackNarrative",
+      "kind": "other",
+      "tokens": 35
+    },
+    {
+      "path": "worker/src/services/ai-dm.ts#parseAIResponse",
+      "kind": "other",
+      "tokens": 34
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1774,
+  "codeTokensRead": 1624,
+  "otherToolTokens": 69,
+  "filesModified": [],
+  "answer": "All of this is in `worker/src/services/ai-dm.ts`. I read `AGENTS.md`, the `ai` doc (`docs/code/worker/src/services/ai-dm.md`), and the code.\n\n**Models**\n- Primary: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It runs with `response_format: { type: 'json_object' }`, temperature 0.85 and `max_tokens` 1024.\n- Backup: `@cf/mistral/mistral-7b-instruct-v0.2-lora`. It gets the same prompts and `max_tokens` 1024, with no JSON format forcing.\n\n**Model failure (`askDM`, line 81)**\n1. If the llama call throws, `askDM` logs the error and calls mistral. A streaming response also counts as a failure, because `askDM` throws on a `ReadableStream`.\n2. If mistral also throws, `askDM` returns `fallbackNarrative(playerAction)` straight away (line 135).\n3. The mistral backup runs only when llama throws. If llama returns empty or invalid text, the code goes to parsing and does not try mistral.\n\n**Invalid or empty JSON (`parseAIResponse`, line 143)**\n- Empty or non-string text returns `fallbackNarrative`.\n- It strips markdown code fences. If the text still doesn't start with `{`, it extracts the first `{…}` block with a regex. If there is no block, it logs a warning and returns `fallbackNarrative`.\n- A `JSON.parse` failure goes through the `catch` and also returns `fallbackNarrative`.\n- If the JSON parses, each field gets a default when it is missing or the wrong type:\n  - `narrative` becomes \"The world holds its breath…\".\n  - `suggestedActions` becomes four stock actions and is capped at 4.\n  - `diceRolls` becomes `[]` and is capped at 8.\n  - The `gameStateChanges` deltas become `null`.\n  - The item arrays become `[]`.\n  - `combatInitiated` and `combatEnded` are true only if they are exactly `true`.\n\n**`fallbackNarrative` (line 198)**\nIt returns a generic \"You attempt to …\" narrative and four fixed suggested actions (Look around, Proceed carefully, Listen for sounds, Rest a moment). Every state change is null or empty, so a failure never alters HP, XP, gold or combat state. This matches the project rule that the Worker owns the mechanics and the AI only narrates.\n\n**Other AI functions**\n`generateQuest`, `generateBackstory` and `generateLevelUpNarrative` don't use this path. Per the doc, they read only the legacy `response` field. With llama-3.3 they therefore fall back to canned text or an empty string (bug B-03). In local `wrangler dev` without `--remote`, the AI is stubbed, so you always get the fallback.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

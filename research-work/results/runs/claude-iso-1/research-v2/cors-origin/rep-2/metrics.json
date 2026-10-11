@@ -1,0 +1,55 @@
+{
+  "agent": "claude",
+  "inputTokens": 24474,
+  "outputTokens": 1039,
+  "cacheReadTokens": 19937,
+  "cacheWriteTokens": 4531,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.032513400000000005,
+  "apiDurationMs": 8400,
+  "mainInputTokens": 24474,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 2,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 414
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 229
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 414,
+  "codeTokensRead": 229,
+  "otherToolTokens": 85,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set by the `origin` function in the `cors({...})` call in `worker/src/index.ts:19-35`. It echoes back the request's `Origin` only if one of these is true:\n- It is exactly `http://localhost:4200`.\n- It ends with `.pages.dev`.\n- It ends with `.workers.dev`.\n\nAny other origin, or a request with no `Origin` header, gets `null`, so no CORS header is sent. The same block allows these methods: `GET, POST, PATCH, DELETE, OPTIONS`. It allows these headers: `Content-Type, Authorization`. `maxAge` is `86400`.\n\n**To add a custom domain**, edit the condition at `worker/src/index.ts:23-27`. Add a clause to the `if (...)` inside the `origin` function. For one exact origin, use `|| origin === 'https://play.example.com'`. Use the full scheme and host, with no trailing slash.\n\nDon't add it to an array form of `origin`. The code comment at line 20 and `worker/src/index.md` both say wildcards don't work there. Hono matches array entries as exact strings, and that is why the code uses a function.\n\nIf you use a suffix match such as `origin.endsWith('.example.com')`, it will also match lookalike hosts. For example, `evil-example.com` doesn't match `.example.com`, but a loose suffix without the leading dot would. The existing `.pages.dev` and `.workers.dev` checks have the same weakness. They also match any origin ending that way, including `http://` ones.\n\nAfter editing, redeploy the Worker. `docs/DEPLOYMENT_NOTES.md` §4 covers CORS. I didn't open it, so check it for any frontend-side steps. The frontend's API base URL would also need to point at the Worker if the domain changes.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "agent": "claude",
+  "inputTokens": 49584,
+  "outputTokens": 2810,
+  "cacheReadTokens": 32208,
+  "cacheWriteTokens": 17368,
+  "reasoningTokens": 137,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.1040296,
+  "apiDurationMs": 18221,
+  "mainInputTokens": 49584,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 12,
+  "toolCallsByName": {
+    "Read": 11,
+    "Glob": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1072
+    },
+    {
+      "path": "docs/code/frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 1033
+    },
+    {
+      "path": "docs/code/worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 784
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 763
+    },
+    {
+      "path": "docs/code/worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 726
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 720
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 658
+    },
+    {
+      "path": "docs/code/frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 581
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 532
+    },
+    {
+      "path": "docs/code/worker/src/routes/shop.md",
+      "kind": "doc",
+      "tokens": 439
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    }
+  ],
+  "docFilesRead": 11,
+  "codeFilesRead": 0,
+  "docTokensRead": 7737,
+  "codeTokensRead": 0,
+  "otherToolTokens": 454,
+  "filesModified": [],
+  "answer": "Everything below comes from `AGENTS.md` and the docs it routes to, mainly `docs/flows/add-endpoint.md`, which uses this exact feature as its example. I didn't open any source files, so line numbers are the doc anchors and may have drifted.\n\n## Worker\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` (near `ShopTransactionBody:159`) | Add `RestBody { sessionId, characterId }`. Add a cost constant such as `REST_COST_GOLD`. The cost is my placeholder; the docs set no value, and the Worker should own it. |\n| `worker/src/routes/rest.ts` (new) | Add `export const restRoutes = new Hono<{ Bindings: Env }>()` with `POST /`. Validate the body and call `getCharacter` (`services/character.ts:86`). Return 404 if the character is missing. Return 400 if `gold < REST_COST_GOLD`. Then call `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (`services/character.ts:94`). That function only accepts the whitelisted fields hp, xp, gold, level, max_hp, ac and abilities. Return `{ success, cost, updatedCharacter }`. Optionally call `askDM` for narration, then `appendHistory`, `saveSession` and an `adventure_log` insert, following `routes/action.ts`. |\n| `worker/src/index.ts` (route mounts, lines 41-48) | Import `restRoutes` and add `app.route('/api/rest', restRoutes)`. CORS (lines 19-35) needs no change. |\n\n- **Optional guards:** reject the rest if HP is already full, so no gold is spent. Also reject it while the session has an active `CombatState` in KV. Neither rule is in the docs, so both are design choices.\n- **No migration:** `characters` already has `hp`, `max_hp` and `gold`, so `worker/migrations/` stays untouched.\n- **Shared logic:** only move it into `worker/src/services/character.ts` if another route will reuse it.\n\n## Angular frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` (near `CombatResponse:106`) | Add a `RestResponse { success, cost, updatedCharacter, narrative? }` interface. It must mirror the Worker response. |\n| `frontend/src/app/services/game-api.service.ts` (near `shopTransaction():109`) | Add `rest(sessionId, characterId)`, which posts to `${API_BASE}/api/rest`. |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add a `restAtInn()` handler, next to `levelUp():183`. It calls `api.rest`, then `CharacterStateService.setCharacter(res.updatedCharacter)` (`character-state.service.ts:50`) so the sheet and HP bar update. It then pushes a narrative entry and handles errors via `err.error.error`. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at Inn (N gp)\" button in the left column near the Inventory button (line 9). Disable it while `inCombat()` is true, and optionally when gold is below the cost. |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add tests with `GameApiService` as a Jasmine spy: the handler calls `rest` and updates state, and the button is disabled in combat. |\n| `game-console.component.css` | Only if the button needs styling. |\n\n## Docs to update in the same change\n- **New doc:** `docs/code/worker/src/routes/rest.md`.\n- **Existing docs:** update the docs beside each changed file.\n- **Index:** add an entry in `code.md`, then re-run `research-work/scripts/build-symbol-index.mjs`.\n- **Specs and routing:** update `docs/PRD.md` §9 (API spec). Also update the `AGENTS.md` routing table and `docs/flows/inventory.md` if you treat this as a new feature area.\n\n`CharacterStateService` and `character-sheet` need no code changes, because they already re-render from `setCharacter`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

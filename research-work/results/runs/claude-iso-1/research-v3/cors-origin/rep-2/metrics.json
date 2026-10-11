@@ -1,0 +1,55 @@
+{
+  "agent": "claude",
+  "inputTokens": 32910,
+  "outputTokens": 1137,
+  "cacheReadTokens": 28329,
+  "cacheWriteTokens": 4573,
+  "reasoningTokens": 0,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0353438,
+  "apiDurationMs": 9231,
+  "mainInputTokens": 32910,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 2,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 414
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 91
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 414,
+  "codeTokensRead": 91,
+  "otherToolTokens": 198,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set by the `origin` function passed to `cors({...})` in `worker/src/index.ts:19-35`. A request origin is allowed if it is one of these:\n- exactly `http://localhost:4200`\n- any origin ending in `.pages.dev`\n- any origin ending in `.workers.dev`\n\nAny other origin gets `null`, so no CORS headers are sent. Requests with no `Origin` header also get `null`. The same block allows the methods `GET`, `POST`, `PATCH`, `DELETE` and `OPTIONS`, and the headers `Content-Type` and `Authorization`. Preflight responses are cached for `maxAge: 86400` seconds.\n\n**Adding a custom domain:** edit the `if (...)` condition at `worker/src/index.ts:23-27` and add another `||` clause. For example:\n```ts\norigin === 'https://play.example.com' ||\n```\nUse an exact match for a single domain. Use `origin.endsWith('.example.com')` for subdomains.\n\n- **Don't use an array.** Hono treats array entries as exact strings, so wildcards won't work there. This is noted in the comment at line 20 and in `worker/src/index.md` (Rules & gotchas).\n- **Don't use `endsWith` on a bare apex like `example.com`.** It would also match `evilexample.com`. Use `.example.com` with the leading dot, or an exact match.\n- **Nothing in `wrangler.toml` needs to change for CORS.** It only declares bindings. Redeploy the Worker after editing.\n- **I didn't check how the frontend points at the API.** If the custom domain is for the API itself rather than the frontend, CORS doesn't apply to it. You would need to update the frontend's API base URL instead.\n\nThe docs also cover this in `docs/DEPLOYMENT_NOTES.md` §4 (CORS), but I didn't open that file.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -49,7 +49,7 @@ for (const runRoot of runRoots) for (const armDir of readdirSync(runRoot)) {
         cacheReadTokens: m.cacheReadTokens, cacheWriteTokens: m.cacheWriteTokens,
         mainInputTokens: m.mainInputTokens, mainRequests: m.mainRequests, subagentInputTokens: m.subagentInputTokens, subagentRuns: m.subagentRuns,
         toolset: m.toolset,
-        modelRequests: m.modelRequests, aiCredits: m.aiCredits,
+        modelRequests: m.modelRequests, aiCredits: m.aiCredits, costUsd: m.costUsd ?? 0, agent: m.agent ?? 'copilot',
         toolCalls: m.toolCalls, failedToolCalls: m.failedToolCalls,
         multiReadCalls: m.multiReadCalls ?? 0,
         docFilesRead: m.docFilesRead, codeFilesRead: m.codeFilesRead,
@@ -83,13 +83,14 @@ const METRICS = [
   ['multiReadCalls', 'tools/read.mjs calls (v6+)'],
   ['mainRequests', 'Main-agent model requests (round trips)'],
   ['modelRequests', 'Model requests (all agents)'],
-  ['aiCredits', 'AI credits'],
+  ['aiCredits', 'AI credits (Copilot)'],
+  ['costUsd', 'Cost in USD (Claude)'],
   ['score', 'Answer score (0-1)'],
 ];
 
 const arms = [...new Set(rows.map((r) => r.arm))].sort((a, b) => (a === baseline ? -1 : b === baseline ? 1 : a.localeCompare(b)));
 const tasks = [...new Set(rows.map((r) => r.task))].sort();
-const fmt = (v, key) => (!Number.isFinite(v) ? '–' : key === 'score' ? v.toFixed(2) : key === 'aiCredits' ? v.toFixed(2) : Math.round(v).toLocaleString('en-US'));
+const fmt = (v, key) => (!Number.isFinite(v) ? '–' : key === 'score' ? v.toFixed(2) : key === 'aiCredits' ? v.toFixed(2) : key === 'costUsd' ? `$${v.toFixed(3)}` : Math.round(v).toLocaleString('en-US'));
 const delta = (v, b) => (Number.isFinite(v) && Number.isFinite(b) && b !== 0 ? `${v >= b ? '+' : ''}${(((v - b) / b) * 100).toFixed(0)}%` : '');
 const med = (filter, key) => median(rows.filter(filter).map((r) => r[key]));
 
@@ -109,12 +110,12 @@ for (const [key, name] of METRICS) {
   const k = (v) => `${Math.round(v / 1000).toLocaleString('en-US')}K`;
   const base = sums(baseline, 'inputTokens', () => true);
   md += `\n## Sum of per-task medians\n\nEach cell adds the median of every task in the group. Held-out tasks: ${[...HELD_OUT].join(', ') || 'none'}.\n\n`;
-  md += `| Arm | Input, original | Input, held out | Input, all | vs \`${baseline}\` | Round trips (orig / held) | AI credits |\n|---|---|---|---|---|---|---|\n`;
+  md += `| Arm | Input, original | Input, held out | Input, all | vs \`${baseline}\` | Round trips (orig / held) | AI credits / USD |\n|---|---|---|---|---|---|---|\n`;
   for (const a of arms) {
     const all = sums(a, 'inputTokens', () => true);
     const covered = tasks.filter((t) => rows.some((r) => r.arm === a && r.task === t)).length;
     const label = covered < tasks.length ? `${a} ⚠ partial (${covered}/${tasks.length} tasks)` : a;
-    md += `| ${label} | ${k(sums(a, 'inputTokens', isOrig))} | ${k(sums(a, 'inputTokens', isHeld))} | ${k(all)} | ${a === baseline ? '—' : delta(all, base)} | ${sums(a, 'mainRequests', isOrig)} / ${sums(a, 'mainRequests', isHeld)} | ${sums(a, 'aiCredits', () => true).toFixed(1)} |\n`;
+    md += `| ${label} | ${k(sums(a, 'inputTokens', isOrig))} | ${k(sums(a, 'inputTokens', isHeld))} | ${k(all)} | ${a === baseline ? '—' : delta(all, base)} | ${sums(a, 'mainRequests', isOrig)} / ${sums(a, 'mainRequests', isHeld)} | ${sums(a, 'aiCredits', () => true).toFixed(1)} / $${sums(a, 'costUsd', () => true).toFixed(2)} |\n`;
   }
 }
 

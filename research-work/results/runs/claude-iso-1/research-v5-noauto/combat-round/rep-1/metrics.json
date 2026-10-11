@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "inputTokens": 24853,
+  "outputTokens": 1756,
+  "cacheReadTokens": 16762,
+  "cacheWriteTokens": 8085,
+  "reasoningTokens": 48,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0532644,
+  "apiDurationMs": 11685,
+  "mainInputTokens": 24853,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 3,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1072
+    },
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 746
+    },
+    {
+      "path": "docs/code/worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 663
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2481,
+  "codeTokensRead": 0,
+  "otherToolTokens": 216,
+  "filesModified": [],
+  "answer": "The Worker resolves the whole round in code, and the AI only narrates the result. This comes from `docs/flows/combat.md` and `docs/code/worker/src/services/combat.md`, as AGENTS.md directs. I didn't open the source, so the line numbers are the docs' anchors.\n\n**Flow for Attack**\n1. **Frontend:** the Attack button in `game-console.component.html:83-92` calls `combatAction(action)` at `game-console.component.ts:144`. That calls `GameApiService.resolveCombat` (`game-api.service.ts:50`).\n2. **Route:** `POST /api/combat/resolve` in `worker/src/routes/combat.ts:11` loads the character and session. It returns 400 if the session isn't in combat.\n3. **Rules engine:** `routes/combat.ts:38` calls `resolveCombatRound` (`worker/src/services/combat.ts:50`). The attack branch is at `:81`.\n4. **Persist:** `routes/combat.ts:51` calls `updateCharacter`, which clamps HP to 0..max and adds XP on a victory. Lines `:56-57` call `rollLoot` and `grantLoot`, but loot never drops (B-01).\n5. **Narrate:** `routes/combat.ts:68` calls `askDM(..., result.contextForDM)`.\n6. **Save and log:**\n   - `routes/combat.ts:80-95` clears `combatState` if combat ended. Otherwise it increments `round` and saves monster HP, then calls `saveSession`.\n   - `routes/combat.ts:100-103` writes two `adventure_log` rows. The player row is prefixed `[Combat]`.\n7. **UI:** `game-console.component.ts:149-175` updates state and shows the victory, fled or died messages. It prompts for level-up if `canLevelUp`.\n\n**Where the dice are rolled**\n- Dice are rolled only in the Worker, through `worker/src/services/dice.ts`. `resolveCombatRound` calls `attackRoll` (`dice.ts:55`), `rollExpression`, `modifier` and `roll`.\n- **Attack roll:** d20 + modifier + proficiency `ceil(level/4)+1`, compared to monster AC. The modifier is DEX for Rogue and Ranger and STR for everyone else. A natural 20 is a crit and a natural 1 is a miss.\n- **Damage:** the class die from `getPlayerDamageDice` (`combat.ts:222`) is 1d8 for Fighter, Cleric and Bard and 1d6 for the others. The modifier is added, with INT used for Wizard and Bard. Damage is at least 1 and is doubled on a crit.\n- **Equipment:** the equipped weapon is ignored (B-08).\n- **Monster response:** the monster then attacks if combat hasn't ended. Monster death is handled at `:121`, with XP equal to `monster.xp_reward`. Player death is handled at `:152`.\n- **No mutation:** `resolveCombatRound` doesn't mutate state. It returns a `CombatRoundResult` with HP deltas, end and victory flags, XP, `diceRolls` and `contextForDM`. The route applies those changes.\n\n**What the AI does**\n- **Is responsible for:** narrating the already-resolved round. `askDM` (`worker/src/services/ai-dm.ts`) receives `contextForDM`, the round log built at `combat.ts:160`.\n- **Is not responsible for:** dice, hit or miss, damage, HP, XP, gold, loot, or whether combat ends. The AI's only part in starting combat is setting `combatInitiated: true` from a free-text action. Code then picks the monster with `selectMonster` and `initCombat`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

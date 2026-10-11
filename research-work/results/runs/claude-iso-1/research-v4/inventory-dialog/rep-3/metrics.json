@@ -1,0 +1,55 @@
+{
+  "agent": "claude",
+  "inputTokens": 27352,
+  "outputTokens": 1516,
+  "cacheReadTokens": 21343,
+  "cacheWriteTokens": 6003,
+  "reasoningTokens": 74,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0434526,
+  "apiDurationMs": 10450,
+  "mainInputTokens": 27352,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 2,
+    "Grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 658
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 158
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 658,
+  "codeTokensRead": 158,
+  "otherToolTokens": 480,
+  "filesModified": [],
+  "answer": "**Where it's opened**\n- The **Inventory** button at `game-console.component.html:9` calls `openInventory()` (`frontend/src/app/components/game-console/game-console.component.ts:237`).\n- That calls `MatDialog.open(InventoryComponent, { data: dialogData, panelClass: 'inv-dialog-panel', maxHeight: '90vh' })` at `:242`.\n\n**Data passed**\n- `dialogData` is an `InventoryDialogData` (`inventory.component.ts:19`): `{ characterId: this.characterId, sessionId: this.sessionId }`.\n- The dialog reads it with `inject(MAT_DIALOG_DATA)` at `inventory.component.ts:41`.\n- It uses `characterId` in every API call below.\n\n**API calls it can make** (all through `GameApiService`)\n| Trigger | Dialog code | Service method | Endpoint |\n|---|---|---|---|\n| Load on init | `ngOnInit`, `inventory.component.ts:59` | `getInventory` (`game-api.service.ts:90`) | `GET /api/character/:id` (`routes/character.ts:72`) |\n| Equip or unequip | `toggleEquip`, `:77` | `equipItem` (`game-api.service.ts:96`) | `PATCH /api/character/:id/equip` (`routes/character.ts:93`) |\n| Use potion | `usePotion`, `:123` | `dropItem` | `DELETE /api/character/:id/inventory/:itemId` |\n| Drop item | `dropItem`, `:150` | `dropItem` (`game-api.service.ts:100`) | `DELETE /api/character/:id/inventory/:itemId` (`routes/character.ts:137`) |\n\n**Caveats** (from `docs/flows/inventory.md`)\n- Using a potion only calls the delete endpoint to consume the item. The heal is rolled in the browser and applied to HP locally, so it is never saved (B-05).\n- Equipping is display-only, because combat ignores equipment (B-08).\n- The shop endpoints (`/api/shop/...`) exist on the Worker, but the dialog doesn't call them.\n\nI read `docs/flows/inventory.md` and checked the line numbers against `game-console.component.ts` and the `api.*` calls in `inventory.component.ts`. I didn't open the service or route files.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

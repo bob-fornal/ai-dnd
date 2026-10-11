@@ -1,0 +1,64 @@
+{
+  "agent": "claude",
+  "inputTokens": 44055,
+  "outputTokens": 1009,
+  "cacheReadTokens": 37249,
+  "cacheWriteTokens": 6800,
+  "reasoningTokens": 56,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.044751799999999994,
+  "apiDurationMs": 10005,
+  "mainInputTokens": 44055,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Bash": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 2,
+  "filesRead": [
+    {
+      "path": "frontend/src/app/services/auth.service.ts",
+      "kind": "code",
+      "tokens": 671
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 529
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 462
+    },
+    {
+      "path": "docs/code/frontend/src/app/app.routes.md",
+      "kind": "doc",
+      "tokens": 294
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 1285,
+  "codeTokensRead": 671,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Login**\n- There is no server-side auth. Login is a name-only profile kept in the browser's `localStorage`, handled by `AuthService` in `frontend/src/app/services/auth.service.ts`.\n- `login(username)` (line 16) trims the name and returns early if it's empty. It then loads the saved profile `ai_dnd_user_<lowercase name>`, or creates a fresh `{ username, campaigns: [] }` and persists it.\n- The active profile is stored under the key `ai_dnd_user` (`STORAGE_KEY`). `loadProfile()` restores it on reload.\n- `logout()` (line 31) sets the profile signal to `null` and removes `ai_dnd_user`. The per-user `ai_dnd_user_<name>` copy stays.\n- `isLoggedIn()` is `profile() !== null`.\n- `authGuard` (`services/auth.guard`) protects the `characters` and `game/:sessionId` routes in `app.routes.ts`. Unauthenticated users are redirected to `login`.\n\n**Where campaigns are stored**\n- Campaigns are `CampaignSlot`s in `UserProfile.campaigns`, in the same `localStorage` entries. They are managed by `addCampaign`, `updateCampaign` and `removeCampaign`.\n- Each slot points at a Worker session and character. The route `game/:sessionId` uses the Worker session id, not the character id.\n- The campaigns exist only in that browser. If storage is cleared, the links to the server sessions are lost, though the D1 data remains.\n\n**Deleting a campaign slot**\n- `LoginComponent` calls `auth.removeCampaign(slotId)` (`login.component.ts:57`).\n- `removeCampaign` (`auth.service.ts:54`) only filters the slot out of `p.campaigns`, updates the signal and persists the profile.\n- No API call is made. The server-side character, its session in KV, and its inventory are untouched and become orphaned, with nothing pointing to them.\n- This is documented in `docs/code/frontend/src/app/services/auth.service.md`: \"`removeCampaign` only deletes the slot. It doesn't delete the character on the server.\"\n\nI didn't check the Worker side for any cleanup of orphaned characters.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

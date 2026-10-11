@@ -1,0 +1,55 @@
+{
+  "agent": "claude",
+  "inputTokens": 33403,
+  "outputTokens": 980,
+  "cacheReadTokens": 28688,
+  "cacheWriteTokens": 4707,
+  "reasoningTokens": 0,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.034381600000000005,
+  "apiDurationMs": 8038,
+  "mainInputTokens": 33403,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 2,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 183
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 429,
+  "codeTokensRead": 183,
+  "otherToolTokens": 85,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set in `worker/src/index.ts:19-35`. The `cors({ origin: (origin) => … })` callback echoes the origin back only if it is one of these:\n\n- exactly `http://localhost:4200`\n- any origin ending in `.pages.dev`\n- any origin ending in `.workers.dev`\n\nRequests with no `Origin` header, and every other origin, get `null`, so no CORS headers are sent. The same middleware allows methods `GET, POST, PATCH, DELETE, OPTIONS` and headers `Content-Type, Authorization`, with `maxAge: 86400`.\n\n**Adding a custom domain:** add another condition inside the `origin` function, at `worker/src/index.ts:23-27`. For example, add `|| origin === 'https://play.example.com'` to the `if (...)`. Use an exact match for a single domain. For all subdomains, use `origin.endsWith('.example.com')`. That suffix check also matches lookalikes such as `evil-example.com`, so prefer `.endsWith('.example.com')` with the leading dot, or an exact match.\n\nDon't put the domain in an array form of `origin`. Hono matches array entries as exact strings, so wildcards wouldn't work there (noted in `index.ts:20` and in `docs/code/worker/src/index.md`).\n\nIf the custom domain is also the frontend's host, check that the frontend's API base URL points at the Worker. I haven't looked at that. `docs/DEPLOYMENT_NOTES.md` §4 covers CORS in more detail, and I didn't read it.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

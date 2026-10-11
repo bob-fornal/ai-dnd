@@ -1,0 +1,50 @@
+{
+  "agent": "claude",
+  "inputTokens": 28673,
+  "outputTokens": 1119,
+  "cacheReadTokens": 22923,
+  "cacheWriteTokens": 5744,
+  "reasoningTokens": 192,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.038762599999999994,
+  "apiDurationMs": 8758,
+  "mainInputTokens": 28673,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 1,
+    "Grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/flows/character-creation.md",
+      "kind": "doc",
+      "tokens": 773
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 773,
+  "codeTokensRead": 0,
+  "otherToolTokens": 1395,
+  "filesModified": [],
+  "answer": "A new Fighter starts with four items:\n\n| ID | Item name (from `items` seed) |\n|---|---|\n| 2 | Longsword |\n| 15 | Shield |\n| 17 | Potion of Healing |\n| 23 | Torchx5 (the seed's name for the torches item) |\n\n**Where it's defined**\n- **IDs:** `CLASS_STARTING_ITEMS` in `worker/src/services/character.ts:66` has `Fighter: [2, 15, 17, 23]`. The `createCharacter` function in the same file (around line 75) loops over those IDs and inserts them into `character_inventory`.\n- **Names:** the `INSERT INTO items` statements in `worker/src/db/seed.sql` (lines 4–41) define them. IDs come from insert order: weapons are 1–10, armor 11–16, potions 17–21, and misc 22–26. That makes 2 Longsword, 15 Shield, 17 Potion of Healing and 23 Torchx5.\n\n**Comment mismatch (bug B-09):** the code comment on that line says `Rations`, but ID 23 is `Torchx5`. Rations are ID 24, `Rations (1 day)`. The seed data decides what the Fighter gets, so the Fighter gets torches, not rations.\n\nThis is also documented in `docs/flows/character-creation.md`, and I checked it against the code and the seed.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "agent": "claude",
+  "arm": {
+    "id": "research-v1",
+    "dir": "../research-documentation-v1",
+    "description": "v1 component docs beside the code (code.md index, AGENTS.md authoring rules), no hint.",
+    "preamble": "",
+    "docsVersion": "v1"
+  },
+  "task": {
+    "id": "level-up-flow",
+    "area": "full-stack",
+    "prompt": "Explain the level-up flow end to end: when the UI offers it, which endpoint is called, and what changes on the character.",
+    "expect": [
+      [
+        "shouldLevelUp"
+      ],
+      [
+        "XP_THRESHOLDS"
+      ],
+      [
+        "/api/levelup",
+        "levelup.ts"
+      ],
+      [
+        "+2"
+      ],
+      [
+        "abilityChoice",
+        "ability"
+      ],
+      [
+        "hit die",
+        "hitDie",
+        "CLASS_HIT_DICE"
+      ]
+    ]
+  },
+  "rep": 2,
+  "prompt": "Explain the level-up flow end to end: when the UI offers it, which endpoint is called, and what changes on the character.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\claude-iso-1\\research-documentation-v1",
+  "isolated": true,
+  "cliArgs": [
+    "-p",
+    "--model",
+    "claude-sonnet-5-5",
+    "--effort",
+    "medium",
+    "--tools",
+    "Read,Grep,Glob",
+    "--permission-mode",
+    "dontAsk",
+    "--no-session-persistence",
+    "--strict-mcp-config",
+    "--disable-slash-commands",
+    "--setting-sources",
+    "project,local",
+    "--settings",
+    "{\"claudeMdExcludes\":[\"**/AGENTS.md\"]}",
+    "--output-format",
+    "stream-json",
+    "--verbose"
+  ],
+  "model": "claude-sonnet-5-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-10T14:43:01.369Z"
+}

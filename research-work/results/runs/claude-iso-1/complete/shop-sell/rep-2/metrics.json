@@ -1,0 +1,50 @@
+{
+  "agent": "claude",
+  "inputTokens": 20388,
+  "outputTokens": 1257,
+  "cacheReadTokens": 16498,
+  "cacheWriteTokens": 3884,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.031417600000000004,
+  "apiDurationMs": 8962,
+  "mainInputTokens": 20388,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Grep": 3,
+    "Read": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1216
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 1216,
+  "otherToolTokens": 227,
+  "filesModified": [],
+  "answer": "**Gold received: 14 gp.** The longsword's `value` is 15 (`worker/src/db/seed.sql:6`). The sell branch of the `POST /api/shop/transaction` handler in `worker/src/routes/shop.ts:88` computes `Math.floor(15 * 0.5) * 2`. That is `7 * 2 = 14`. The floor is applied per item before multiplying by quantity, so the player gets 14 gp, not 15 gp.\n\n**Checks, in order** (`shop.ts`, the `shopRoutes.post('/transaction')` handler):\n1. The body must parse as JSON, otherwise 400 \"Invalid JSON body\" (`shop.ts:28-33`).\n2. `characterId`, `shopId`, `action`, `itemId` and `quantity` must all be present, otherwise 400 (`shop.ts:36`).\n3. `getCharacter` (`worker/src/services/character.ts`) must find the character, otherwise 404 (`shop.ts:40-41`).\n4. The item must exist in `items`, otherwise 404 (`shop.ts:44-47`).\n5. For the sell action, the handler queries `character_inventory` for that character and item. If there is no row or `inv.quantity < quantity`, it returns 400 \"You do not have enough of this item to sell\" (`shop.ts:91-96`).\n\nThe sell path never checks that Aldric's Armory (shop 1) stocks longswords. It does not check `shopId` against `shop_inventory`, and it does not add to the shop's stock. Any shop accepts any item.\n\n**Inventory row:** the update runs in one `DB.batch` (`shop.ts:98-107`).\n- It runs `UPDATE characters SET gold = gold + 14, updated_at = datetime('now')`.\n- If the player owned exactly 2 longswords (`inv.quantity === quantity`), the `character_inventory` row is deleted.\n- If they owned more, the row stays and `quantity = quantity - 2`.\n\nThe response is `{success, action:'sell', item:'Longsword', quantity:2, earned:14, updatedGold}`.\n\nThe delete branch also removes the row regardless of its `equipped` flag. The sell path has no check that the item is unequipped.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

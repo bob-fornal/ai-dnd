@@ -1,0 +1,57 @@
+{
+  "agent": "claude",
+  "inputTokens": 30826,
+  "outputTokens": 1125,
+  "cacheReadTokens": 25871,
+  "cacheWriteTokens": 4947,
+  "reasoningTokens": 67,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0362282,
+  "apiDurationMs": 8689,
+  "mainInputTokens": 30826,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 2,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 852
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 709
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1561,
+  "codeTokensRead": 0,
+  "otherToolTokens": 258,
+  "filesModified": [],
+  "answer": "Everything is in `worker/src/services/ai-dm.ts`. This follows `AGENTS.md` and `worker/src/services/ai-dm.md`, plus a grep of the code to confirm line numbers.\n\n**Model failure (`askDM`, line 81)**\n- The primary model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, called at line 93.\n- If that call throws, the `catch` at line 115 retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`, called at line 119.\n- If the retry also throws, the `catch (err2)` at line 133 returns `fallbackNarrative(playerAction)` (line 135). This is a canned `AIDMResponse` that is defined at line 198.\n\n**Response that isn't valid JSON (`parseAIResponse`, line 143)**\n- `parseAIResponse` runs on the text from whichever model succeeded.\n- It strips code fences and extracts the first `{…}` block.\n- If the text is empty (line 146) or no JSON block is found (line 163), it returns `fallbackNarrative(playerAction)`.\n- If `JSON.parse` (line 168) throws, the `catch` at line 192 returns `fallbackNarrative(playerAction)`.\n- If parsing succeeds, it fills defaults for missing fields. It also caps `suggestedActions` at 4 and `diceRolls` at 8.\n\nA non-JSON reply from the primary model does not trigger the Mistral retry. The retry only happens when the call throws. A bad-JSON reply goes straight to `fallbackNarrative`.\n\n**Other AI functions**\n- `generateQuest`, `generateBackstory` and `generateLevelUpNarrative` use their own `catch` blocks (lines 263, 298 and 325) with canned text or an empty string. They have no Mistral retry.\n- They only read the legacy `response` field, so with llama-3.3 they often fall back (`bugs.md` B-03).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

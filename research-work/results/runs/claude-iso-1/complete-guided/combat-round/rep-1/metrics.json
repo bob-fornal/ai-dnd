@@ -1,0 +1,81 @@
+{
+  "agent": "claude",
+  "inputTokens": 90692,
+  "outputTokens": 2635,
+  "cacheReadTokens": 56890,
+  "cacheWriteTokens": 33794,
+  "reasoningTokens": 61,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.17292,
+  "apiDurationMs": 18362,
+  "mainInputTokens": 90692,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 10,
+  "toolCallsByName": {
+    "Read": 7,
+    "Glob": 2,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 5956
+    },
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3940
+    },
+    {
+      "path": "worker/src/services/combat.ts",
+      "kind": "code",
+      "tokens": 2252
+    },
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 1944
+    },
+    {
+      "path": "worker/src/routes/combat.ts",
+      "kind": "code",
+      "tokens": 1225
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 914
+    },
+    {
+      "path": "worker/src/services/dice.ts",
+      "kind": "code",
+      "tokens": 557
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 4,
+  "docTokensRead": 8814,
+  "codeTokensRead": 7974,
+  "otherToolTokens": 526,
+  "filesModified": [],
+  "answer": "An Attack round is resolved by the Worker's own code, and the AI only narrates the result.\n\n## Flow\n\n1. **Frontend:** `game-console.component.ts:149` calls `GameApiService.resolveCombat()` (`game-api.service.ts:50`). That sends `POST /api/combat/resolve` with `{sessionId, characterId, action: \"attack\"}`.\n2. **Route:** the handler in `worker/src/routes/combat.ts:11` loads the character from D1 and the session from KV. It rejects the request with a 400 if `session.inCombat` or `combatState` is missing.\n3. **Mechanics:** `resolveCombatRound()` in `worker/src/services/combat.ts:50` resolves the whole round. It is called at `routes/combat.ts:38`.\n4. **Persistence:** the route then does the following.\n   - Clamps the character's HP to 0..`max_hp` and adds XP on victory (`updateCharacter`).\n   - On victory, calls `rollLoot` and `grantLoot`. Loot uses `Math.random() < drop_chance` against the D1 `loot_tables`.\n   - Calls `askDM()` for narration (step 5).\n   - Appends to the KV history. It either ends combat or increments `round` and applies the monster HP delta.\n   - Writes two rows to the D1 `adventure_log`.\n5. **Response:** the route returns the narrative, `diceRolls`, `combatState`, `victory`, `playerDied`, `loot` and `canLevelUp`.\n\n## Where the dice are rolled\n\nAll dice are rolled in `worker/src/services/dice.ts`, which says \"never delegated to the AI\". The calls come from `resolveCombatRound`:\n\n- **Player attack:**\n  - `attackRoll(atkBonus, monster.ac)` (`combat.ts:91`) rolls a d20.\n  - The bonus is the STR modifier plus proficiency, or the DEX modifier for Rogue and Ranger.\n  - Proficiency is `ceil(level/4)+1`.\n  - A natural 20 always hits and is a crit. A natural 1 always misses.\n- **Player damage (on hit):**\n  - `rollExpression(getPlayerDamageDice(class))` (`combat.ts:103`) rolls the class die. It is 1d8 for Fighter, Cleric and Bard, and 1d6 for the others.\n  - The modifier is STR, or INT for Wizard and Bard.\n  - Damage is at least 1 and doubles on a crit.\n- **Enemy turn:** this runs only if the monster survives.\n  - `attackRoll(monster.attack_bonus, character.ac)` (`combat.ts:131`) rolls the attack.\n  - `rollExpression(monster.damage_dice)` (`combat.ts:142`) rolls damage on a hit.\n  - If the player's HP drops to 0 or below, combat ends in defeat.\n- **Monster death:** at 0 HP or below, the player wins and gains `monster.xp_reward`.\n\nThe result goes back as `diceRolls[]`, plus a `contextForDM` string built from the round log.\n\n## What the AI does and doesn't do\n\n`askDM()` in `worker/src/services/ai-dm.ts:81` receives `contextForDM` as \"COMBAT CONTEXT (pre-resolved by the system — narrate these results vividly)\" (`ai-dm.ts:69`). The primary model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, with `@cf/mistral/mistral-7b-instruct-v0.2-lora` as the fallback.\n\n- **The AI does:**\n  - Write the `narrative` prose for the round.\n  - Suggest up to 4 `suggestedActions`.\n- **The AI does not:**\n  - Roll dice, decide hit or miss, set damage, or set HP, XP or loot.\n  - Decide when combat ends. The route reads `result.combatEnded`, not the AI's `gameStateChanges`, which it ignores.\n  - Add attack or damage rolls. The system prompt forbids this (`ai-dm.ts:40`).\n- **If the AI fails:** `fallbackNarrative()` returns generic prose and the mechanical outcome stays intact.\n\n## Caveats\n\n- **Enforcement:** nothing enforces \"don't contradict the numbers\" except the prompt. The narrative isn't checked against the results.\n- **Dodge:** the code applies a flat -5 to the enemy's attack bonus. The comment in `combat.ts` says \"disadvantage\", but it isn't implemented as true disadvantage.\n- **Docs vs code:** the PRD's architecture diagram lists `llama-3.1-8b-instruct`, but the code and `docs/DEPLOYMENT_NOTES.md` use `llama-3.3-70b`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

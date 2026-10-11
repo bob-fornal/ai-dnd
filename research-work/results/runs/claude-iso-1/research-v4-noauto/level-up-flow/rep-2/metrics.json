@@ -1,0 +1,65 @@
+{
+  "agent": "claude",
+  "inputTokens": 34606,
+  "outputTokens": 1885,
+  "cacheReadTokens": 23163,
+  "cacheWriteTokens": 11437,
+  "reasoningTokens": 99,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.06924260000000002,
+  "apiDurationMs": 11709,
+  "mainInputTokens": 34606,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "Read": 4,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 948
+    },
+    {
+      "path": "docs/code/worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 726
+    },
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 668
+    },
+    {
+      "path": "docs/code/worker/src/routes/levelup.md",
+      "kind": "doc",
+      "tokens": 421
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 0,
+  "docTokensRead": 2763,
+  "codeTokensRead": 0,
+  "otherToolTokens": 2714,
+  "filesModified": [],
+  "answer": "The level-up flow below comes from the project docs (`docs/flows/level-up.md`, `routes/levelup.md`, `services/character.md`). I didn't open the source files to re-check the line numbers.\n\n**When the UI offers it**\n- `XP_THRESHOLDS` (`worker/src/types/index.ts:175`, mirrored in `frontend/.../game.models.ts:146`) is 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000. Index N is the XP needed to reach level N+1, and the maximum level is 10.\n- The Worker decides with `shouldLevelUp(character)` (`worker/src/services/character.ts:159`), which is `xp >= XP_THRESHOLDS[level]` and `level < 10`.\n- `POST /api/action` (`routes/action.ts:99`) and `POST /api/combat/resolve` (`routes/combat.ts:109`) return that result as `canLevelUp`.\n- The frontend also computes it locally in `CharacterStateService.setCharacter` → `checkLevelUp` (`character-state.service.ts:52,76`). It then overwrites that with the server value (`game-console.component.ts:128,155`).\n- The prompts are:\n  - a banner in the character sheet (`character-sheet.component.html:66`);\n  - an ability picker in the console sidebar (`game-console.component.html:19-28`);\n  - a system message after combat (`game-console.component.ts:172`).\n\n**Endpoint**\n1. Clicking an ability calls `levelUp(key)` in `game-console.component.ts:183`. That calls `GameApiService.levelUp(sessionId, characterId, abilityChoice)` (`game-api.service.ts:74`).\n2. This sends `POST /api/levelup` with body `{ sessionId, characterId, abilityChoice }`. The route is `worker/src/routes/levelup.ts:10`.\n3. `abilityChoice` must be one of str, dex, con, int, wis or cha. The route returns 400 for bad input or when `shouldLevelUp` is false, and 404 if the character doesn't exist.\n4. The response is `{ narrative, updatedCharacter, abilityImproved, newLevel }`.\n\n**What changes on the character**\n`levelUp(db, character, ability)` (`services/character.ts:133`) makes these changes:\n- Level goes up by 1.\n- HP gain is `roll(class hit die) + CON modifier` (`:141`), added to both `max_hp` and current HP. Hit dice (`CLASS_HIT_DICE`) are d10 for Fighter and Ranger, d8 for Rogue, Cleric and Bard, and d6 for Wizard. The gain can be 0 or negative with a low CON.\n- The chosen ability gets +2 (`:152`).\n- AC is unchanged, and ability scores are not capped at 20.\n\n**Side effects**\n- The route calls `generateLevelUpNarrative` for flavor text. That is usually canned fallback text (bug B-03).\n- It writes a `system` log row `[Level Up] …` and adds the narrative to the session history as a DM turn (`routes/levelup.ts:39-50`).\n- The frontend then calls `setCharacter`, calls `setCanLevelUp(false)`, shows a system message and updates the campaign slot level (`game-console.component.ts:187-194`).\n\nEach call grants one level. A character with enough XP for two levels has to call the endpoint twice.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

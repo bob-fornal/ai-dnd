@@ -1,0 +1,76 @@
+{
+  "agent": "claude",
+  "inputTokens": 52151,
+  "outputTokens": 3383,
+  "cacheReadTokens": 32604,
+  "cacheWriteTokens": 19539,
+  "reasoningTokens": 119,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.1185228,
+  "apiDurationMs": 22551,
+  "mainInputTokens": 52151,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 12,
+  "toolCallsByName": {
+    "Glob": 2,
+    "Grep": 4,
+    "Read": 6
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 2556
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 1272
+    },
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1216
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 706
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 608
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 352
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 6,
+  "docTokensRead": 0,
+  "codeTokensRead": 6710,
+  "otherToolTokens": 2834,
+  "filesModified": [],
+  "answer": "I read the shop route, `index.ts`, the Angular API service, the game console and the character services. I did not open `session.ts`, `combat.ts`, the HTML templates or the specs, so those points are flagged as unchecked below. I made no changes.\n\n## Worker\n\n**1. `worker/src/types/index.ts`**\n- Add `export interface RestBody { sessionId: string; characterId: string; }`, next to `LevelUpBody` (line 168).\n- Optionally add `export const INN_REST_COST = 10;`, next to `XP_THRESHOLDS` (line 175). The cost could instead scale with level, for example `level * 5`.\n\n**2. `worker/src/routes/rest.ts` (new file)**\n- Export `restRoutes = new Hono<{ Bindings: Env }>()`, following the `levelup.ts` pattern.\n- Handle `POST /`. Parse the body and return 400 if `sessionId` or `characterId` is missing.\n- Load the character with `getCharacter`. Return 404 if it is missing.\n- Return 400 if `hp >= max_hp` (\"already at full health\").\n- Return 400 if `gold < cost`, using the same message style as `shop.ts:52`.\n- Reject the rest if the session is in combat. I haven't checked how combat state is stored in `session.ts` or `combat.ts`.\n- Call `updateCharacter(db, id, { hp: character.max_hp, gold: character.gold - cost })`. The existing helper at `services/character.ts:94` already accepts `hp` and `gold`.\n- Return `{ success, cost, updatedCharacter }`, re-fetched with `getCharacter`.\n- Do the deduction and heal in one `UPDATE`, or use `DB.batch` as `shop.ts` does. That avoids a race between the gold check and the update. `updateCharacter` alone is not atomic with the check.\n\n**3. `worker/src/index.ts`**\n- Add `import { restRoutes } from './routes/rest.js';` after line 12.\n- Add `app.route('/api/rest', restRoutes);` after line 48.\n- CORS needs no change, since `POST` is already allowed.\n\n**4. `worker/src/services/session.ts` (possible change)**\n- `levelup.ts` imports `loadSession`, `saveSession` and `rebuildSession`, which suggests the session caches character stats for the AI prompt. If it does, the rest route needs to call the same rebuild so the DM doesn't see stale HP.\n- I haven't confirmed this. Check whether the session stores HP.\n\n**5. `worker/src/routes/shop.ts` (not needed)**\n- Resting could be a new `action` on `/transaction`, but that body requires `itemId` and `quantity`. A separate route is cleaner.\n\n## Angular frontend\n\n**1. `frontend/src/app/services/game-api.service.ts`**\n- Add `restAtInn(sessionId: string, characterId: string): Observable<{ success: boolean; cost: number; updatedCharacter: Character }>`, which POSTs to `${API_BASE}/api/rest`. Put it under a new `// ── Rest ──` section, after Shop.\n\n**2. `frontend/src/app/components/game-console/game-console.component.ts`**\n- Add `restLoading = signal(false);`, next to `luLoading`.\n- Add `restAtInn()`, modelled on `levelUp()` at line 183:\n  - Guard on `restLoading()` and `charSvc.inCombat()`.\n  - On success, call `this.charSvc.setCharacter(res.updatedCharacter)` and `this.pushEntry('system', ...)` with a message like \"You rest at the inn for Ngp. HP restored.\"\n  - On error, show `err?.error?.error` through `pushEntry('system', ...)`. `levelUp()` currently swallows errors, so don't copy that part.\n\n**3. `frontend/src/app/components/game-console/game-console.component.html`**\n- Add a \"Rest at Inn (10 gp)\" button. Disable it when `restLoading()`, `charSvc.inCombat()`, `hp === max_hp`, or `gold < cost`. It could sit near the sidebar or inventory button, or beside the suggested actions.\n- I haven't read this template. Match the existing button markup.\n\n**4. `frontend/src/app/components/game-console/game-console.component.css`**\n- Add styling only if the new button needs it.\n\n**5. `frontend/src/app/models/game.models.ts` (optional)**\n- Add a shared `INN_REST_COST` constant if the UI shows or checks the price. `XP_THRESHOLDS` is already shared this way.\n- The worker stays the source of truth for the cost.\n\n**6. `frontend/src/app/services/character-state.service.ts` (no change)**\n- `setCharacter()` already updates the HP and gold signals, and `hpPercent` recomputes from them.\n- `character-sheet.component.html` and `inventory.component.html` (the gold chip) update automatically.\n\n## Tests\n- Add a spec for the new route, if the worker has tests. I saw none in the file listing.\n- Extend `game-console.component.spec.ts` to cover `restAtInn()`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

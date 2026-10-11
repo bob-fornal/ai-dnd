@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "inputTokens": 24590,
+  "outputTokens": 1679,
+  "cacheReadTokens": 18704,
+  "cacheWriteTokens": 5880,
+  "reasoningTokens": 111,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0440628,
+  "apiDurationMs": 12318,
+  "mainInputTokens": 24590,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 3,
+    "Glob": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 852
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 717
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 655
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2224,
+  "codeTokensRead": 0,
+  "otherToolTokens": 465,
+  "filesModified": [],
+  "answer": "I answered from the docs in `AGENTS.md`'s routing table (`docs/flows/add-endpoint.md` and `docs/flows/inventory.md`). I didn't open the code, so the line anchors below come from those docs and are unverified. The recipe's own worked example is \"rest at the inn\", so this follows it directly.\n\n## Worker (rules live here; the AI only narrates)\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add `RestBody { sessionId, characterId }` and a cost constant such as `INN_COST`. The docs give no price, so you need to choose one. |\n| `worker/src/routes/rest.ts` (new) | Add `export const restRoutes = new Hono<{ Bindings: Env }>()` with a `POST /`. It validates the body, calls `getCharacter`, and returns an error if `gold < cost`. Then it calls `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (`services/character.ts:94`, which only accepts whitelisted fields). It returns `{ updatedCharacter }`. Optionally add `askDM` narration, `appendHistory` and `saveSession`, and an `adventure_log` insert, following `routes/action.ts`. |\n| `worker/src/index.ts:41-48` | Add `app.route('/api/rest', restRoutes)`. CORS (`:19-35`) needs no change unless there is a new origin. |\n| `worker/src/services/*.ts` | Only needed if other routes will share the rest logic. Otherwise leave it in the route. |\n| `worker/migrations/` | No change. `gold`, `hp` and `max_hp` already exist. |\n\n## Angular frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add a `RestResponse` interface that mirrors the Worker response. |\n| `frontend/src/app/services/game-api.service.ts` | Add `rest(sessionId, characterId)`, which POSTs to `${API_BASE}/api/rest`. |\n| `frontend/src/app/components/game-console/game-console.component.ts` and `.html` | Add a \"Rest at inn\" button and a handler. The handler calls `rest()`, then `CharacterStateService.setCharacter(res.updatedCharacter)` so the sheet updates, and pushes a system or narrative entry. It also needs to show the \"not enough gold\" error. Existing buttons, such as Inventory at `.html:9`, show the pattern. |\n| `game-console.component.spec.ts` | Add tests with `GameApiService` as a Jasmine spy. |\n\n`character-state.service.ts` needs no change, since `setCharacter` already exists.\n\n## Docs to update in the same change\n- Update the `.md` beside each changed file, with links at both ends (`docs/AUTHORING.md` §3).\n- Add a `code.md` entry for the new `routes/rest.md`, then re-run `research-work/scripts/build-symbol-index.mjs`.\n- Update the `docs/PRD.md` §9 API spec.\n- Update the routing table in `AGENTS.md` only if you count this as a new feature area.\n\n## Things to watch\n- Do the HP math and the cost check on the Worker only. Don't copy the browser-side logic from `usePotion`, which has the unsaved-HP bug B-05.\n- Don't edit migration `0001`.\n- Keep the Angular template in its own `.html` file, not inline.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

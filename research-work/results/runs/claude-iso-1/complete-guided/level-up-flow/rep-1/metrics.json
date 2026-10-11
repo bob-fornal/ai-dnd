@@ -1,0 +1,91 @@
+{
+  "agent": "claude",
+  "inputTokens": 86925,
+  "outputTokens": 3190,
+  "cacheReadTokens": 57355,
+  "cacheWriteTokens": 29562,
+  "reasoningTokens": 153,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.161635,
+  "apiDurationMs": 20735,
+  "mainInputTokens": 86925,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 13,
+  "toolCallsByName": {
+    "Read": 9,
+    "Glob": 1,
+    "Grep": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "PRD.md",
+      "kind": "doc",
+      "tokens": 5956
+    },
+    {
+      "path": "docs/DEPLOYMENT_NOTES.md",
+      "kind": "doc",
+      "tokens": 1944
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 1602
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 992
+    },
+    {
+      "path": "SETUP.md",
+      "kind": "doc",
+      "tokens": 914
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 706
+    },
+    {
+      "path": "worker/src/routes/levelup.ts",
+      "kind": "code",
+      "tokens": 603
+    },
+    {
+      "path": "worker/src/routes/action.ts",
+      "kind": "code",
+      "tokens": 590
+    },
+    {
+      "path": "worker/src/types/index.ts",
+      "kind": "code",
+      "tokens": 154
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 6,
+  "docTokensRead": 8814,
+  "codeTokensRead": 4647,
+  "otherToolTokens": 1693,
+  "filesModified": [],
+  "answer": "## Level-up flow\n\n**1. When the UI offers it**\n\nThe offer is driven by the `canLevelUp` signal in `CharacterStateService` (`frontend/src/app/services/character-state.service.ts`). It gets set in three places:\n- `setCharacter()` calls the private `checkLevelUp()`. That returns true if `level < 10` and `xp >= XP_THRESHOLDS[level]`. This covers a page load or resume.\n- After `POST /api/action`, `game-console.component.ts:128` calls `setCanLevelUp(res.canLevelUp)`.\n- After `POST /api/combat/resolve`, `game-console.component.ts:155` does the same. Line 172 also pushes a system message: \"You have enough XP to level up! Choose an ability to improve.\"\n\nThe worker computes `canLevelUp` with `shouldLevelUp()` (`worker/src/services/character.ts:159`). That function returns false at level 10 or above. Otherwise it checks `character.xp >= XP_THRESHOLDS[character.level]`. The thresholds in `worker/src/types/index.ts:175` are `[0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000]`. The frontend has its own copy in `game.models.ts`, so the two lists have to be kept in sync by hand.\n\nWhen the signal is true, two things show:\n- The \"⬆ Level Up Available!\" banner in `character-sheet.component.html:66`.\n- The ability-picker panel in `game-console.component.html:19`. It has one button per ability, and each button calls `levelUp(key)`.\n\n**2. Endpoint**\n\n`GameConsoleComponent.levelUp()` (`game-console.component.ts:183`) calls `GameApiService.levelUp()`. That sends `POST {API_BASE}/api/levelup` with `{ sessionId, characterId, abilityChoice }`. The worker route is `worker/src/routes/levelup.ts`, mounted at `/api/levelup` in `index.ts:47`.\n\nThe route checks the request in this order:\n1. All three body fields are present, otherwise 400.\n2. `abilityChoice` is one of `str`, `dex`, `con`, `int`, `wis`, `cha`, otherwise 400.\n3. The character exists, otherwise 404.\n4. `shouldLevelUp()` passes, otherwise 400. The server re-checks XP and doesn't trust the client.\n\n**3. What changes on the character**\n\n`levelUp()` in `character.ts:133` writes one row update through `updateCharacter()`, which also bumps `updated_at`:\n- **`level`:** goes up by 1. Only one level is gained per call.\n- **`max_hp`:** goes up by `hpGain = roll(hitDie) + modifier(con)`. The hit die comes from `CLASS_HIT_DICE[class]`. The roll is random, not the 5e average. The CON modifier uses the pre-level-up CON score, not the one just chosen.\n- **`hp`:** becomes `min(hp + hpGain, newMaxHp)`. The character gets the HP gained, not a full heal.\n- **Chosen ability:** goes up by **+2**. I found no cap at 20.\n- **Unchanged:** `xp`, `ac` and `gold`.\n\n**4. Side effects in the route**\n- `generateLevelUpNarrative()` (`ai-dm.ts:304`) produces the narrative text.\n- An `adventure_log` row is inserted with actor `'system'` and the content `[Level Up] {name} reached Level N! {narrative}`. The PRD only lists `'player'` and `'dm'` as actors.\n- The KV session history gets the narrative pushed as a `dm` entry. If the session is gone from KV, `rebuildSession()` recreates it first.\n- The response is `{ narrative, updatedCharacter, abilityImproved, newLevel }`.\n\n**5. Client after the response**\n- `setCharacter(res.updatedCharacter)`.\n- `setCanLevelUp(false)`. This is set even if the new XP already qualifies for another level. The next action or combat response will re-enable it.\n- A system log line `⬆ Level N! …` is pushed.\n- `updateCampaignSlot(newLevel)` runs.\n- The `error` handler only clears `luLoading`, so a failed level-up gives the player no message.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "agent": "claude",
+  "inputTokens": 51534,
+  "outputTokens": 2778,
+  "cacheReadTokens": 35462,
+  "cacheWriteTokens": 16064,
+  "reasoningTokens": 77,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0991444,
+  "apiDurationMs": 18628,
+  "mainInputTokens": 51534,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 11,
+  "toolCallsByName": {
+    "Read": 10,
+    "Glob": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/code/frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 1033
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 948
+    },
+    {
+      "path": "docs/code/worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 784
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 763
+    },
+    {
+      "path": "docs/code/worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 726
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 720
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 658
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 532
+    },
+    {
+      "path": "docs/code/worker/src/routes/shop.md",
+      "kind": "doc",
+      "tokens": 439
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    }
+  ],
+  "docFilesRead": 10,
+  "codeFilesRead": 0,
+  "docTokensRead": 7032,
+  "codeTokensRead": 0,
+  "otherToolTokens": 465,
+  "filesModified": [],
+  "answer": "This is based on AGENTS.md, `docs/flows/add-endpoint.md` and the per-file docs. I haven't opened the source files, so the line numbers below come from the docs' anchors. I changed no files.\n\n## Worker\n\n1. **`worker/src/types/index.ts`**\n   - Add `RestBody { sessionId: string; characterId: number }`. It would sit near `ShopTransactionBody:159`.\n   - Add a cost constant, e.g. `INN_REST_COST`. I'd pick a flat 10 gold, since starting gold is 50. The cost is your call.\n2. **`worker/src/routes/rest.ts`** (new)\n   - Export `restRoutes = new Hono<{ Bindings: Env }>()` with `POST /`.\n   - Validate the body, then call `getCharacter(db, id)` (`services/character.ts:86`). Return 404 if the character is missing.\n   - Return 400 if `gold < INN_REST_COST`.\n   - Return 400 if `hp >= max_hp`, so the player isn't charged for nothing.\n   - Return 400 if the session is in combat. Check `session.combatState` from KV, or block it on the client. Without this, resting would work as a free full heal mid-fight.\n   - Call `updateCharacter(db, id, { hp: max_hp, gold: gold - INN_REST_COST })` (`services/character.ts:94`). It only accepts whitelisted fields, and `hp` and `gold` are both on the list.\n   - Respond with `{ success, cost, updatedCharacter }`.\n   - Optionally add an `adventure_log` insert, and `appendHistory` with `saveSession` (`services/session.ts`), following `routes/action.ts`. `askDM` narration is also optional.\n3. **`worker/src/index.ts:41-48`**: import `restRoutes` and add `app.route('/api/rest', restRoutes)`. CORS (`:19-35`) needs no change.\n4. **No schema change.** `characters.hp`, `characters.max_hp` and `characters.gold` already exist, so there is no new migration.\n\n## Frontend\n\n5. **`frontend/src/app/models/game.models.ts`**: add a `RestResponse { success: boolean; cost: number; updatedCharacter: Character }` interface. This mirrors the Worker response, and nothing enforces that the two stay in sync.\n6. **`frontend/src/app/services/game-api.service.ts`**: add `rest(sessionId, characterId)`, which posts to `${API_BASE}/api/rest`. It would go after `shopTransaction():109`.\n7. **`frontend/src/app/components/game-console/game-console.component.ts` and `.html`**\n   - Add a \"Rest at Inn (N gold)\" button in the left column, next to the Inventory button at `.html:9`.\n   - Add a `rest()` handler, modelled on `levelUp():183`:\n     - Call `api.rest`.\n     - Call `CharacterStateService.setCharacter(res.updatedCharacter)` (`character-state.service.ts:50`).\n     - Push a system or narrative entry.\n     - Show `err.error.error` on failure.\n   - Disable the button while `inCombat()` or `gold < cost`.\n8. **`game-console.component.css`**: only needed if the button needs styling.\n9. **`game-console.component.spec.ts`**: add tests with `GameApiService` as a Jasmine spy. They should cover the success path and the not-enough-gold error.\n\n`character-state.service.ts` and `character-sheet.component` need no change. They update automatically from `setCharacter`.\n\n## Docs\n\n- Update the docs beside every changed file, with links in both directions: `routes/rest.md` (new), `types/index.md`, `worker/src/index.md`, `game-api.service.md`, `game-console.component.md` and `game.models.md`.\n- Add `rest.md` to `code.md`, then re-run `research-work/scripts/build-symbol-index.mjs`.\n- Add the endpoint to PRD §9.\n- Add `rest` to `docs/flows/inventory.md` or the AGENTS.md routing table, if it counts as a new feature area.\n\n## Open decisions\n\n- Flat cost or level-scaled cost.\n- Whether resting is blocked at full HP. I'd block it.\n- Whether to add AI narration. The Worker owns the rules, so the heal and cost must stay in the Worker whatever you choose.\n- B-05: potion healing in the inventory component is client-only and never saved. A rest would persist HP correctly, because it goes through `updateCharacter`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

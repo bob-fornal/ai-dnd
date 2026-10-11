@@ -1,0 +1,63 @@
+{
+  "agent": "claude",
+  "arm": {
+    "id": "complete-guided",
+    "dir": "../complete",
+    "description": "Baseline told to use its docs.",
+    "preamble": "Before answering, orient yourself with the project documentation in this folder (PRD.md, SETUP.md, docs/), then read only the code you need.",
+    "docsVersion": "baseline"
+  },
+  "task": {
+    "id": "session-expiry",
+    "area": "worker",
+    "prompt": "What happens when a player resumes a game after the Workers KV session has expired? Trace both the frontend resume path and the Worker routes, and say whether the game can continue.",
+    "expect": [
+      [
+        "rebuildSession"
+      ],
+      [
+        "404"
+      ],
+      [
+        "session.ts"
+      ],
+      [
+        "7 days",
+        "7-day",
+        "TTL",
+        "604800"
+      ],
+      [
+        "getSession"
+      ]
+    ]
+  },
+  "rep": 3,
+  "prompt": "Before answering, orient yourself with the project documentation in this folder (PRD.md, SETUP.md, docs/), then read only the code you need.\n\nWhat happens when a player resumes a game after the Workers KV session has expired? Trace both the frontend resume path and the Worker routes, and say whether the game can continue.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\claude-iso-1\\complete",
+  "isolated": true,
+  "cliArgs": [
+    "-p",
+    "--model",
+    "claude-sonnet-5-5",
+    "--effort",
+    "medium",
+    "--tools",
+    "Read,Grep,Glob",
+    "--permission-mode",
+    "dontAsk",
+    "--no-session-persistence",
+    "--strict-mcp-config",
+    "--disable-slash-commands",
+    "--setting-sources",
+    "project,local",
+    "--settings",
+    "{\"claudeMdExcludes\":[\"**/AGENTS.md\"]}",
+    "--output-format",
+    "stream-json",
+    "--verbose"
+  ],
+  "model": "claude-sonnet-5-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-10T15:22:07.654Z"
+}

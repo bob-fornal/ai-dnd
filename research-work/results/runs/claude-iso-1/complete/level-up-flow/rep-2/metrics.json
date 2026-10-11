@@ -1,0 +1,65 @@
+{
+  "agent": "claude",
+  "inputTokens": 40296,
+  "outputTokens": 2384,
+  "cacheReadTokens": 30757,
+  "cacheWriteTokens": 9531,
+  "reasoningTokens": 36,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.06813140000000001,
+  "apiDurationMs": 15442,
+  "mainInputTokens": 40296,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "Grep": 2,
+    "Read": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 992
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 620
+    },
+    {
+      "path": "worker/src/routes/levelup.ts",
+      "kind": "code",
+      "tokens": 603
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 302
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 4,
+  "docTokensRead": 0,
+  "codeTokensRead": 2517,
+  "otherToolTokens": 1634,
+  "filesModified": [],
+  "answer": "## Level-up flow\n\n### 1. When the UI offers it\nThe offer is controlled by the `canLevelUp` signal in `frontend/src/app/services/character-state.service.ts`.\n\n- **Set from the character.** `setCharacter()` (line 50) sets it using `checkLevelUp()` (line 76). That returns true when `level < 10` and `xp >= XP_THRESHOLDS[level]`.\n- **Set from the server.** The `/api/action` and combat responses (`worker/src/routes/action.ts:99`, `combat.ts:109`) include `canLevelUp`, computed by `shouldLevelUp()` in `worker/src/services/character.ts:159`. `game-console.component.ts` copies it in with `setCanLevelUp(res.canLevelUp)` at lines 128 and 155.\n- **Thresholds.** Both sides use `[0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000]`. The index is the current level, so a level 1 character needs 300 XP. The frontend copy is in `game.models.ts:146` and the worker copy is in `worker/src/types/index.ts:175`. The level cap is 10.\n- **What the user sees.**\n  - `game-console.component.html:19` shows a `.levelup-panel` with one button per ability. Each button calls `levelUp(key)` and is disabled while `luLoading()` is true.\n  - `character-sheet.component.html:66` shows a `.levelup-banner`.\n  - After combat, `combatAction()` also adds the system message \"⬆ You have enough XP to level up!\" (line 172).\n\n### 2. Endpoint\n`GameApiService.levelUp()` (`game-api.service.ts:74`) sends `POST /api/levelup` with `{ sessionId, characterId, abilityChoice }`. The route is `worker/src/routes/levelup.ts`, mounted in `worker/src/index.ts:47`.\n\nThe handler validates the request in this order:\n1. Returns 400 if any field is missing.\n2. Returns 400 if `abilityChoice` is not one of `str`, `dex`, `con`, `int`, `wis`, `cha`.\n3. Returns 404 if the character is not found.\n4. Returns 400 if `shouldLevelUp()` is false, so the server re-checks XP.\n\n### 3. What changes on the character\n`levelUp()` in `worker/src/services/character.ts:133` writes one `updateCharacter` call to D1:\n- **`level`** goes up by 1.\n- **`hp` and `max_hp`:** `hpGain = roll(hitDie) + modifier(con)`.\n  - `max_hp` increases by `hpGain`.\n  - `hp` is `min(hp + hpGain, newMaxHp)`.\n  - Hit dice come from `CLASS_HIT_DICE`: Fighter 10, Ranger 10, Rogue 8, Cleric 8, Bard 8, Wizard 6.\n  - The `con` modifier used is the one from before any ability bump, since it is read from the old character.\n- **The chosen ability** gets +2. There is no cap at 20.\n- **`xp` is not changed.** It is cumulative, so the next threshold applies to the same total.\n\n### 4. Side effects and response\n- `generateLevelUpNarrative()` in `ai-dm.ts:304` produces the narrative text.\n- The route inserts an `adventure_log` row: actor `system`, content `[Level Up] <name> reached Level N! <narrative>`.\n- The route pushes the narrative into the KV session history as a `dm` entry. It rebuilds the session first if none is found.\n- The response is `{ narrative, updatedCharacter, abilityImproved, newLevel }`.\n\n### 5. Frontend after the response\nIn `game-console.component.ts:183-197`:\n- It calls `setCharacter(res.updatedCharacter)`.\n- It calls `setCanLevelUp(false)`, even if the new XP already meets the next threshold. The flag is only recomputed on the next `setCharacter` or action or combat response.\n- It adds the entry `⬆ Level N! <narrative>`.\n- It calls `updateCampaignSlot(res.newLevel)`.\n- On error it only clears `luLoading` and shows nothing to the user.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

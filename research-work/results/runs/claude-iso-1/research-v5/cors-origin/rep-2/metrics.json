@@ -1,0 +1,55 @@
+{
+  "agent": "claude",
+  "inputTokens": 34513,
+  "outputTokens": 1058,
+  "cacheReadTokens": 29517,
+  "cacheWriteTokens": 4988,
+  "reasoningTokens": 0,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0364514,
+  "apiDurationMs": 9348,
+  "mainInputTokens": 34513,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 2,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 124
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 429,
+  "codeTokensRead": 124,
+  "otherToolTokens": 198,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set by the `origin` callback passed to `cors()` in `worker/src/index.ts:19-35`. The callback echoes the request's `Origin` back if it matches one of these:\n\n- `http://localhost:4200`, an exact match (`index.ts:24`).\n- Any origin that ends with `.pages.dev` (`index.ts:25`).\n- Any origin that ends with `.workers.dev` (`index.ts:26`).\n\nRequests with no `Origin` header, and any other origin, get `null`, so no CORS headers are sent. The same `cors()` call also sets these (`index.ts:32-34`):\n\n- `allowMethods`: `GET`, `POST`, `PATCH`, `DELETE`, `OPTIONS`\n- `allowHeaders`: `Content-Type`, `Authorization`\n- `maxAge`: `86400`\n\n**Adding a custom domain:** edit the `if (...)` condition inside that `origin` function, between `index.ts:23` and `index.ts:27`. Add one more `||` clause:\n\n- For an exact origin, use `origin === 'https://play.example.com'`. Include the scheme, and the port if there is one.\n- For a whole domain, use `origin.endsWith('.example.com')`. This would also match any subdomain, so prefer the exact form.\n\nDon't add the domain to an array. Hono matches array entries as exact strings, which is why the code uses a function (`index.ts:20`). `docs/code/worker/src/index.md` and DEPLOYMENT_NOTES §4 say the same.\n\nNothing in `wrangler.toml` controls CORS. If the custom domain is for the Worker itself, it also needs a route or custom domain configured in Cloudflare, but that doesn't affect which browser origins are allowed. The frontend's API base URL is a separate setting.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "agent": "claude",
+  "inputTokens": 60201,
+  "outputTokens": 1645,
+  "cacheReadTokens": 48171,
+  "cacheWriteTokens": 12020,
+  "reasoningTokens": 43,
+  "modelRequests": 5,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.07418419999999999,
+  "apiDurationMs": 12402,
+  "mainInputTokens": 60201,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "Read": 4,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 2447
+    },
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1577
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1238
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 659
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 4344,
+  "codeTokensRead": 1577,
+  "otherToolTokens": 271,
+  "filesModified": [],
+  "answer": "All of this is in `worker/src/services/ai-dm.ts`, in `askDM`, `parseAIResponse` and `fallbackNarrative`. `ai-dm.md` and the code agree, but the doc doesn't spell out the invalid-JSON path, so I read the code for that.\n\n**Model failure (`askDM`, lines 90–139)**\n- The primary call is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, with `response_format: json_object`, temperature 0.85 and `max_tokens` 1024.\n- If that call throws, `askDM` retries once with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. This call has no `response_format` and no temperature.\n- A streaming response is treated as an error. It throws, so it takes the Mistral path.\n- If Mistral also throws, `askDM` returns `fallbackNarrative(playerAction)` straight away, without parsing.\n- A call that succeeds but returns empty text does not trigger the Mistral retry. It goes on to `parseAIResponse` as an empty string.\n\n**Invalid JSON (`parseAIResponse`, lines 143–195)**\n1. If the text is empty or whitespace, it returns `fallbackNarrative`.\n2. It strips markdown code fences. If the text still doesn't start with `{`, it extracts the first `{…}` block with a regex. If there is no such block, it logs a warning and returns `fallbackNarrative`.\n3. `JSON.parse` runs inside a `try`. If it throws, the `catch` returns `fallbackNarrative`.\n4. If parsing succeeds, missing or invalid fields get defaults:\n   - **`narrative`:** \"The world holds its breath…\".\n   - **`gameStateChanges`:** deltas become `null`, the item arrays become `[]`, and the combat flags are `true` only when they are exactly `true`.\n   - **`suggestedActions`:** a default list of four, otherwise capped at 4.\n   - **`diceRolls`:** `[]`, otherwise capped at 8.\n\n**`fallbackNarrative`**\nIt returns a generic narrative built from the player's action. All state changes are null or empty, the four suggested actions are fixed (\"Look around\", \"Proceed carefully\", …), and `diceRolls` is `[]`. A failure therefore never changes HP, XP or gold. That matches the rule in `AGENTS.md` that the Worker owns the mechanics and the AI only provides prose.\n\n**Related**\n- `generateQuest`, `generateBackstory` and `generateLevelUpNarrative` don't have the Mistral retry. They use llama only, with a `catch` that falls back to canned text. They also read only the legacy `response` field, which is the known bug B-03 in `../bugs.md`.\n- The callers of `askDM` are `routes/action` and `routes/combat`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "agent": "claude",
+  "inputTokens": 23348,
+  "outputTokens": 1438,
+  "cacheReadTokens": 16862,
+  "cacheWriteTokens": 6480,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0436844,
+  "apiDurationMs": 10147,
+  "mainInputTokens": 23348,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Grep": 1,
+    "Read": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1577
+    },
+    {
+      "path": "worker/src/routes/action.ts",
+      "kind": "code",
+      "tokens": 601
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 2,
+  "docTokensRead": 0,
+  "codeTokensRead": 2178,
+  "otherToolTokens": 603,
+  "filesModified": [],
+  "answer": "All of this is in `worker/src/services/ai-dm.ts`, in `askDM()`, `parseAIResponse()` and `fallbackNarrative()`.\n\n**Model failure (`askDM`, lines 85–140)**\n- The primary model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It is called with `max_tokens: 1024`, `temperature: 0.85` and `response_format: { type: 'json_object' }`.\n- A streaming (`ReadableStream`) response is treated as an error.\n- If the primary call throws, `askDM` logs `llama failed, trying mistral` and retries once with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. That retry uses the same prompts and `max_tokens`, but no `response_format`.\n- If the Mistral call also throws, `askDM` returns `fallbackNarrative(playerAction)` directly.\n- For either model, the text comes from `choices[0].message.content`, then `.response`, then the raw string if the response is one. If none of those has content, `rawText` is `''`.\n\n**Invalid or empty JSON (`parseAIResponse`, lines 143–195)**\n`askDM` always passes `rawText` to `parseAIResponse`, which falls back to `fallbackNarrative` in these cases:\n1. `rawText` is empty or not a string.\n2. After stripping the ```` ```json ```` fences, the text doesn't start with `{` and no `{…}` block can be extracted by regex. It logs a warning with the first 200 characters.\n3. `JSON.parse` throws. The `catch` at line 192 returns the fallback.\n\nWhen the JSON parses but is incomplete, it is patched field by field:\n- `narrative` defaults to \"The world holds its breath…\".\n- `suggestedActions` is capped at 4 and defaults to four stock actions.\n- `diceRolls` is capped at 8 and defaults to `[]`.\n- `itemsAdded` and `itemsRemoved` default to `[]`.\n- `combatInitiated` and `combatEnded` are true only if exactly `true`.\n- The remaining state changes default to `null`.\n\n**The fallback itself**\n`fallbackNarrative(playerAction)` returns a generic atmospheric narrative that quotes the player's action. It makes no state changes: all deltas are `null`, the arrays are empty, and both combat flags are `false`. It also supplies four stock suggested actions and an empty `diceRolls`.\n\n**Caller (`worker/src/routes/action.ts`)**\nNeither a model failure nor bad JSON reaches the route as an error, because `askDM` always returns a valid `AIDMResponse`. The player sees a normal response with the generic narrative. The route's own `catch` (line 111) returns a 500 only for unrelated errors, such as D1 or KV failures.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

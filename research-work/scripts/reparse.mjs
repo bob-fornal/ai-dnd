@@ -5,7 +5,7 @@
 //
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
-import { WORK_DIR, loadJson, parseRun, grade } from './lib.mjs';
+import { WORK_DIR, loadJson, parseRun, parseClaudeRun, grade } from './lib.mjs';
 
 const runRoot = path.resolve(WORK_DIR, process.argv[2] ?? '');
 const { tasks } = loadJson('tasks.json');
@@ -19,7 +19,8 @@ for (const arm of readdirSync(runRoot, { withFileTypes: true }).filter((d) => d.
       const meta = JSON.parse(readFileSync(metaFile, 'utf8'));
       // Isolated runs record the workspace they ran in; older runs ran in the arm folder itself.
       const armDir = meta.workspaceDir ?? path.resolve(WORK_DIR, meta.arm.dir);
-      const m = parseRun({ eventsFile: path.join(dir, 'events.jsonl'), usageFile: path.join(dir, 'usage.json'), armDir });
+      const eventsFile = path.join(dir, 'events.jsonl');
+      const m = meta.agent === 'claude' ? parseClaudeRun({ eventsFile, armDir }) : parseRun({ eventsFile, usageFile: path.join(dir, 'usage.json'), armDir });
       const expect = tasks.find((t) => t.id === task)?.expect ?? meta.task.expect;
       m.grade = grade(m.answer, expect);
       writeFileSync(path.join(dir, 'metrics.json'), JSON.stringify(m, null, 2));

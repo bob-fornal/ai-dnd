@@ -1,0 +1,105 @@
+{
+  "agent": "claude",
+  "inputTokens": 104051,
+  "outputTokens": 3539,
+  "cacheReadTokens": 84834,
+  "cacheWriteTokens": 19205,
+  "reasoningTokens": 287,
+  "modelRequests": 6,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.1292008,
+  "apiDurationMs": 24085,
+  "mainInputTokens": 104051,
+  "mainRequests": 6,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 14,
+  "toolCallsByName": {
+    "Read": 12,
+    "Grep": 2
+  },
+  "failedToolCalls": 1,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 2447
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1238
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 819
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 645
+    },
+    {
+      "path": "worker/src/routes/levelup.ts",
+      "kind": "code",
+      "tokens": 603
+    },
+    {
+      "path": "worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 569
+    },
+    {
+      "path": "worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 563
+    },
+    {
+      "path": "frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 457
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 447
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 414
+    },
+    {
+      "path": "worker/src/routes/shop.md",
+      "kind": "doc",
+      "tokens": 397
+    },
+    {
+      "path": "worker/src/routes/levelup.md",
+      "kind": "doc",
+      "tokens": 378
+    }
+  ],
+  "docFilesRead": 11,
+  "codeFilesRead": 1,
+  "docTokensRead": 8374,
+  "codeTokensRead": 603,
+  "otherToolTokens": 386,
+  "filesModified": [],
+  "answer": "I've finished reading the docs and the levelup route, which I'm using as the pattern. Here's the answer.\n\n## Worker\n\nFollow the `routes/levelup.ts` pattern: a new route, a small service function, a new body type, and a mount.\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add `RestBody { sessionId, characterId }` beside `LevelUpBody` (line 168). Add a rule constant such as `INN_COST` (flat, e.g. 10 gold) or a per-level formula. |\n| `worker/src/services/character.ts` | Add `restAtInn(db, character)`. It checks `gold >= cost` and `hp < max_hp`, then calls the existing `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })`. The whitelist already allows both fields. |\n| `worker/src/routes/inn.ts` (new) | `POST /api/inn/rest` (or `POST /api/rest`). It validates the body, calls `getCharacter`, and returns 404 if the character is missing. It returns 400 if HP is already full or gold is short. It then calls `restAtInn`, inserts a `system` row into `adventure_log` (`[Rest] …`), and pushes a DM turn onto session history with `loadSession`, `rebuildSession` and `saveSession`. It returns `{ narrative, updatedCharacter, cost }`. |\n| `worker/src/index.ts` | Import the new router and mount it (e.g. `app.route('/api/inn', innRoutes)`). |\n| `worker/src/routes/inn.md` (new) | Document the endpoint, its parents and children, and the caller `GameApiService.restAtInn`. |\n| `worker/src/index.md`, `types/index.md`, `services/character.md` | Update the route mount table, the `RestBody` and constant exports, and the `restAtInn` export. |\n\n- **Narration:** the narrative should be a fixed string. AGENTS.md §9 says the Worker owns HP and gold. You could add a `generateRestNarrative` to `services/ai-dm.ts`, but the AI should only narrate the result. That would also mean updating `ai-dm.md`.\n- **Shop route:** `routes/shop.ts` doesn't need to change. It's an item-trading route and is currently broken (B-02). Keep the inn out of it.\n- **No migration or seed:** `characters.hp`, `max_hp` and `gold` already exist.\n\n## Angular frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add `RestResponse { narrative, updatedCharacter, cost }`. Mirror `INN_COST` only if the UI shows the price. |\n| `frontend/src/app/services/game-api.service.ts` | Add `restAtInn(sessionId, characterId): Observable<RestResponse>`, which does `POST /api/inn/rest`. It sits beside `levelUp` (line 74). |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add `rest()`, modelled on `levelUp()` (line 183). It calls `api.restAtInn`, then `charSvc.setCharacter(res.updatedCharacter)`, pushes the narrative into the entries, and calls `auth.updateCampaign` if needed. It also needs a loading signal like `luLoading`, and error handling via `err.error.error`. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at Inn (N gp)\" button in the left column near the Inventory button (line 9). Disable it while loading, while `inCombat()` is true, when `hp === max_hp`, or when `gold < cost`. |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add `'restAtInn'` to the API spy list (line 24). Optionally add a test for the new method. |\n| `frontend/src/app/components/game-console/game-console.component.css` | Only if the button needs styling. |\n| Docs: `game-console.component.md`, `game-api.service.md`, `game.models.md` | Update the Layout and Flow sections, the method table, and the exports. |\n\n`character-state.service.ts` and `character-sheet` need no code change. `setCharacter` already updates the HP bar and gold display from the server response.\n\n## Shared docs\n\n- Add `inn.md` to `code.md`.\n- Add the endpoint to the API section of `PRD.md` (§4.4, Inventory & Economy).\n\nI made no changes.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

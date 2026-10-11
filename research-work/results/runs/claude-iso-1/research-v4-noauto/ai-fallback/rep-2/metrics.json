@@ -1,0 +1,66 @@
+{
+  "agent": "claude",
+  "inputTokens": 36007,
+  "outputTokens": 1392,
+  "cacheReadTokens": 27459,
+  "cacheWriteTokens": 8540,
+  "reasoningTokens": 80,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.053587800000000005,
+  "apiDurationMs": 10848,
+  "mainInputTokens": 36007,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1590
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 948
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 726
+    },
+    {
+      "path": "docs/flows/action-loop.md",
+      "kind": "doc",
+      "tokens": 566
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 1,
+  "docTokensRead": 2240,
+  "codeTokensRead": 1590,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "All of this is in `worker/src/services/ai-dm.ts`, in `askDM` (line 81) and the helpers it calls. It matches `docs/code/worker/src/services/ai-dm.md`.\n\n**Model failure**\n1. `askDM` first calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It requests `response_format: json_object`, `temperature` 0.85 and `max_tokens` 1024.\n2. If that call throws, including the \"Unexpected streaming response\" error, the `catch` retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. The retry uses the same prompts, `max_tokens` 1024, and no `response_format`.\n3. If Mistral also throws, `askDM` returns `fallbackNarrative(playerAction)` straight away. This is a canned narrative. It has all `gameStateChanges` null or empty, `combatInitiated` and `combatEnded` false, four stock `suggestedActions`, and empty `diceRolls`.\n\n**Invalid or empty JSON**\n- Bad output does not trigger the Mistral retry. That retry only runs when Llama throws. Whatever text comes back, from either model, goes to `parseAIResponse(rawText, playerAction)`.\n- `parseAIResponse` returns `fallbackNarrative` in these cases:\n  - The text is empty or not a string.\n  - The text doesn't start with `{` after code fences are stripped, and a regex for a `{…}` block finds nothing.\n  - `JSON.parse` throws.\n- If the JSON parses, each field is defaulted individually:\n  - A missing `narrative` becomes \"The world holds its breath…\".\n  - `suggestedActions` is capped at 4, with a default list if it isn't an array.\n  - `diceRolls` is capped at 8.\n  - `hpDelta`, `xpGained`, `goldDelta`, `locationChange` and `questUpdate` default to null.\n  - `itemsAdded` and `itemsRemoved` default to `[]`.\n  - `combatInitiated` and `combatEnded` are true only when exactly `true`.\n\n**Caller impact**\n- Because the fallback has null deltas, `routes/action.ts` applies no HP, XP or gold change on a failure.\n- `generateQuest`, `generateBackstory` and `generateLevelUpNarrative` have no model retry. They read only the legacy `response` field, so with Llama 3.3 they fall back to canned or empty text (bugs.md B-03).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

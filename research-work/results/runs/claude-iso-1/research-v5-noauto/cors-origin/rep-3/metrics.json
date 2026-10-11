@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "inputTokens": 23674,
+  "outputTokens": 1156,
+  "cacheReadTokens": 18073,
+  "cacheWriteTokens": 5595,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0375666,
+  "apiDurationMs": 8632,
+  "mainInputTokens": 23674,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 3,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1072
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 471
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1501,
+  "codeTokensRead": 471,
+  "otherToolTokens": 125,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set in the `origin` callback of the `cors({...})` middleware in `worker/src/index.ts:19-35`. The callback returns the request's origin if it matches one of these:\n- `http://localhost:4200`, as an exact match.\n- Any origin ending in `.pages.dev`.\n- Any origin ending in `.workers.dev`.\n\nAny other origin gets `null`, so no CORS headers are sent. A request with no `Origin` header also gets `null`.\n\nThe same middleware allows these methods and headers:\n- Methods: `GET`, `POST`, `PATCH`, `DELETE`, `OPTIONS`.\n- Headers: `Content-Type` and `Authorization`.\n- Preflight cache: `maxAge: 86400`.\n\n**Adding a custom domain:** edit the condition at `worker/src/index.ts:23-27`. Add one more clause to the `if (...)` chain, for example:\n\n```ts\norigin === 'https://app.example.com' ||\n```\n\n- **Exact match:** use `===` with the full scheme and host, and no trailing slash.\n- **Wildcard subdomains:** use `origin.endsWith('.example.com')`.\n- **Don't use an array:** don't switch `origin` to an array. Hono treats array entries as exact strings, so wildcards would stop working. The code comment at line 20 and `docs/code/worker/src/index.md:26-27` both say this.\n\nNothing else in the Worker needs to change for CORS. After the edit, redeploy the Worker. `docs/DEPLOYMENT_NOTES.md` §4 covers CORS in more detail, but I didn't open it.\n\nThe custom domain also has to be the frontend's origin, meaning the site that calls the API. The Worker's own route or domain doesn't affect CORS.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

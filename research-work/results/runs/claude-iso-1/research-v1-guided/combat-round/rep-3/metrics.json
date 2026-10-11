@@ -1,0 +1,80 @@
+{
+  "agent": "claude",
+  "inputTokens": 69507,
+  "outputTokens": 2400,
+  "cacheReadTokens": 53883,
+  "cacheWriteTokens": 15614,
+  "reasoningTokens": 82,
+  "modelRequests": 5,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0972526,
+  "apiDurationMs": 16149,
+  "mainInputTokens": 69507,
+  "mainRequests": 5,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 9,
+  "toolCallsByName": {
+    "Read": 7,
+    "Grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 2447
+    },
+    {
+      "path": "worker/src/services/combat.ts",
+      "kind": "code",
+      "tokens": 1769
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1238
+    },
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 659
+    },
+    {
+      "path": "worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 592
+    },
+    {
+      "path": "worker/src/routes/combat.md",
+      "kind": "doc",
+      "tokens": 492
+    },
+    {
+      "path": "worker/src/services/dice.md",
+      "kind": "doc",
+      "tokens": 284
+    }
+  ],
+  "docFilesRead": 6,
+  "codeFilesRead": 1,
+  "docTokensRead": 5712,
+  "codeTokensRead": 1769,
+  "otherToolTokens": 515,
+  "filesModified": [],
+  "answer": "Code and docs agree. One Attack round runs like this:\n\n**Flow**\n1. **Frontend.** `combatAction('attack')` in `game-console.component.ts:144` calls `GameApiService.resolveCombat()` (`game-api.service.ts:50`). That sends `POST /api/combat/resolve` with `{sessionId, characterId, action}`.\n2. **Route.** `routes/combat.ts` calls `resolveCombatRound(character, combatState, 'attack')` at line 38. It then persists HP (clamped 0..max) and XP. On a victory it runs `rollLoot` and `grantLoot`.\n3. **Narration.** The route calls `askDM(..., contextForDM)` in `services/ai-dm.ts` to narrate the result.\n4. **State and log.** If combat ended, the route clears `combatState`. Otherwise it increments the round and saves the monster's HP. It then saves the session and logs both turns, with the player turn prefixed `[Combat]`.\n\n**Where dice are rolled**\n\nAll rolls happen in `services/combat.ts` `resolveCombatRound` (lines 50–179). They use `services/dice.ts` (`attackRoll`, `rollExpression`, `modifier`), which is built on `Math.random()`.\n\n| Step | Roll |\n|---|---|\n| Player attack (line 91) | `attackRoll(atkBonus, monster.ac)` is d20 plus the bonus. The bonus is DEX mod for Rogue/Ranger, otherwise STR mod, plus proficiency `ceil(level/4)+1`. A natural 20 always hits and crits. A natural 1 always misses. |\n| Player damage (lines 98–105) | `rollExpression(getPlayerDamageDice(class))`, for example 1d8 for Fighter and Cleric and 1d6 for Wizard and Rogue. The modifier is INT for Wizard/Bard, otherwise STR. The result is at least 1 and is doubled on a crit. |\n| Monster death | If monster HP ≤ 0, the round ends in victory and `xpGained = monster.xp_reward`. The monster does not attack. |\n| Monster attack (line 131) | Only if combat is still going. `attackRoll(monster.attack_bonus, character.ac)`, then `rollExpression(monster.damage_dice)` on a hit. |\n| Player death | If player HP + delta ≤ 0, combat ends in defeat. |\n\nThe function returns `diceRolls`, the HP deltas, the end and victory flags, `xpGained`, and a `contextForDM` text summary. It doesn't mutate state. The route applies the changes.\n\n**Responsibility split**\n- **Worker code owns** every roll, hit and miss, damage, HP, XP, loot, and the end-of-combat decision. This is the \"Worker owns the rules; the AI owns the prose\" principle in AGENTS.md §9.\n- **The AI (`askDM`)** receives the pre-resolved `contextForDM` and writes prose and `suggestedActions`. It does not decide outcomes. `SYSTEM_PROMPT` also tells it not to report attack or damage rolls. If both models fail, it returns `fallbackNarrative`, and the mechanics are unaffected.\n\n**Known gaps** (from the docs)\n- Equipped weapons have no effect, because damage dice come from the class ([bugs.md B-08](../bugs.md)).\n- Loot never drops, because every seeded monster has a null `loot_table_id` ([bugs.md B-01](../bugs.md)).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

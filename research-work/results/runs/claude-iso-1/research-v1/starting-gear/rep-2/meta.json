@@ -1,0 +1,61 @@
+{
+  "agent": "claude",
+  "arm": {
+    "id": "research-v1",
+    "dir": "../research-documentation-v1",
+    "description": "v1 component docs beside the code (code.md index, AGENTS.md authoring rules), no hint.",
+    "preamble": "",
+    "docsVersion": "v1"
+  },
+  "task": {
+    "id": "starting-gear",
+    "area": "data",
+    "prompt": "What items does a newly created Fighter start with, and where is that defined? Give the item names, not just IDs.",
+    "expect": [
+      [
+        "CLASS_STARTING_ITEMS"
+      ],
+      [
+        "Longsword"
+      ],
+      [
+        "Shield"
+      ],
+      [
+        "Potion of Healing",
+        "Potion"
+      ],
+      [
+        "seed.sql"
+      ]
+    ]
+  },
+  "rep": 2,
+  "prompt": "What items does a newly created Fighter start with, and where is that defined? Give the item names, not just IDs.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\claude-iso-1\\research-documentation-v1",
+  "isolated": true,
+  "cliArgs": [
+    "-p",
+    "--model",
+    "claude-sonnet-5-5",
+    "--effort",
+    "medium",
+    "--tools",
+    "Read,Grep,Glob",
+    "--permission-mode",
+    "dontAsk",
+    "--no-session-persistence",
+    "--strict-mcp-config",
+    "--disable-slash-commands",
+    "--setting-sources",
+    "project,local",
+    "--settings",
+    "{\"claudeMdExcludes\":[\"**/AGENTS.md\"]}",
+    "--output-format",
+    "stream-json",
+    "--verbose"
+  ],
+  "model": "claude-sonnet-5-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-10T14:36:17.412Z"
+}

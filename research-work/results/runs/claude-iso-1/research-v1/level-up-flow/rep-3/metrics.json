@@ -1,0 +1,65 @@
+{
+  "agent": "claude",
+  "inputTokens": 41073,
+  "outputTokens": 2364,
+  "cacheReadTokens": 30067,
+  "cacheWriteTokens": 10998,
+  "reasoningTokens": 30,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.07366140000000002,
+  "apiDurationMs": 15959,
+  "mainInputTokens": 41073,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 6,
+  "toolCallsByName": {
+    "Grep": 2,
+    "Read": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.ts",
+      "kind": "code",
+      "tokens": 944
+    },
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 620
+    },
+    {
+      "path": "worker/src/routes/levelup.ts",
+      "kind": "code",
+      "tokens": 603
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 256
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 4,
+  "docTokensRead": 0,
+  "codeTokensRead": 2423,
+  "otherToolTokens": 2661,
+  "filesModified": [],
+  "answer": "## Level-up flow\n\n**1. When the UI offers it**\n- The server decides eligibility with `shouldLevelUp()` (`worker/src/services/character.ts:159`). It returns true when level is below 10 and `xp >= XP_THRESHOLDS[level]`.\n- `XP_THRESHOLDS` is `[0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000]` (`worker/src/types/index.ts:175`). Index N is the XP needed to leave level N, so a level 1 character needs 300 XP.\n- `POST /api/action` (`routes/action.ts:99`) and the combat endpoint (`routes/combat.ts:109`) both return `canLevelUp`.\n- In `game-console.component.ts`, the `sendAction` handler (line 128) and `combatAction` (line 155) pass that value to `charSvc.setCanLevelUp(res.canLevelUp)`.\n- The frontend also computes it locally. `CharacterStateService.setCharacter()` calls `checkLevelUp()` (`character-state.service.ts:52,76`), using a copy of the thresholds in `frontend/src/app/models/game.models.ts:146`.\n- When `canLevelUp()` is true:\n  - `game-console.component.html:19` shows the \"Choose Ability to Improve (+2)\" panel, with one button per ability.\n  - `character-sheet.component.html:66` shows a \"Level Up Available!\" banner.\n  - After combat, `combatAction` also pushes a \"You have enough XP to level up!\" log line (line 172).\n\n**2. Endpoint called**\n- Clicking an ability button calls `GameConsoleComponent.levelUp(key)` (line 183), which calls `GameApiService.levelUp()` (`game-api.service.ts:74`).\n- That sends `POST /api/levelup` with `{ sessionId, characterId, abilityChoice }`. The route is mounted in `worker/src/index.ts:47` and handled in `worker/src/routes/levelup.ts`.\n- The handler:\n  - Returns 400 if a field is missing, if `abilityChoice` is not one of `str`, `dex`, `con`, `int`, `wis`, `cha`, or if `shouldLevelUp()` is false.\n  - Returns 404 if the character isn't found.\n  - Calls `levelUp()`, then `generateLevelUpNarrative()` (`ai-dm.ts:304`).\n  - Inserts an `adventure_log` row with actor `system` and content `[Level Up] …`.\n  - Pushes the narrative onto the KV session history as a `dm` entry. It rebuilds the session first if none is loaded.\n  - Returns `{ narrative, updatedCharacter, abilityImproved, newLevel }`.\n\n**3. What changes on the character** (`levelUp()` in `character.ts:133`)\n- `level` goes up by 1.\n- HP gain is `roll(CLASS_HIT_DICE[class]) + modifier(con)`. The hit dice are Fighter d10, Wizard d6, Rogue d8 and Cleric d8, and the table continues in `types/index.ts:183`.\n- `max_hp` goes up by the HP gain.\n- `hp` becomes `min(hp + hpGain, newMaxHp)`, so it is not a full heal.\n- The chosen ability gets +2. There is no cap at 20.\n- The update is saved through `updateCharacter()`, which also sets `updated_at`, and the character is re-read.\n- `xp` is not reset or deducted. It just keeps accumulating against the next threshold.\n\n**4. Frontend after the response**\n- `setCharacter(res.updatedCharacter)` re-runs `checkLevelUp`. If XP already covers the next threshold, the panel stays open.\n- Then `setCanLevelUp(false)` runs unconditionally, which hides the panel anyway. In that case the panel only reappears after the next action or combat response.\n- A `⬆ Level N! <narrative>` entry is added to the log, and `updateCampaignSlot(newLevel)` runs.\n- The error handler only clears `luLoading` and shows no message.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

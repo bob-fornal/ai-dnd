@@ -1,0 +1,65 @@
+{
+  "agent": "claude",
+  "inputTokens": 26364,
+  "outputTokens": 1820,
+  "cacheReadTokens": 18605,
+  "cacheWriteTokens": 7753,
+  "reasoningTokens": 73,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.052945,
+  "apiDurationMs": 12700,
+  "mainInputTokens": 26364,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "Read": 4,
+    "Glob": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 806
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 717
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 655
+    },
+    {
+      "path": "worker/src/routes/shop.md",
+      "kind": "doc",
+      "tokens": 421
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 0,
+  "docTokensRead": 2599,
+  "codeTokensRead": 0,
+  "otherToolTokens": 770,
+  "filesModified": [],
+  "answer": "I read `AGENTS.md`, then `docs/flows/add-endpoint.md`, which uses this exact feature as its example. I also read `docs/flows/inventory.md` and `worker/src/routes/shop.md`. I didn't open any code files, so the line numbers below come from the docs and may have drifted.\n\n## Worker\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add `RestBody { sessionId, characterId }`. Add a cost constant such as `REST_COST`. The cost lives here because the Worker owns the rules. |\n| `worker/src/routes/rest.ts` (new) | Export `restRoutes = new Hono<{ Bindings: Env }>()` with `POST /`. It validates the body and calls `getCharacter`. It rejects the request if `gold < cost`, and probably if HP is already full. Then it calls `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (`services/character.ts:94`, which only accepts whitelisted fields). Narration through `askDM`, `appendHistory` and `saveSession`, and an `adventure_log` insert, are optional. If you add them, follow `routes/action.ts`. It returns `{ success, cost, updatedCharacter }`. |\n| `worker/src/index.ts:41-48` | Import `restRoutes` and add `app.route('/api/rest', restRoutes)`. CORS (`:19-35`) needs no change unless there's a new origin. |\n| `worker/src/services/*.ts` | Only needed if other routes will share the logic, such as a cost calculation. Otherwise leave it in the route. |\n| `worker/migrations/` | None. `characters.hp`, `max_hp` and `gold` already exist. |\n\n## Frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add a `RestResponse` interface that mirrors the Worker response. |\n| `frontend/src/app/services/game-api.service.ts` | Add `rest(sessionId, characterId)`, which POSTs to `${API_BASE}/api/rest`. |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add a `rest()` handler. It calls the API, then `CharacterStateService.setCharacter(res.updatedCharacter)` so the sheet updates, and pushes a system or narrative entry. It also needs to handle errors such as not enough gold. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at the inn (N gold)\" button. Disable it during combat and when gold is too low or HP is full. |\n| `game-console.component.css` | Only if the button needs styling. |\n| `game-console.component.spec.ts` | Add tests with `GameApiService` as a Jasmine spy. |\n\n`CharacterStateService` needs no change, because `setCharacter` already exists.\n\n## Docs to update in the same change\n- Add `worker/src/routes/rest.md` for the new route.\n- Update the doc beside each changed file: `types/index.md`, `index.md`, `game.models.md`, `game-api.service.md` and `game-console.component.md`.\n- Add `rest.md` to `code.md`, and re-run `research-work/scripts/build-symbol-index.mjs`.\n- Update `docs/PRD.md` §9 (API spec).\n\n## Existing bugs\n- **B-05:** potions only change HP in the browser and never save it. The rest endpoint saves HP on the Worker, so the HP it sets is the one that persists.\n- **B-02:** buying in shops is broken. Rest doesn't use shops, so this doesn't affect it.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

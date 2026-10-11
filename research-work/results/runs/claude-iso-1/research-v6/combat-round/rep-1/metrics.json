@@ -1,0 +1,54 @@
+{
+  "agent": "claude",
+  "inputTokens": 28235,
+  "outputTokens": 1196,
+  "cacheReadTokens": 22340,
+  "cacheWriteTokens": 5891,
+  "reasoningTokens": 0,
+  "modelRequests": 2,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.04000000000000001,
+  "apiDurationMs": 8449,
+  "mainInputTokens": 28235,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "Bash": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 734
+    },
+    {
+      "path": "docs/code/worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 646
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1380,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "An Attack round is resolved entirely in code. The AI only narrates the result. This comes from the project docs (`docs/flows/combat.md` and `docs/code/worker/src/services/combat.md`). I didn't open the source files to check the line numbers.\n\n**Flow**\n1. In the frontend, the Attack button in `game-console.component.html` (lines 83-92) calls `combatAction('attack')` at `game-console.component.ts:144`. That calls `GameApiService.resolveCombat` (`game-api.service.ts:50`), which sends `POST /api/combat/resolve`.\n2. The Worker handler is in `worker/src/routes/combat.ts:11`. It loads the character and session, and returns 400 if the session isn't in combat.\n3. At `routes/combat.ts:38` it calls `resolveCombatRound(char, state, 'attack')` (`worker/src/services/combat.ts:50`). This is where the mechanics run, and it doesn't mutate state.\n4. The route then applies the result:\n   - `updateCharacter` clamps HP to 0..max and adds XP on a victory (`:51`).\n   - On a victory it calls `rollLoot` and `grantLoot` (`:56-57`). Loot never drops because every seeded monster has a null `loot_table_id` (bug B-01).\n   - It calls `askDM(..., result.contextForDM)` for the narration (`:68`).\n   - It clears `combatState` if combat ended. Otherwise it increments `round` and saves the monster's HP, then calls `saveSession` (`:80-95`).\n   - It writes two `adventure_log` rows, with the player row prefixed `[Combat]` (`:100-103`).\n\n**Where the dice are rolled**\n- The dice are rolled inside `resolveCombatRound`, using helpers from `worker/src/services/dice.ts`: `attackRoll` (`dice.ts:55`), `rollExpression`, `modifier` and `roll`.\n- **Attack roll:** d20 + ability modifier + proficiency, against the monster's AC.\n  - The modifier is DEX for Rogue and Ranger, and STR for everyone else.\n  - Proficiency is `ceil(level/4)+1`.\n  - A natural 20 is a crit. A natural 1 is a miss.\n- **Damage:** the class die from `getPlayerDamageDice` (`:222`) plus a modifier.\n  - Fighter, Cleric and Bard roll 1d8. Other classes roll 1d6.\n  - The modifier is INT for Wizard and Bard.\n  - Damage is at least 1, and doubled on a crit.\n  - Equipped weapons are ignored (bug B-08).\n- **Monster's turn:** if the monster survives, it attacks in the same function.\n  - Monster death is handled at `:121`, and the XP is `monster.xp_reward`.\n  - Player death is handled at `:152`. HP at or below 0 ends combat in defeat.\n\n**What the AI does and doesn't do**\n- **What it does:** `resolveCombatRound` builds `contextForDM` (`:160`), the log of what already happened. `askDM` in `services/ai-dm.ts` turns that log into narration prose.\n- **What it doesn't do:** it doesn't roll dice, decide hits or misses, set damage, change HP or XP, grant loot, or decide when combat ends. The Worker owns those rules.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

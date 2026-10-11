@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "inputTokens": 22874,
+  "outputTokens": 1092,
+  "cacheReadTokens": 17660,
+  "cacheWriteTokens": 5208,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.035296,
+  "apiDurationMs": 8015,
+  "mainInputTokens": 22874,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 3,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 852
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 527
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 414
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1266,
+  "codeTokensRead": 527,
+  "otherToolTokens": 121,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set in the `origin` callback passed to `cors({...})` in `worker/src/index.ts:19-35`. That callback returns the request's origin only if one of these holds:\n- It is exactly `http://localhost:4200`.\n- It ends with `.pages.dev`, at any subdomain depth.\n- It ends with `.workers.dev`, at any subdomain depth.\n\nAnything else gets `null`, so no CORS headers are sent. A request with no `Origin` header also gets `null`. The same `cors()` call allows these methods and headers:\n- Methods: `GET`, `POST`, `PATCH`, `DELETE`, `OPTIONS`.\n- Headers: `Content-Type`, `Authorization`.\n- Preflight cache: `maxAge: 86400`.\n\n**Adding a custom domain:** edit that `origin` callback at `worker/src/index.ts:23-27`. Add another condition inside the `if`, for example:\n- An exact match for one domain: `origin === 'https://app.example.com' ||`\n- A suffix match for a wildcard: `origin.endsWith('.example.com') ||`\n\nDon't add it to an array. `worker/src/index.md:24` says Hono matches array entries as exact strings, so wildcards wouldn't work there.\n\nTwo things to keep in mind:\n- **Exact vs. suffix:** `endsWith` with no leading dot or scheme would also match lookalike hosts such as `evilexample.com`. Prefer an exact match, or a suffix with a leading dot.\n- **Docs to update:** `worker/src/index.md:7` lists the CORS origins and should be updated with the change. The deployment rationale is in `docs/DEPLOYMENT_NOTES.md` §4, which I didn't open.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

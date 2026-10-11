@@ -1,0 +1,70 @@
+{
+  "agent": "claude",
+  "inputTokens": 59023,
+  "outputTokens": 832,
+  "cacheReadTokens": 49564,
+  "cacheWriteTokens": 9451,
+  "reasoningTokens": 76,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0560528,
+  "apiDurationMs": 8764,
+  "mainInputTokens": 59023,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 1,
+    "Bash": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 2,
+  "filesRead": [
+    {
+      "path": "worker/src/services/character.ts",
+      "kind": "code",
+      "tokens": 1120
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1063
+    },
+    {
+      "path": "docs/flows/character-creation.md",
+      "kind": "doc",
+      "tokens": 765
+    },
+    {
+      "path": "docs/code/worker/migrations/0001_initial_schema.md",
+      "kind": "doc",
+      "tokens": 542
+    },
+    {
+      "path": "docs/code/worker/src/db/seed.md",
+      "kind": "doc",
+      "tokens": 515
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 1,
+  "docTokensRead": 2885,
+  "codeTokensRead": 1120,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "A new Fighter starts with four items, each at quantity 1 and unequipped: **Longsword, Shield, Potion of Healing and Torchx5**.\n\n**Where it's defined**\n- **Item IDs:** `CLASS_STARTING_ITEMS` in `worker/src/services/character.ts:65`. The Fighter entry is `[2, 15, 17, 23]`.\n- **Granting:** `grantStartingEquipment` (`character.ts:74`) is called from `createCharacter` (`character.ts:59`). It inserts each ID into `character_inventory` with `quantity=1, equipped=0`.\n- **Names:** the `items` rows in `worker/src/db/seed.sql`. IDs are assigned by insert order, so the Fighter's IDs map as follows:\n\n| ID | Item | Seed row |\n|---|---|---|\n| 2 | Longsword | weapon, 1d8, +2 attack |\n| 15 | Shield | armor, +2 AC |\n| 17 | Potion of Healing | potion, heals 2d4+2 |\n| 23 | Torchx5 | misc |\n\n**Item 23 name mismatch:** the code comment on that line says \"Rations\", but ID 23 is `Torchx5`. \"Rations (1 day)\" is ID 24. `docs/flows/character-creation.md` tracks this as bug B-09.\n\nBecause IDs depend on insert order, reordering `seed.sql` would silently change what a Fighter gets.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

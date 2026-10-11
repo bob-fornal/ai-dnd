@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "inputTokens": 39235,
+  "outputTokens": 1347,
+  "cacheReadTokens": 23747,
+  "cacheWriteTokens": 15482,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.08015939999999999,
+  "apiDurationMs": 9575,
+  "mainInputTokens": 39235,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Read": 1,
+    "Bash": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1063
+    },
+    {
+      "path": "docs/flows/combat.md",
+      "kind": "doc",
+      "tokens": 734
+    },
+    {
+      "path": "docs/code/worker/src/services/combat.md",
+      "kind": "doc",
+      "tokens": 646
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2443,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "When the player picks Attack, the Worker resolves the whole round in code and the AI only narrates the result. This answer comes from `AGENTS.md` and the combat docs (`docs/flows/combat.md`, `docs/code/worker/src/services/combat.md`). I didn't open the source files, so the line numbers are the docs' anchors.\n\n**Flow**\n1. **Frontend:** the Attack button in `game-console.component.html:83-92` calls `combatAction(action)` (`game-console.component.ts:144`). That calls `GameApiService.resolveCombat` (`game-api.service.ts:50`).\n2. **Route:** `POST /api/combat/resolve` is handled in `worker/src/routes/combat.ts:11`. It loads the character and session and returns 400 if the session isn't in combat.\n3. **Mechanics:** `routes/combat.ts:38` calls `resolveCombatRound` (`worker/src/services/combat.ts:50`). The Attack branch is at `:81`.\n4. **Persistence:** `routes/combat.ts:51` calls `updateCharacter`, which clamps HP to 0..max and adds XP on a victory. On a victory, `rollLoot` and `grantLoot` run at `:56-57`, but loot never drops because of bug B-01.\n5. **Narration:** `routes/combat.ts:68` calls `askDM(..., result.contextForDM)`.\n6. **Saving:** `routes/combat.ts:80-95` either clears `combatState` or increments `round` and saves monster HP, then calls `saveSession`. `:100-103` writes two `adventure_log` rows.\n\n**Where the dice are rolled**\n- The dice are rolled in `resolveCombatRound`, using helpers from `worker/src/services/dice.ts`: `attackRoll` (`:55`), `rollExpression`, `modifier` and `roll`.\n- **Attack roll:** d20 + DEX (Rogue/Ranger) or STR (others) + proficiency `ceil(level/4)+1`, compared to the monster's AC. A natural 20 is a crit and a natural 1 is a miss.\n- **Damage:** the class die from `getPlayerDamageDice` (`:222`), plus the modifier, with a minimum of 1 and doubled on a crit.\n  - Fighter, Cleric and Bard use 1d8. Other classes use 1d6.\n  - The modifier is INT for Wizard and Bard, and the same ability as the attack roll for other classes.\n- **Equipment:** equipped weapons are ignored (B-08).\n- **Monster turn:** the monster then attacks if it's still alive. Monster death is at `:121` and awards `monster.xp_reward`. Player death is at `:152`.\n- **Output:** the function returns a `CombatRoundResult` with HP deltas, end flags, XP, `diceRolls`, and the `contextForDM` log.\n- **State:** it doesn't mutate state. The route applies the changes.\n\n**What the AI is responsible for**\n- It only narrates the pre-resolved round, using `contextForDM` through `askDM` in `services/ai-dm.ts`.\n\n**What the AI is not responsible for**\n- It doesn't roll dice, decide hits or damage, change HP, XP, gold or loot, or decide whether combat ends.\n- Combat starts when the AI sets `combatInitiated: true` on a free-text action. The Worker then picks the monster (`selectMonster`, `services/combat.ts:6`) and creates the state (`initCombat`, `:27`).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

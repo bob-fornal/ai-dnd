@@ -1,0 +1,59 @@
+{
+  "agent": "claude",
+  "inputTokens": 30279,
+  "outputTokens": 1461,
+  "cacheReadTokens": 21767,
+  "cacheWriteTokens": 8506,
+  "reasoningTokens": 108,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0529994,
+  "apiDurationMs": 10424,
+  "mainInputTokens": 30279,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1590
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 726
+    },
+    {
+      "path": "docs/flows/action-loop.md",
+      "kind": "doc",
+      "tokens": 566
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1292,
+  "codeTokensRead": 1590,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "All of this is in `worker/src/services/ai-dm.ts`, in `askDM` (line 81), `parseAIResponse` (line 143) and `fallbackNarrative` (line 198).\n\n**Model failure (`askDM`)**\n1. `askDM` first calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast` with `response_format: json_object`, temperature 0.85 and `max_tokens` 1024.\n2. If that call throws, including when it returns a `ReadableStream`, the catch block logs the error and retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. The retry uses the same prompt and `max_tokens` 1024, with no JSON mode.\n3. If Mistral also throws, `askDM` returns `fallbackNarrative(playerAction)` directly.\n\nThe Mistral retry only happens when Llama throws. An empty or garbled Llama reply does not trigger it. That reply goes straight to `parseAIResponse`.\n\n**Text extraction**\nBoth models are read from `choices[0].message.content`, then the legacy `response` field, then the bare string. If none of these yields text, `rawText` is `''`.\n\n**Invalid JSON (`parseAIResponse`)**\n- **Empty or non-string input:** returns `fallbackNarrative`.\n- **Code fences:** strips the leading ```` ```json ```` and trailing ```` ``` ````.\n- **No leading `{`:** extracts the first `{…}` block with the regex `/\\{[\\s\\S]*\\}/`. If there is no match, it logs a warning and returns `fallbackNarrative`.\n- **Malformed JSON:** `JSON.parse` sits in a try/catch, and a failure returns `fallbackNarrative`.\n- **Valid JSON with missing fields:**\n  - `narrative` defaults to \"The world holds its breath as your words echo into the shadows.\"\n  - Each `gameStateChanges` field defaults to `null`, `[]` or `false`.\n  - `suggestedActions` defaults to `['Look around', 'Search the area', 'Listen carefully', 'Move on']`, capped at 4.\n  - `diceRolls` defaults to `[]`, capped at 8.\n\n**`fallbackNarrative`**\nIt returns a generic atmospheric narrative built from the player's action, with no state changes (`hpDelta`, `xpGained` and `goldDelta` are all `null`, and no combat is started). It also offers four default suggested actions and an empty `diceRolls`. The Worker therefore treats a failure as a harmless turn instead of returning an error.\n\n**Related**\n- `generateQuest`, `generateBackstory` and `generateLevelUpNarrative` read only the legacy `response` field. With Llama 3.3 they fall back to canned text or an empty string (bug B-03).\n- Local `wrangler dev` without `--remote` stubs the AI, so it always produces the fallback.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

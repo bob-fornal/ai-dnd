@@ -1,0 +1,61 @@
+{
+  "agent": "claude",
+  "inputTokens": 40920,
+  "outputTokens": 1366,
+  "cacheReadTokens": 34189,
+  "cacheWriteTokens": 6725,
+  "reasoningTokens": 82,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0474098,
+  "apiDurationMs": 11003,
+  "mainInputTokens": 40920,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 1,
+    "Glob": 1,
+    "Bash": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1063
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 709
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 652
+    }
+  ],
+  "docFilesRead": 3,
+  "codeFilesRead": 0,
+  "docTokensRead": 2424,
+  "codeTokensRead": 0,
+  "otherToolTokens": 465,
+  "filesModified": [],
+  "answer": "I answered this from the project's own recipe, `docs/flows/add-endpoint.md`, which uses \"rest at the inn\" as its example. I did not open the source files, so the line numbers come from the docs.\n\n## Worker\n\n1. **`worker/src/types/index.ts`**\n   - Add a request type `RestBody { sessionId, characterId }`.\n   - Add an inn cost constant (the name and price are yours to choose).\n2. **`worker/src/routes/rest.ts`** (new file)\n   - Export `restRoutes = new Hono<{ Bindings: Env }>()`, with a POST handler.\n   - Validate the body and call `getCharacter`.\n   - Reject the request if `gold` is below the cost.\n   - Call `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })`. It is defined at `services/character.ts:94` and only accepts whitelisted fields.\n   - Optionally call `askDM` for narration, then `appendHistory` and `saveSession`, and insert an `adventure_log` row. `routes/action.ts` is the template for these.\n   - Return `updatedCharacter`.\n3. **`worker/src/index.ts`** (around lines 41-48)\n   - Import `restRoutes` and add `app.route('/api/rest', restRoutes)`.\n   - CORS (lines 19-35) only needs a change if a new frontend origin is involved.\n4. **`worker/src/services/*.ts`** only changes if the logic is shared with other routes.\n5. **Migration:** none is needed, since `hp`, `max_hp` and `gold` already exist. If you add a schema change, put it in a new `000N_*.sql` and never edit `0001`.\n\nThe Worker does the cost check and the HP math. The AI only narrates.\n\n## Frontend\n\n6. **`frontend/src/app/models/game.models.ts`**\n   - Add a response interface that mirrors the Worker's return type, including `updatedCharacter`.\n7. **`frontend/src/app/services/game-api.service.ts`**\n   - Add `rest(sessionId, characterId)`, which POSTs to `${API_BASE}/api/rest`.\n8. **`game-console.component.ts` and `game-console.component.html`**\n   - Add a \"Rest at Inn\" button in the template. The Inventory button is at `.html:9`.\n   - Add a handler that calls `rest()`, then `CharacterStateService.setCharacter(res.updatedCharacter)` so the sheet updates.\n   - The handler should also push a system or narrative entry, and show an error if the player lacks gold.\n   - Keep the template, styles and spec in separate files. Never inline them.\n9. **`game-console.component.spec.ts`**\n   - Add tests with `GameApiService` as a Jasmine spy.\n\n## Docs to update in the same change\n- The doc next to each changed file, under `docs/code/...`, with links in both directions.\n- `code.md` for the new route doc, then re-run `research-work/scripts/build-symbol-index.mjs`.\n- `docs/PRD.md` §9 (the API spec).\n- `docs/flows/` if you want a dedicated flow doc.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

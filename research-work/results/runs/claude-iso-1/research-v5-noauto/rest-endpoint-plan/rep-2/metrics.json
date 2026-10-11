@@ -1,0 +1,84 @@
+{
+  "agent": "claude",
+  "inputTokens": 30730,
+  "outputTokens": 2347,
+  "cacheReadTokens": 17672,
+  "cacheWriteTokens": 13052,
+  "reasoningTokens": 107,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0792244,
+  "apiDurationMs": 16236,
+  "mainInputTokens": 30730,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 8,
+  "toolCallsByName": {
+    "Read": 8
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1072
+    },
+    {
+      "path": "docs/code/frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 1033
+    },
+    {
+      "path": "docs/code/worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 784
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 763
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 720
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 658
+    },
+    {
+      "path": "docs/code/frontend/src/app/models/game.models.md",
+      "kind": "doc",
+      "tokens": 581
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 532
+    }
+  ],
+  "docFilesRead": 8,
+  "codeFilesRead": 0,
+  "docTokensRead": 6143,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Everything below comes from `AGENTS.md` and the docs it routes to, mainly `docs/flows/add-endpoint.md`, which uses this exact feature as its example. I didn't open the source files, so line numbers are the doc anchors and may have drifted.\n\n## Worker\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` (near `LevelUpBody:168`) | Add `RestBody { sessionId, characterId }`. Add a cost constant such as `INN_REST_COST`. The doc says \"if needed\", and no cost constant exists yet. |\n| `worker/src/routes/rest.ts` (new) | Export `restRoutes = new Hono<{ Bindings: Env }>()` with `POST /`. The handler validates the body and calls `getCharacter`. If `gold < cost`, it returns an error. Otherwise it calls `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (`services/character.ts:94`, whitelisted fields only). It returns `{ updatedCharacter }`. Optionally add `askDM` narration, `appendHistory` + `saveSession`, and an `adventure_log` insert, following `routes/action.ts`. |\n| `worker/src/index.ts:41-48` | Add `app.route('/api/rest', restRoutes)`. |\n\n- **Cost and HP math:** these stay in Worker code, because the Worker owns the rules and the AI only narrates.\n- **Shared logic:** if more than one route needs it, put it in `worker/src/services/*.ts`.\n- **Schema:** `characters` already has `hp`, `max_hp` and `gold`, so no migration is needed. If you did need one, add a new `000N_*.sql` and never edit `0001`.\n- **No change to `services/character.ts`:** `hp` and `gold` should already be on the `updateCharacter` whitelist. That is worth confirming when you implement.\n- **Combat check (my suggestion, not in the docs):** reject the rest if the session is in combat.\n\n## Angular frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add a `RestResponse` interface, e.g. `{ updatedCharacter: Character, narrative?: string }`, mirroring the Worker response. Keep it in step with the Worker types, since nothing enforces the match. |\n| `frontend/src/app/services/game-api.service.ts` (after `levelUp():74`) | Add `rest(sessionId, characterId)` that posts to `${API_BASE}/api/rest`. |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add a `rest()` handler, near `levelUp():183`. It calls `GameApiService.rest`, then `CharacterStateService.setCharacter(res.updatedCharacter)`. It pushes a narrative or system entry and updates the campaign slot through `AuthService.updateCampaign` if needed. It handles `err.error.error`, e.g. for not enough gold. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at Inn (N gold)\" button in the left column next to the Inventory button (`:9`). Disable it when `inCombat()` is true. |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add tests with `GameApiService` as a Jasmine spy. The current spec doesn't cover actions, combat or level-up. |\n\n- **No change to `character-state.service.ts`:** `setCharacter()` already updates the HP bar and `hpPercent`.\n- **Optional:** a `.css` tweak for the button.\n\n## Docs (same change)\n\n`AUTHORING.md` requires updating the doc beside each changed file, plus a new doc for `routes/rest.ts`. You would also need:\n- the `code.md` entry,\n- a re-run of `research-work/scripts/build-symbol-index.mjs`,\n- the PRD §9 API spec.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "agent": "claude",
+  "inputTokens": 16902,
+  "outputTokens": 823,
+  "cacheReadTokens": 11590,
+  "cacheWriteTokens": 5308,
+  "reasoningTokens": 0,
+  "modelRequests": 2,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.031788,
+  "apiDurationMs": 5843,
+  "mainInputTokens": 16902,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Read": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 709
+    },
+    {
+      "path": "docs/flows/action-loop.md",
+      "kind": "doc",
+      "tokens": 564
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1273,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Source: `worker/src/services/ai-dm.md` and `docs/flows/action-loop.md`. I didn't open `ai-dm.ts` itself.\n\n**Model failure** (`askDM`, `ai-dm.ts:81`)\n1. `askDM` first calls the primary model, `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It uses `json_object` format, temperature 0.85 and 1024 tokens.\n2. If that call throws, it retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n3. If both models fail, it returns `fallbackNarrative`, a canned response. The game keeps going.\n\n**Response that isn't valid JSON** (`parseAIResponse`)\n- `parseAIResponse` strips code fences and extracts the first `{…}` block.\n- It fills in defaults for every field, so `askDM` always returns a validated `AIDMResponse`.\n- It keeps at most 4 `suggestedActions` and 8 `diceRolls`.\n- The docs don't say what happens if no `{…}` block can be parsed at all. Check `parseAIResponse` in the code to confirm.\n\n**Related points**\n- `askDM` reads text from both `choices[0].message.content` and the legacy `response` field.\n- `routes/action.ts:57-69` clamps the AI's `hpDelta`, `xpGained` and `goldDelta`, so a bad or fallback response can't break the game rules.\n- `generateQuest`, `generateBackstory` and `generateLevelUpNarrative` have no model fallback. They read only the legacy `response` field. With llama-3.3 they fall back to canned text or an empty string (bug B-03).\n- Under `wrangler dev` without `--remote`, AI is stubbed, so you always get the fallback text locally.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

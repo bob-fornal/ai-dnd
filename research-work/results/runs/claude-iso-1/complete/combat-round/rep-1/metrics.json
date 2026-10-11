@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "inputTokens": 26175,
+  "outputTokens": 1995,
+  "cacheReadTokens": 15935,
+  "cacheWriteTokens": 10234,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.064085,
+  "apiDurationMs": 13497,
+  "mainInputTokens": 26175,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 5,
+  "toolCallsByName": {
+    "Grep": 2,
+    "Read": 3
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/combat.ts",
+      "kind": "code",
+      "tokens": 2252
+    },
+    {
+      "path": "worker/src/routes/combat.ts",
+      "kind": "code",
+      "tokens": 1225
+    },
+    {
+      "path": "worker/src/services/dice.ts",
+      "kind": "code",
+      "tokens": 557
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 3,
+  "docTokensRead": 0,
+  "codeTokensRead": 4034,
+  "otherToolTokens": 641,
+  "filesModified": [],
+  "answer": "An Attack is resolved entirely by server code. The AI only narrates the result afterwards.\n\n**Flow**\n\n1. `POST /api/combat/resolve` is handled in `worker/src/routes/combat.ts:11`. It validates `sessionId`, `characterId` and `action`, loads the character and session, and rejects the request if the session isn't in combat.\n2. It calls `resolveCombatRound(character, combatState, 'attack')` in `worker/src/services/combat.ts:50`. This is where the round is resolved.\n3. The route then applies the results:\n   - It clamps HP to `0..max_hp` using `playerHpDelta`.\n   - It adds `xpGained` on victory.\n   - It calls `rollLoot` and `grantLoot` on victory.\n4. The route calls `askDM(...)` (`worker/src/services/ai-dm.ts:81`) with the string `\"attacks the <monster>\"` and `result.contextForDM`.\n5. The route updates the session next. If combat didn't end, it increments `round` and subtracts `enemyHpDelta` from the monster's HP. It also appends history, saves the session to KV, and writes `adventure_log` rows to D1.\n6. The response returns `narrative`, `diceRolls`, `combatState`, `victory`, `playerDied`, `loot` and the other fields.\n\n**Where the dice are rolled**\n\nAll randomness comes from `worker/src/services/dice.ts`, which uses `Math.random()` in `roll(sides)`. Its header comment says it is \"never delegated to the AI.\"\n\n- **Player attack:** `attackRoll(atkBonus, monster.ac)` rolls a d20.\n  - `atkBonus` is the DEX modifier for Rogue and Ranger, and the STR modifier for everyone else. It adds a proficiency bonus of `ceil(level/4)+1`.\n  - A natural 20 is a crit and always hits. A natural 1 always misses. Otherwise it hits if the total is at least the monster's AC.\n- **Player damage (on a hit):** `rollExpression(getPlayerDamageDice(class))`.\n  - The dice are d8 for Fighter, Cleric and Bard, and d6 for Wizard, Rogue and Ranger.\n  - The damage modifier is the INT modifier for Wizard and Bard, and the STR modifier otherwise.\n  - Damage is at least 1 and is doubled on a crit.\n- **Enemy counterattack:** this happens if the monster survives.\n  - It rolls `attackRoll(monster.attack_bonus, character.ac)`.\n  - On a hit it rolls `rollExpression(monster.damage_dice)`.\n  - A dodge would add a -5 penalty, but that doesn't apply to an Attack.\n- **Outcome checks:** the monster dies if its HP is 0 or less, which gives victory and `monster.xp_reward`. The player dies if HP is 0 or less, which ends combat as a defeat.\n\n**What the AI is responsible for**\n\n- It turns the pre-resolved log (`contextForDM`) into 1–4 paragraphs of prose in `narrative`. The prompt at `ai-dm.ts:69` labels it \"pre-resolved by the system — narrate these results.\"\n- It also returns `suggestedActions`.\n- If the call fails, `fallbackNarrative` supplies generic text and the mechanics are unaffected.\n\n**What the AI is not responsible for**\n\n- **Rolls and damage:** the prompt at `ai-dm.ts:40` says \"Do NOT include attack/damage rolls — those are resolved by the system.\"\n- **HP and combat state:** the prompt at `ai-dm.ts:36` says combat damage is \"resolved separately.\" HP, monster HP, rounds, victory and defeat are all computed in `resolveCombatRound` and the route.\n- **XP and loot:** both are handled server-side.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

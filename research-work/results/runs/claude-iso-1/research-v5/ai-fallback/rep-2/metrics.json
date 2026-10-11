@@ -1,0 +1,57 @@
+{
+  "agent": "claude",
+  "inputTokens": 29168,
+  "outputTokens": 1296,
+  "cacheReadTokens": 22195,
+  "cacheWriteTokens": 6967,
+  "reasoningTokens": 87,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.045279,
+  "apiDurationMs": 9391,
+  "mainInputTokens": 29168,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 2,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 726
+    },
+    {
+      "path": "docs/flows/action-loop.md",
+      "kind": "doc",
+      "tokens": 566
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1292,
+  "codeTokensRead": 0,
+  "otherToolTokens": 536,
+  "filesModified": [],
+  "answer": "`askDM` in `worker/src/services/ai-dm.ts:81` handles both cases. It never throws to the route, and it always returns a valid `AIDMResponse`.\n\n**Model failure** (`ai-dm.ts:115-137`)\n1. It first calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast` with `json_object` format, temperature 0.85 and 1024 tokens.\n2. If that call throws, it logs `[askDM] llama failed, trying mistral` and retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`.\n3. If Mistral also throws, it logs the error and returns `fallbackNarrative(playerAction)` (`ai-dm.ts:198`).\n\n**Response that isn't valid JSON** (`parseAIResponse`, `ai-dm.ts:143`)\n- **Empty or non-string input:** `fallbackNarrative` is returned right away (line 146).\n- **Cleanup:** it strips markdown code fences, then extracts the first `{…}` block. If no block is found, it returns `fallbackNarrative` (line 163).\n- **Parsing:** it runs `JSON.parse` inside a `try`. If that throws, the `catch` returns `fallbackNarrative` (line 192).\n- **Partial JSON:** if the parse succeeds, missing fields get defaults. For example, `narrative` falls back to a default if it isn't a non-empty string. At most 4 `suggestedActions` and 8 `diceRolls` are kept.\n\n**What `fallbackNarrative` returns:** a generic line, \"You attempt to <action>. The world shifts around you…\", with neutral `gameStateChanges`. The fallback therefore doesn't change HP, XP or gold.\n\n**Other AI functions**\n- `generateQuest` falls back to a canned \"Blood on the Road\" quest (`ai-dm.ts:264`).\n- `generateBackstory` falls back to canned text (line 299).\n- `generateLevelUpNarrative` falls back to canned text (line 326).\n- These three only read the legacy `response` field. With llama-3.3 they often hit the canned text (`bugs.md` B-03).\n- `wrangler dev` without `--remote` stubs the AI, so you always get the fallback locally.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8,
+    "passed": 4,
+    "total": 5,
+    "missing": [
+      "choices"
+    ]
+  }
+}

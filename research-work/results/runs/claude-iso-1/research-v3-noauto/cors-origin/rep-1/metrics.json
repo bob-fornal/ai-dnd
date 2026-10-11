@@ -1,0 +1,60 @@
+{
+  "agent": "claude",
+  "inputTokens": 22881,
+  "outputTokens": 1130,
+  "cacheReadTokens": 17664,
+  "cacheWriteTokens": 5211,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.03568880000000001,
+  "apiDurationMs": 8751,
+  "mainInputTokens": 22881,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 3,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 852
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 527
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 414
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1266,
+  "codeTokensRead": 527,
+  "otherToolTokens": 121,
+  "filesModified": [],
+  "answer": "The CORS policy is set in `worker/src/index.ts:19-35`, in the `app.use('*', cors({...}))` middleware. Its `origin` option is a function, and it returns the request's origin only in these cases:\n\n- **Exact match:** `http://localhost:4200`.\n- **Suffix match:** any origin that ends with `.pages.dev`, at any depth.\n- **Suffix match:** any origin that ends with `.workers.dev`, at any depth.\n- **Everything else:** requests with no `Origin` header, or any other origin, get `null`, so no CORS headers are sent.\n\nThe same middleware allows these methods: `GET`, `POST`, `PATCH`, `DELETE`, `OPTIONS`. It allows the headers `Content-Type` and `Authorization`, and sets `maxAge` to 86400.\n\n**Adding a custom domain:** edit the `origin` function at `worker/src/index.ts:21-31`. Add a new clause to the `if` condition at lines 23-27:\n\n- For one exact origin, add `origin === 'https://app.example.com' ||`.\n- For a whole domain, add `origin.endsWith('.example.com') ||`.\n\nThe origin must include the scheme, for example `https://`. A bare `endsWith` check is loose. `.example.com` won't match `evil-example.com`, but a suffix without the leading dot would. Prefer the exact-match form where you can.\n\nDon't put the domain in an array. The code comment and `worker/src/index.md:24-25` both say Hono matches array entries as exact strings, so wildcards only work in the function form. `docs/DEPLOYMENT_NOTES.md` §4 covers CORS in more detail. I didn't open it.\n\nIf you change this, update the CORS line in `worker/src/index.md:7` as well. Also redeploy the Worker, because the policy is in code, not in `wrangler.toml`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

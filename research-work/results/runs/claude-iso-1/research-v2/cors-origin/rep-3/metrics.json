@@ -1,0 +1,55 @@
+{
+  "agent": "claude",
+  "inputTokens": 32410,
+  "outputTokens": 946,
+  "cacheReadTokens": 29959,
+  "cacheWriteTokens": 2443,
+  "reasoningTokens": 0,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0252398,
+  "apiDurationMs": 8030,
+  "mainInputTokens": 32410,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 2,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 414
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 160
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 414,
+  "codeTokensRead": 160,
+  "otherToolTokens": 85,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set by the `origin` function in the `cors({...})` middleware in `worker/src/index.ts:19-35`. It echoes the request's origin back only if it is one of these:\n- exactly `http://localhost:4200`\n- any origin ending in `.pages.dev`\n- any origin ending in `.workers.dev`\n\nRequests with no `Origin` header, and any other origin, get `null`, so no CORS headers are sent. The middleware also allows the methods `GET, POST, PATCH, DELETE, OPTIONS` and the headers `Content-Type, Authorization`, with `maxAge: 86400`.\n\n**Adding a custom domain:** add another condition to the `if (...)` at `worker/src/index.ts:23-27`. For example:\n\n```ts\norigin === 'https://play.example.com' ||\n```\n\nUse an exact match, including the scheme and with no trailing slash. Don't put it in an array, because Hono matches array entries as exact strings only. That is why this is a function. For a wildcard such as all subdomains, use `origin.endsWith('.example.com')`. Be careful with `endsWith` on a bare domain, since `evilexample.com` would also match. Include the leading dot.\n\nThen redeploy the Worker. `worker/wrangler.toml` needs no change, because CORS isn't configured there. The rationale is in `docs/DEPLOYMENT_NOTES.md` §4.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

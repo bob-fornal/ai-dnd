@@ -1,0 +1,64 @@
+{
+  "agent": "claude",
+  "inputTokens": 17801,
+  "outputTokens": 1096,
+  "cacheReadTokens": 11535,
+  "cacheWriteTokens": 6262,
+  "reasoningTokens": 46,
+  "modelRequests": 2,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.038323,
+  "apiDurationMs": 7664,
+  "mainInputTokens": 17801,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 607
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 503
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 446
+    },
+    {
+      "path": "frontend/src/app/app.routes.md",
+      "kind": "doc",
+      "tokens": 280
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 0,
+  "docTokensRead": 1836,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "**Login** is local only, with no server auth and no password.\n- `AuthService.login(username)` (`frontend/src/app/services/auth.service.ts:16`) loads `ai_dnd_user_<lowercase name>` from `localStorage`. If that key doesn't exist, it creates an empty profile.\n- The active profile is stored under `ai_dnd_user` so it survives a reload.\n- `isLoggedIn()` is `profile() !== null`. `authGuard` uses it to protect the `characters` and `game/:sessionId` routes (`app.routes.ts`).\n- `logout()` clears `ai_dnd_user` but keeps the per-user `ai_dnd_user_<name>` copy.\n\n**Campaign storage**\n- Campaign slots (`CampaignSlot`) live only in the browser's `localStorage`, inside the user profile. They are managed by `addCampaign`, `updateCampaign` and `removeCampaign` (`auth.service.ts:36`, `:44`, `:54`).\n- Each slot holds a `sessionId` and a `characterId` that point to server data.\n- The server side has two parts:\n  - Workers KV holds `session:<sessionId>` with a 7-day TTL (`SESSION_TTL_SECONDS = 604800`, `services/session.ts:4`).\n  - D1 holds the permanent data in `characters`, `character_inventory` and `adventure_log`.\n\n**Deleting a slot**\n- `removeCampaign` (`auth.service.ts:54`) only removes the slot from `localStorage`. It makes no API call.\n- The character, its inventory and its adventure log stay in D1. The KV session stays until its TTL expires.\n- Nothing points to that data any more, so it is orphaned.\n\nThese answers come from the docs (`auth.service.md`, `resume-session.md`, `app.routes.md`). I didn't open the code to check them.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

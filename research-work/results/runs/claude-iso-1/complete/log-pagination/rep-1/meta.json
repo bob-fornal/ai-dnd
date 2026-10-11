@@ -1,0 +1,65 @@
+{
+  "agent": "claude",
+  "arm": {
+    "id": "complete",
+    "dir": "../complete",
+    "description": "Baseline: original document-type docs (PRD.md, SETUP.md, docs/), no hint.",
+    "preamble": "",
+    "docsVersion": "baseline"
+  },
+  "task": {
+    "id": "log-pagination",
+    "area": "full-stack",
+    "heldOut": true,
+    "prompt": "How does the adventure log sidebar load older entries? Describe the endpoint, its paging parameters and limits, the sort order, and how the UI decides there is nothing more to load.",
+    "expect": [
+      [
+        "/api/log",
+        "log.ts"
+      ],
+      [
+        "limit"
+      ],
+      [
+        "50"
+      ],
+      [
+        "created_at"
+      ],
+      [
+        "loadMoreLog"
+      ],
+      [
+        "total"
+      ]
+    ]
+  },
+  "rep": 1,
+  "prompt": "How does the adventure log sidebar load older entries? Describe the endpoint, its paging parameters and limits, the sort order, and how the UI decides there is nothing more to load.\n\nThis is a read-only question: do not create or modify any files. Give a concise answer that names the specific files, functions, and values involved.",
+  "workspaceDir": "C:\\Projects\\PERSONAL\\ai-dnd-research-workspaces\\claude-iso-1\\complete",
+  "isolated": true,
+  "cliArgs": [
+    "-p",
+    "--model",
+    "claude-sonnet-5-5",
+    "--effort",
+    "medium",
+    "--tools",
+    "Read,Grep,Glob",
+    "--permission-mode",
+    "dontAsk",
+    "--no-session-persistence",
+    "--strict-mcp-config",
+    "--disable-slash-commands",
+    "--setting-sources",
+    "project,local",
+    "--settings",
+    "{\"claudeMdExcludes\":[\"**/AGENTS.md\"]}",
+    "--output-format",
+    "stream-json",
+    "--verbose"
+  ],
+  "model": "claude-sonnet-5-5",
+  "reasoningEffort": "medium",
+  "startedAt": "2026-10-10T13:50:42.986Z"
+}

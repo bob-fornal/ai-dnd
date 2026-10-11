@@ -1,0 +1,54 @@
+{
+  "agent": "claude",
+  "inputTokens": 17393,
+  "outputTokens": 731,
+  "cacheReadTokens": 11760,
+  "cacheWriteTokens": 5629,
+  "reasoningTokens": 155,
+  "modelRequests": 2,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.032186,
+  "apiDurationMs": 5782,
+  "mainInputTokens": 17393,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Read": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/flows/character-creation.md",
+      "kind": "doc",
+      "tokens": 773
+    },
+    {
+      "path": "docs/code/worker/src/db/seed.md",
+      "kind": "doc",
+      "tokens": 528
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 0,
+  "docTokensRead": 1301,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "A new Fighter starts with four items:\n\n| ID | Item |\n|---|---|\n| 2 | Longsword |\n| 15 | Shield |\n| 17 | Potion of Healing |\n| 23 | Torches |\n\n**Where it's defined**\n- The IDs are in the `CLASS_STARTING_ITEMS` map in `worker/src/services/character.ts:65`. `createCharacter` (`:14`) applies them at around `:59`.\n- The names come from the `items` rows in `worker/src/db/seed.sql`. Items get autoincrement IDs in insert order: weapons are 1–10, armor 11–16, potions 17–21 and misc 22–28.\n- The Fighter also gets d10 HP, base AC 16 and 50 gold, but those aren't items.\n\n**Caveats**\n- I took this from `docs/flows/character-creation.md` and `docs/code/worker/src/db/seed.md`. I did not open the source files to check the line numbers or the insert order.\n- Item 23 is Torches in the seed order, but the code comments call it Rations. The docs track this as bug B-09.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

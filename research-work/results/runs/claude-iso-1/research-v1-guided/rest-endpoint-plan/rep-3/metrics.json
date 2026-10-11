@@ -1,0 +1,95 @@
+{
+  "agent": "claude",
+  "inputTokens": 58800,
+  "outputTokens": 3202,
+  "cacheReadTokens": 41530,
+  "cacheWriteTokens": 17262,
+  "reasoningTokens": 119,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.10939000000000002,
+  "apiDurationMs": 20864,
+  "mainInputTokens": 58800,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 12,
+  "toolCallsByName": {
+    "Read": 10,
+    "Grep": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 2447
+    },
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1238
+    },
+    {
+      "path": "frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 819
+    },
+    {
+      "path": "frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 645
+    },
+    {
+      "path": "worker/src/routes/levelup.ts",
+      "kind": "code",
+      "tokens": 603
+    },
+    {
+      "path": "worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 569
+    },
+    {
+      "path": "worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 563
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 447
+    },
+    {
+      "path": "worker/src/index.md",
+      "kind": "doc",
+      "tokens": 414
+    },
+    {
+      "path": "worker/src/routes/shop.md",
+      "kind": "doc",
+      "tokens": 397
+    }
+  ],
+  "docFilesRead": 9,
+  "codeFilesRead": 1,
+  "docTokensRead": 7539,
+  "codeTokensRead": 603,
+  "otherToolTokens": 844,
+  "filesModified": [],
+  "answer": "Following AGENTS.md §7 I started at `code.md`, read the shop, character, levelup, types, index, game-api, game-console and character-state docs, then opened `levelup.ts`. I also grepped `game-console.component.*` and `game-api.service.ts`. I made no changes.\n\n`POST /api/levelup` is the closest existing pattern, so the inn follows its shape. The shop endpoints are unusable and have no UI ([bugs.md B-02](../../../bugs.md)), so don't build on them.\n\n## Worker\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add `RestBody { sessionId; characterId }`. Add a constant such as `INN_COST` (a flat value, or scaled by level, e.g. `5 * level`). |\n| `worker/src/routes/inn.ts` (new) | Add `innRoutes` with `POST /rest`. It validates the body (400) and loads the character with `getCharacter` (404). It returns 400 if `hp >= max_hp` (\"already at full HP\"). It returns 400 if `gold < INN_COST`. It then calls `updateCharacter(db, id, { hp: max_hp, gold: gold - INN_COST })`. Worker code decides gold and HP, per AGENTS §9. The AI isn't needed. If you want a narrative, add one in `ai-dm.ts`. It returns `{ updatedCharacter, cost }`. |\n| `worker/src/routes/inn.md` (new) | Doc per AGENTS §1 and §4. |\n| `worker/src/index.ts` | Import `innRoutes`. Mount it with `app.route('/api/inn', innRoutes)`. |\n| `worker/src/index.md` | Add `/api/inn` to the Route mounts table and to Children. |\n\n- **Combat check:** the route should reject resting while in combat. `inCombat` lives in the KV session (`CombatState`), so `loadSession` and `rebuildSession` from `services/session.ts` are needed. The frontend also hides the button in combat.\n- **Logging:** optionally insert an `adventure_log` row (`actor 'system'`) and push to `session.history`, as `levelup.ts` does.\n- **`services/character.ts`:** no change needed. `updateCharacter` already whitelists `hp` and `gold`. A `restAtInn()` helper there is optional.\n- **Schema:** no migration. `characters` already has `hp`, `max_hp` and `gold`.\n\n## Angular frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/services/game-api.service.ts` | Add `rest(sessionId, characterId): Observable<{ updatedCharacter: Character; cost: number }>`, calling `POST ${API_BASE}/inn/rest`. |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add `rest()`, modelled on `levelUp()` (line 183). It calls `api.rest`, then `charSvc.setCharacter(res.updatedCharacter)` and `auth.updateCampaign` if needed. It pushes a narrative line. On error it shows `err.error.error`. Add an `resting` loading signal. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at Inn (N gold)\" button in the left column beside the Inventory button (line 9). Show it only when `!charSvc.inCombat()`. Disable it when `resting()`, when HP is full, or when gold is below the cost. |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add `'rest'` to the `jasmine.createSpyObj` method list (line 24). Add a test that it calls the API and updates the character. |\n| `frontend/src/app/components/game-console/game-console.component.css` | Optional, for button styling. |\n| `frontend/src/app/models/game.models.ts` | Only if you add a `RestResponse` interface. Otherwise the inline type in `game-api.service.ts` is enough. |\n| `character-state.service.ts` | No change. `setCharacter` already updates HP, gold and the signals. |\n| `character-sheet.component.*` | No change. It re-renders from the signal. |\n\nIf the cost scales by level, mirror the formula or a shared constant on the frontend for the button label and disabled state. Nothing enforces the two copies matching, as `types/index.md` notes. The Worker stays authoritative.\n\n## Docs to update (AGENTS §8)\n\n- `code.md`: add the `inn.md` entry under Worker routes.\n- `worker/src/types/index.md`: add `RestBody` and `INN_COST`.\n- `game-api.service.md`: add a row for `rest`, linked to `inn.md`.\n- `game-console.component.md`: update Layout and Flow.\n- `PRD.md`: update §4.4 (inventory & economy) and the API spec.\n- `inn.md`: set its Parents to `../index.md` and `game-api.service.md`. Set its Children to `services/character.md`, `services/session.md` and `types/index.md`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

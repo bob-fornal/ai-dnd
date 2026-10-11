@@ -1,0 +1,52 @@
+{
+  "agent": "claude",
+  "inputTokens": 22402,
+  "outputTokens": 1314,
+  "cacheReadTokens": 16409,
+  "cacheWriteTokens": 5987,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.040381799999999995,
+  "apiDurationMs": 9607,
+  "mainInputTokens": 22402,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Grep": 3,
+    "Read": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "frontend/src/app/components/inventory/inventory.component.ts",
+      "kind": "code",
+      "tokens": 1707
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 1707,
+  "otherToolTokens": 1021,
+  "filesModified": [],
+  "answer": "**Where it's opened**\n\n`GameConsoleComponent.openInventory()` is at `frontend/src/app/components/game-console/game-console.component.ts:237`. It calls `this.dialog.open(InventoryComponent, …)` with `panelClass: 'inv-dialog-panel'` and `maxHeight: '90vh'`.\n\n**Data passed in**\n\nThe dialog receives an `InventoryDialogData` object, defined at `inventory.component.ts:19`:\n- `characterId: this.characterId`\n- `sessionId: this.sessionId`\n\n`InventoryComponent` reads it through `MAT_DIALOG_DATA`. It only uses `characterId`. `sessionId` is passed but never used in the component.\n\nThe component also reads `CharacterStateService.character`, a signal, for HP values. It writes back with `setInventory()` and `setCharacter()`.\n\n**API calls**\n\nAll of these go through `GameApiService` in `frontend/src/app/services/game-api.service.ts`:\n\n| Component method | Service method | HTTP request |\n|---|---|---|\n| `loadInventory()`, on init | `getInventory(characterId)` | `GET /api/character/:id`. It returns only the `inventory` field. |\n| `toggleEquip()` | `equipItem(characterId, itemId, equipped)` | `PATCH /api/character/:id/equip` with body `{ itemId, equipped }` |\n| `dropItem()` | `dropItem(characterId, itemId)` | `DELETE /api/character/:id/inventory/:itemId` |\n| `usePotion()` | `dropItem(…)` | The same `DELETE` as above. |\n\n`usePotion()` rolls the heal dice on the client, caps HP at `max_hp`, calls `dropItem` to consume the item, and then updates HP locally with `charSvc.setCharacter()`. The server is never told about the HP change.\n\nThe worker routes behind these calls are in `worker/src/routes/character.ts`. I didn't open that file.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 0.8333333333333334,
+    "passed": 5,
+    "total": 6,
+    "missing": [
+      "MatDialog"
+    ]
+  }
+}

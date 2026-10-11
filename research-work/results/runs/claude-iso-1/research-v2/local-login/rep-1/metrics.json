@@ -1,0 +1,64 @@
+{
+  "agent": "claude",
+  "inputTokens": 17835,
+  "outputTokens": 1193,
+  "cacheReadTokens": 11535,
+  "cacheWriteTokens": 6296,
+  "reasoningTokens": 80,
+  "modelRequests": 2,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.039429,
+  "apiDurationMs": 8075,
+  "mainInputTokens": 17835,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 4
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 607
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.md",
+      "kind": "doc",
+      "tokens": 503
+    },
+    {
+      "path": "frontend/src/app/services/auth.service.md",
+      "kind": "doc",
+      "tokens": 446
+    },
+    {
+      "path": "frontend/src/app/app.routes.md",
+      "kind": "doc",
+      "tokens": 280
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 0,
+  "docTokensRead": 1836,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "Login is local only, campaigns are stored in the browser, and deleting a campaign slot leaves the server-side character untouched. This comes from the docs, and I didn't open the code to check them.\n\n**Login**\n- There is no server auth. `AuthService.login(username)` in `frontend/src/app/services/auth.service.ts:16` is a name-only \"account\" kept in `localStorage`.\n- It loads the saved profile under `ai_dnd_user_<lowercase name>`, or creates an empty one.\n- It also sets the active profile under `ai_dnd_user`, which is restored on reload.\n- `isLoggedIn()` (`:12`) is `profile() !== null`.\n- `authGuard` uses that check to protect the `characters` and `game/:sessionId` routes in `app.routes.ts`.\n- `logout()` (`:31`) clears only the active profile and keeps the per-user copy.\n\n**Where campaigns are stored**\n- Campaigns are `CampaignSlot`s inside the `UserProfile`, in the browser's `localStorage`. They're managed by `addCampaign` (`:36`), `updateCampaign` (`:44`) and `removeCampaign` (`:54`).\n- Each slot holds a `sessionId` and a `characterId`. These point to the Worker's data:\n  - **KV** `session:<sessionId>`: location, quest, combat state, and the last 20 history turns. It expires after 7 days (`SESSION_TTL_SECONDS = 604800`, `worker/src/services/session.ts:4`).\n  - **D1** tables `characters`, `character_inventory` and `adventure_log`: permanent.\n- If browser storage is cleared, the links to the server sessions are lost. The D1 data stays, but nothing points to it.\n\n**Deleting a campaign slot**\n- `removeCampaign` only removes the slot from the local profile. It does not call the Worker, so the D1 character, inventory and adventure log, and the KV session, stay on the server.\n- The KV session eventually expires after its 7-day TTL. The D1 rows are never cleaned up.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

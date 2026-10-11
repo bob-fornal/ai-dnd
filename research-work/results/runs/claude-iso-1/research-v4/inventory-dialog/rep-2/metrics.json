@@ -1,0 +1,50 @@
+{
+  "agent": "claude",
+  "inputTokens": 16282,
+  "outputTokens": 1043,
+  "cacheReadTokens": 11760,
+  "cacheWriteTokens": 4518,
+  "reasoningTokens": 42,
+  "modelRequests": 2,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.030862,
+  "apiDurationMs": 7189,
+  "mainInputTokens": 16282,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Read": 1,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 658
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 658,
+  "codeTokensRead": 0,
+  "otherToolTokens": 76,
+  "filesModified": [],
+  "answer": "This comes from `docs/flows/inventory.md` and `code.md`. I didn't open the source files, so the line numbers are the docs' and may have drifted.\n\n**Where it opens**\n- The **Inventory** button at `game-console.component.html:9` calls `openInventory()` (`game-console.component.ts:237`).\n- That calls `MatDialog.open(InventoryComponent, { data, panelClass: 'inv-dialog-panel', maxHeight: '90vh' })` at `:242`.\n\n**Data passed**\n- The data is `InventoryDialogData = { characterId, sessionId }`, defined at `inventory.component.ts:19`.\n- `InventoryComponent` receives it through `MAT_DIALOG_DATA`.\n\n**API calls it can make**, all through `GameApiService`:\n\n| Action | Component method | Service method | Endpoint |\n|---|---|---|---|\n| Load on init | `ngOnInit` (`:53`) | `getInventory` (`game-api.service.ts:90`) | `GET /api/character/:id` (`routes/character.ts:72`) |\n| Equip / unequip | `toggleEquip` (`:72`) | `equipItem` (`:96`) | `PATCH /api/character/:id/equip` (`routes/character.ts:93`) |\n| Drop | `dropItem` (`:144`) | `dropItem` (`:100`) | `DELETE /api/character/:id/inventory/:itemId` (`routes/character.ts:137`) |\n| Use potion | `usePotion` (`:96`) | `dropItem` | `DELETE /api/character/:id/inventory/:itemId` |\n\n**Behaviour to know about**\n- **Load:** on init, the result is copied into `CharacterStateService.setInventory`.\n- **Use potion:** the heal dice are rolled in the browser (`:110-121`). HP is set locally only (`:129`) and never saved to the Worker (bug B-05).\n- **Equip:** equipment is display only, because combat ignores it (B-08).\n- **Drop:** a `confirm()` runs first, then one unit is removed.\n- **Shops:** the dialog makes no shop calls. The shop endpoints exist only on the Worker and have no UI yet.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

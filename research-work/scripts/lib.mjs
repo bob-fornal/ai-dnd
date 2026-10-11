@@ -140,3 +140,90 @@ export const median = (xs) => {
   const mid = Math.floor(v.length / 2);
   return v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
 };
+
+/**
+ * Claude Code (`claude -p --output-format stream-json --verbose`) → the same metrics shape as parseRun.
+ * Token totals come from the final `result` event (modelUsage); tool calls and results from message content blocks.
+ * Input tokens include cache reads and cache writes, matching Copilot's inputTokens.
+ */
+export function parseClaudeRun({ eventsFile, armDir }) {
+  const m = {
+    agent: 'claude',
+    inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, reasoningTokens: 0,
+    modelRequests: 0, premiumRequests: 0, aiCredits: 0, costUsd: 0, apiDurationMs: 0,
+    mainInputTokens: 0, mainRequests: 0, subagentInputTokens: 0, subagentRuns: 0, models: [],
+    toolCalls: 0, toolCallsByName: {}, failedToolCalls: 0, toolset: 'claude', multiReadCalls: 0,
+    filesRead: [], docFilesRead: 0, codeFilesRead: 0,
+    docTokensRead: 0, codeTokensRead: 0, otherToolTokens: 0,
+    filesModified: [], answer: '', exitCode: null,
+  };
+  if (!existsSync(eventsFile)) return m;
+  const calls = new Map();
+  const reads = new Map();
+  const mainIds = new Set();
+  const subIds = new Set();
+  const textOf = (c) => (typeof c === 'string' ? c : Array.isArray(c) ? c.map((x) => x.text ?? '').join('\n') : '');
+  for (const line of readFileSync(eventsFile, 'utf8').split('\n')) {
+    if (!line.trim()) continue;
+    let e;
+    try { e = JSON.parse(line); } catch { continue; }
+    if (e.type === 'assistant' && e.message) {
+      (e.parent_tool_use_id ? subIds : mainIds).add(e.message.id);
+      for (const b of e.message.content ?? []) {
+        if (b.type !== 'tool_use') continue;
+        calls.set(b.id, { name: b.name, input: b.input ?? {} });
+        m.toolCalls++;
+        m.toolCallsByName[b.name] = (m.toolCallsByName[b.name] ?? 0) + 1;
+        if (['Edit', 'Write', 'MultiEdit', 'NotebookEdit'].includes(b.name) && b.input?.file_path) m.filesModified.push(b.input.file_path);
+      }
+    } else if (e.type === 'user' && e.message) {
+      for (const b of e.message.content ?? []) {
+        if (b.type !== 'tool_result') continue;
+        const call = calls.get(b.tool_use_id) ?? { name: '?', input: {} };
+        if (b.is_error) { m.failedToolCalls++; continue; }
+        const content = textOf(b.content);
+        const command = String(call.input.command ?? '');
+        if (/tools[\/]read\.mjs/.test(command)) {
+          m.multiReadCalls++;
+          for (const part of content.split(/^### /m).slice(1)) {
+            const rel = part.split(/[\s(]/)[0];
+            if (rel && path.extname(rel)) reads.set(rel, (reads.get(rel) ?? 0) + estimateTokens(part.length));
+          }
+        } else if (call.name === 'Read' && call.input.file_path && path.extname(call.input.file_path)) {
+          const rel = toRelative(call.input.file_path, armDir);
+          reads.set(rel, (reads.get(rel) ?? 0) + estimateTokens(content.length));
+        } else {
+          m.otherToolTokens += estimateTokens(content.length);
+        }
+      }
+    } else if (e.type === 'result') {
+      m.exitCode = e.is_error ? 1 : 0;
+      m.answer = e.result ?? '';
+      m.costUsd = e.total_cost_usd ?? 0;
+      m.apiDurationMs = e.duration_api_ms ?? 0;
+      for (const [model, u] of Object.entries(e.modelUsage ?? {})) {
+        m.models.push(model);
+        const input = (u.inputTokens ?? 0) + (u.cacheReadInputTokens ?? 0) + (u.cacheCreationInputTokens ?? 0);
+        m.inputTokens += input;
+        m.outputTokens += u.outputTokens ?? 0;
+        m.cacheReadTokens += u.cacheReadInputTokens ?? 0;
+        m.cacheWriteTokens += u.cacheCreationInputTokens ?? 0;
+      }
+      m.reasoningTokens = e.usage?.output_tokens_details?.thinking_tokens ?? 0;
+    }
+  }
+  // One API request per assistant message id. Subagents (if any were enabled) are counted separately.
+  m.mainRequests = mainIds.size;
+  m.subagentRuns = subIds.size ? 1 : 0;
+  m.modelRequests = mainIds.size + subIds.size;
+  m.mainInputTokens = m.inputTokens; // modelUsage doesn't split main vs subagent; subagents are disabled by default
+  for (const [rel, tokens] of reads) {
+    const kind = classify(rel);
+    m.filesRead.push({ path: rel, kind, tokens });
+    if (kind === 'doc') { m.docFilesRead++; m.docTokensRead += tokens; }
+    else if (kind === 'code') { m.codeFilesRead++; m.codeTokensRead += tokens; }
+    else m.otherToolTokens += tokens;
+  }
+  m.filesRead.sort((a, b) => b.tokens - a.tokens);
+  return m;
+}

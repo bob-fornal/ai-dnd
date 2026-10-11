@@ -1,0 +1,71 @@
+{
+  "agent": "claude",
+  "inputTokens": 64711,
+  "outputTokens": 1815,
+  "cacheReadTokens": 51476,
+  "cacheWriteTokens": 13227,
+  "reasoningTokens": 126,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0813692,
+  "apiDurationMs": 13621,
+  "mainInputTokens": 64711,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Read": 1,
+    "Glob": 1,
+    "Bash": 2
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 2,
+  "filesRead": [
+    {
+      "path": "code.md",
+      "kind": "doc",
+      "tokens": 1712
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1063
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 709
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 652
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 279
+    }
+  ],
+  "docFilesRead": 4,
+  "codeFilesRead": 1,
+  "docTokensRead": 4136,
+  "codeTokensRead": 279,
+  "otherToolTokens": 566,
+  "filesModified": [],
+  "answer": "Per `AGENTS.md` and `docs/flows/add-endpoint.md`, which uses this exact feature as its worked example, these files change. Nothing has been modified. I confirmed the symbol locations against the code index. I did not open the route mounts at `index.ts:41-48`, so that line range comes from the recipe doc.\n\n## Worker\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add a `RestBody { sessionId, characterId }` type next to `LevelUpBody:168`. Add a cost constant such as `INN_COST`, next to the other rule constants (`XP_THRESHOLDS:175`). The cost lives in the Worker because the Worker owns gold and HP. |\n| `worker/src/routes/rest.ts` (new) | Export `restRoutes = new Hono<{ Bindings: Env }>()` with a `POST /`. It validates the body and calls `getCharacter` (`services/character.ts:86`). It returns an error if `gold < cost`. Otherwise it calls `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (`:94`, whitelisted fields only). It returns `{ updatedCharacter, ... }`. Optionally it also calls `askDM` for narration, then `appendHistory` and `saveSession` (`services/session.ts`), and inserts an `adventure_log` row, following `routes/action.ts`. |\n| `worker/src/index.ts` (mounts at `:41-48`) | Import `restRoutes` and add `app.route('/api/rest', restRoutes)`. The CORS block at `:19-35` needs no change because no new origin is involved. |\n| `worker/src/services/*.ts` (optional) | Move any logic that more than one route would share here instead of keeping it in the route. |\n| `worker/migrations/000N_*.sql` | Not needed, since `hp`, `max_hp` and `gold` already exist. If a schema change is wanted, add a new migration and never edit `0001`. |\n\n## Frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add a `RestResponse` interface that mirrors the Worker response. Place it near `ActionResponse:95` and `CombatResponse:106`. |\n| `frontend/src/app/services/game-api.service.ts` | Add `rest(sessionId, characterId)`, which posts to `${API_BASE}/api/rest`. Place it near `levelUp():74`. |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add a `rest()` handler, modelled on `levelUp():183`. It calls the API, then `CharacterStateService.setCharacter(res.updatedCharacter)` (`character-state.service.ts:50`) so the sheet updates, and pushes a system or narrative entry. It handles the not-enough-gold error. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at Inn (N gp)\" button wired to `rest()`. Disable it when `gold < cost` or when combat is active. |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add tests with `GameApiService` as a Jasmine spy. |\n\n`character-sheet` and `character-state.service.ts` need no change, because they react to `setCharacter`.\n\n## Docs (same change, per `AGENTS.md`)\n- Add `docs/code/worker/src/routes/rest.md`.\n- Update the docs for each changed file: `index.md`, `types/index.md`, `game.models.md`, `game-api.service.md` and `game-console.component.md`.\n- Add the new doc to `code.md` and re-run `research-work/scripts/build-symbol-index.mjs`.\n- Add the endpoint to `docs/PRD.md` §9.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

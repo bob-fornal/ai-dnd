@@ -1,0 +1,51 @@
+{
+  "agent": "claude",
+  "inputTokens": 26287,
+  "outputTokens": 1539,
+  "cacheReadTokens": 16672,
+  "cacheWriteTokens": 9609,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0571724,
+  "apiDurationMs": 10679,
+  "mainInputTokens": 26287,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 4,
+  "toolCallsByName": {
+    "Glob": 1,
+    "Grep": 2,
+    "Read": 1
+  },
+  "failedToolCalls": 1,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 3940
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 3940,
+  "otherToolTokens": 901,
+  "filesModified": [],
+  "answer": "Failures are handled in `worker/src/services/ai-dm.ts`, in `askDM()`, `parseAIResponse()` and `fallbackNarrative()`. This matches SETUP.md §5, PRD F-07 and docs/DEPLOYMENT_NOTES.md §6.\n\n**Model failure (`askDM`)**\n- **Primary model:** `askDM` calls `@cf/meta/llama-3.3-70b-instruct-fp8-fast` with `max_tokens: 1024`, `temperature: 0.85` and `response_format: { type: 'json_object' }`.\n- **Reading the reply:** it takes the text from `choices[0].message.content`, then from the legacy `response.response`, then from a plain string. A `ReadableStream` reply throws an error.\n- **Fallback model:** if the primary call throws, it logs the error and retries once with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. The retry uses the same prompts and `max_tokens`, but no `response_format` and no `temperature`.\n- **Both models fail:** it returns `fallbackNarrative(playerAction)` directly.\n\n**Invalid or empty JSON (`parseAIResponse(rawText, playerAction)`)**\nBoth models' output goes through this function. It returns `fallbackNarrative(playerAction)` in three cases:\n1. The text is empty or not a string.\n2. No `{…}` block is found. It first strips markdown fences, then falls back to the regex `/\\{[\\s\\S]*\\}/` to pull out a JSON object.\n3. `JSON.parse` throws.\n\n**Valid JSON with missing fields**\nEach field is normalised with a default:\n- **`narrative`:** defaults to \"The world holds its breath…\".\n- **`gameStateChanges`:** numeric and location fields default to `null`, item arrays to `[]`, and the combat flags are only `true` when exactly `true`.\n- **`suggestedActions`:** capped at 4, defaulting to 4 generic actions.\n- **`diceRolls`:** capped at 8.\n\n**`fallbackNarrative`**\nIt returns a generic \"You attempt to <action>…\" narrative with no state changes: all nulls, empty arrays and both combat flags `false`. It also sets `suggestedActions` to `['Look around', 'Proceed carefully', 'Listen for sounds', 'Rest a moment']` and `diceRolls` to `[]`.\n\n**Gaps**\n- **No retry:** PRD §risks mentions \"retry with stricter prompt\", but the code doesn't do this.\n- **JSON parse failure doesn't trigger mistral:** the mistral fallback only runs when the llama call throws. If llama returns bad JSON, the code returns the fallback narrative without trying mistral.\n- **Other generators:** `generateQuest`, `generateBackstory` and `generateLevelUpNarrative` use llama only. Each has its own `catch` that returns a canned default, for example the \"Blood on the Road\" quest.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "agent": "claude",
+  "inputTokens": 58920,
+  "outputTokens": 1345,
+  "cacheReadTokens": 51071,
+  "cacheWriteTokens": 7841,
+  "reasoningTokens": 39,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0550442,
+  "apiDurationMs": 10438,
+  "mainInputTokens": 58920,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Bash": 2,
+    "Read": 1
+  },
+  "failedToolCalls": 1,
+  "toolset": "claude",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "worker/src/services/ai-dm.ts",
+      "kind": "code",
+      "tokens": 1551
+    },
+    {
+      "path": "docs/code/worker/src/services/ai-dm.md",
+      "kind": "doc",
+      "tokens": 711
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 711,
+  "codeTokensRead": 1551,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "All of this is in `worker/src/services/ai-dm.ts`. It runs in two stages: `askDM` (line 81) handles model failures, and `parseAIResponse` (line 143) handles bad JSON. I read the code to confirm what `docs/code/worker/src/services/ai-dm.md` describes.\n\n**Model failure (`askDM`)**\n1. The primary model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. It is called with `response_format: {type: 'json_object'}`, `max_tokens: 1024` and `temperature: 0.85`.\n2. If that call throws, `askDM` logs the error and retries with `@cf/mistral/mistral-7b-instruct-v0.2-lora`. The retry uses `max_tokens: 1024` and no `response_format`.\n3. If Mistral also throws, `askDM` returns `fallbackNarrative(playerAction)` directly.\n4. A streaming (`ReadableStream`) response counts as a failure, because the code throws on it.\n5. The text is read from `choices[0].message.content`, then from the legacy `response` field, then from the response itself if it is a string. Otherwise it is an empty string.\n\n**Invalid or empty output (`parseAIResponse`)**\nThe text goes through these checks in order. A failure at any step returns `fallbackNarrative(playerAction)`.\n1. Empty or non-string text fails at once.\n2. It strips ```` ```json ```` fences.\n3. If the text doesn't start with `{`, it extracts the first `{…}` block with the regex `/\\{[\\s\\S]*\\}/`. If there is no block, it logs a warning and fails.\n4. A `JSON.parse` error in the `try/catch` fails.\n\nIf parsing succeeds, each field is validated and defaulted:\n- An empty `narrative` becomes \"The world holds its breath…\".\n- `suggestedActions` is cut to 4 entries, with a default list of 4 if it isn't an array.\n- `diceRolls` is cut to 8 entries, with `[]` as the default.\n- `gameStateChanges` fields default to `null`, `[]` or `false`.\n\n**`fallbackNarrative` (line 198)**\nIt returns a generic atmospheric narrative built around the player's action. It makes no state changes: `hpDelta`, `xpGained` and `goldDelta` are `null`, and the combat flags are `false`. It offers four canned suggested actions and no dice rolls. This fits the project rule that the Worker owns the mechanics and the AI only narrates.\n\n**Limits**\n- Invalid JSON from Llama does not trigger the Mistral retry, because the retry only fires when the Llama call throws. A bad-JSON Llama reply goes straight to `fallbackNarrative`.\n- The other generators (`generateQuest`, `generateBackstory`, `generateLevelUpNarrative`) read only the legacy `response` field. With llama-3.3 they fall back to canned or empty text (bug B-03).",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "agent": "claude",
+  "inputTokens": 40678,
+  "outputTokens": 769,
+  "cacheReadTokens": 35961,
+  "cacheWriteTokens": 4711,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0337382,
+  "apiDurationMs": 7175,
+  "mainInputTokens": 40678,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Bash": 1,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 410
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 410,
+  "codeTokensRead": 0,
+  "otherToolTokens": 229,
+  "filesModified": [],
+  "answer": "**Allowed origins** are decided by the `origin` function passed to `cors({...})` in `worker/src/index.ts`, at lines 19–31. It's applied globally with `app.use('*', cors(...))`. A request origin is echoed back, and so allowed, only if it is one of these:\n- exactly `http://localhost:4200`\n- anything ending in `.pages.dev`, at any depth\n- anything ending in `.workers.dev`, at any depth\n\nAn empty origin returns `null`, and so does any other origin, so no CORS headers are sent for them. The allowed methods are `GET`, `POST`, `PATCH`, `DELETE` and `OPTIONS`.\n\n**To add a custom domain**, edit that same function in `worker/src/index.ts`. Add another condition to the `if (...)` at lines 23–27, for example:\n- `origin === 'https://play.example.com'` for an exact match, or\n- `origin.endsWith('.example.com')` for subdomains.\n\nUse a full origin string, including the scheme (`https://`) and any port. Don't put wildcards in an array. Hono matches array entries as exact strings, which is why the code uses a function. The `.endsWith()` checks are loose. `.endsWith('.example.com')` matches any subdomain, so only use it for domains you control.\n\nYou don't need to change `worker/wrangler.toml` for CORS. It only declares the bindings (`AI`, `SESSION_KV`, `DB`, `ENVIRONMENT`). Redeploy the Worker after the edit. `docs/DEPLOYMENT_NOTES.md` §4 covers CORS in more detail, though I didn't read it.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

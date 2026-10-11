@@ -1,0 +1,66 @@
+{
+  "agent": "claude",
+  "inputTokens": 45073,
+  "outputTokens": 2845,
+  "cacheReadTokens": 31673,
+  "cacheWriteTokens": 13392,
+  "reasoningTokens": 58,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0883686,
+  "apiDurationMs": 19252,
+  "mainInputTokens": 45073,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 10,
+  "toolCallsByName": {
+    "Glob": 1,
+    "Grep": 5,
+    "Read": 4
+  },
+  "failedToolCalls": 1,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "frontend/src/app/services/game-api.service.ts",
+      "kind": "code",
+      "tokens": 1272
+    },
+    {
+      "path": "worker/src/routes/shop.ts",
+      "kind": "code",
+      "tokens": 1216
+    },
+    {
+      "path": "frontend/src/app/services/character-state.service.ts",
+      "kind": "code",
+      "tokens": 706
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 608
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 4,
+  "docTokensRead": 0,
+  "codeTokensRead": 3802,
+  "otherToolTokens": 2210,
+  "filesModified": [],
+  "answer": "Nothing needs a database migration, since `characters` already has `hp`, `max_hp` and `gold`. I read the Worker route, service and wiring files and the Angular API and state services. I only grepped the game-console component, so its change is described from the grep hits. I did not open `session.ts`, the combat service or `schema.sql`.\n\n## Worker (`worker/src/`)\n\n1. **`routes/inn.ts` (new)** adds `innRoutes = new Hono<{ Bindings: Env }>()` with `POST /rest`. It follows the pattern of `routes/shop.ts`.\n   - It parses `{ characterId, sessionId }` and returns 400 on bad JSON or missing fields.\n   - It loads the character with `getCharacter()` and returns 404 if missing.\n   - It rejects with 400 if `hp >= max_hp` (\"already at full health\"), so the player isn't charged for nothing.\n   - It rejects with 400 if the character is in combat. I haven't checked where combat state lives (probably the session row via `services/session.ts`), so confirm that.\n   - It checks `character.gold < INN_COST` and returns the same \"Not enough gold\" 400 as `shop.ts:52`.\n   - It calls `updateCharacter(db, id, { hp: character.max_hp, gold: character.gold - INN_COST })`. Both fields are already in the `Partial<Pick<…>>` at `services/character.ts:97`.\n   - It returns `{ success: true, cost, updatedHp, updatedGold }`, or the full updated character like the level-up route does.\n   - A flat cost is simplest. A level-scaled cost such as `character.level * 5` is the alternative.\n\n2. **`index.ts`** needs `import { innRoutes } from './routes/inn.js';` and `app.route('/api/inn', innRoutes);`, next to line 46.\n\n3. **`types/index.ts`** needs an `InnRestBody { characterId: string; sessionId: string }` interface, next to `ShopTransactionBody` at line 159. If you want the cost shared, add an `INN_COST` constant here or in `inn.ts`.\n\n4. **`services/session.ts`** (optional) could log a \"rested at the inn\" entry so it shows in the adventure log. I didn't read this file, so I don't know its API.\n\n5. **`services/ai-dm.ts`** (optional) already puts HP and gold into the prompt at line 60, so the DM sees the new values on the next action with no change.\n\n## Angular frontend (`frontend/src/app/`)\n\n1. **`services/game-api.service.ts`** needs a `restAtInn(sessionId, characterId): Observable<{ success: boolean; cost: number; updatedHp: number; updatedGold: number }>` method. It posts to `${API_BASE}/api/inn/rest`, in a new \"Inn\" section like the Shop one at line 104.\n\n2. **`models/game.models.ts`** (optional) can hold a response interface for the new method, plus a mirrored `INN_COST` constant if the UI shows the price.\n\n3. **`components/game-console/game-console.component.ts`** needs a `restAtInn()` method modeled on `levelUp()` at line 183.\n   - It adds a loading signal, calls `api.restAtInn()`, then updates state with `charSvc.setCharacter({ ...char, hp: res.updatedHp, gold: res.updatedGold })`.\n   - It shows an error message from the 400 responses.\n\n4. **`components/game-console/game-console.component.html`** needs a \"Rest at Inn (N gp)\" button. Put it inside the `@if (!charSvc.inCombat())` block at line 99, or in the sidebar. Disable it when the loading signal is true, `hp === max_hp`, or `gold < cost`.\n\n5. **`services/character-state.service.ts`** needs no change. `setCharacter()` already updates `hpPercent` and the gold display.\n\n6. **Specs** (optional): add a test in `game-console.component.spec.ts` for the button and handler. The fixture there uses `hp: 12, max_hp: 12, gold: 10`, so the hp would need lowering for that test.\n\n`character-sheet` and `inventory` components should update on their own if they read from `CharacterStateService`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "agent": "claude",
+  "inputTokens": 39354,
+  "outputTokens": 932,
+  "cacheReadTokens": 33686,
+  "cacheWriteTokens": 5662,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0387172,
+  "apiDurationMs": 8366,
+  "mainInputTokens": 39354,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 1,
+    "Grep": 1,
+    "Bash": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 1,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1063
+    },
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 577
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 411
+    }
+  ],
+  "docFilesRead": 2,
+  "codeFilesRead": 1,
+  "docTokensRead": 1474,
+  "codeTokensRead": 577,
+  "otherToolTokens": 125,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set by the `origin` callback passed to `cors({...})` in `worker/src/index.ts:19-35`. It is applied to every route with `app.use('*', ...)`. It echoes the request origin back if any of these is true:\n\n- The origin is exactly `http://localhost:4200`.\n- The origin ends with `.pages.dev`, at any subdomain depth.\n- The origin ends with `.workers.dev`, at any subdomain depth.\n\nA request with no `Origin` header, or any other origin, gets `null`, so no CORS headers are sent. The same `cors()` call also sets `allowMethods: GET, POST, PATCH, DELETE, OPTIONS`, `allowHeaders: Content-Type, Authorization`, and `maxAge: 86400`.\n\n**Adding a custom domain:** add another condition to the `if (...)` at `worker/src/index.ts:23-27`. For example, add `|| origin === 'https://play.example.com'` next to the `localhost:4200` check.\n\n- **Exact match for each domain:** Use `===` with the full scheme and host, because `endsWith` would also match look-alike domains such as `evil-example.com`.\n- **Why not an array:** Don't convert `origin` to an array. Hono matches array entries as exact strings, so wildcards wouldn't work. The source comment at line 20 says the same, as does `docs/code/worker/src/index.md` (and DEPLOYMENT_NOTES §4).\n\n**Related, but not CORS:** The frontend needs to call the Worker's URL. That is configured on the frontend side and is covered by the `http` routing key (`game-api.service`). Check there if the new domain hosts the frontend.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

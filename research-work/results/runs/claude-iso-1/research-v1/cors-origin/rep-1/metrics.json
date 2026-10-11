@@ -1,0 +1,50 @@
+{
+  "agent": "claude",
+  "inputTokens": 18784,
+  "outputTokens": 855,
+  "cacheReadTokens": 16030,
+  "cacheWriteTokens": 2748,
+  "reasoningTokens": 0,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.022760000000000002,
+  "apiDurationMs": 6821,
+  "mainInputTokens": 18784,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 2,
+  "toolCallsByName": {
+    "Grep": 1,
+    "Read": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "worker/src/index.ts",
+      "kind": "code",
+      "tokens": 608
+    }
+  ],
+  "docFilesRead": 0,
+  "codeFilesRead": 1,
+  "docTokensRead": 0,
+  "codeTokensRead": 608,
+  "otherToolTokens": 121,
+  "filesModified": [],
+  "answer": "**Allowed origins** are set in the `origin` callback of the `cors({...})` middleware in `worker/src/index.ts:19-35`. A browser origin is accepted if it is:\n\n- exactly `http://localhost:4200`\n- any origin ending in `.pages.dev`\n- any origin ending in `.workers.dev`\n\nAnything else, including requests with no `Origin` header, gets `null`, so no CORS headers are sent. The allowed methods are GET, POST, PATCH, DELETE and OPTIONS. The allowed headers are `Content-Type` and `Authorization`. The preflight `maxAge` is 86400.\n\n**To add a custom domain**, edit the `if` condition at `worker/src/index.ts:23-27`. Add another clause, for example `|| origin === 'https://app.example.com'`, and redeploy the worker.\n\n- **Exact match for a custom domain:** use `===` with the full origin, including the scheme. Don't use `endsWith` on a bare domain. `endsWith('example.com')` would also match `evilexample.com`.\n- **Why not an array:** Hono matches array entries as exact strings, so wildcards don't work there. That is why the code uses a function. The comment at line 20 and `worker/src/index.md:24-25` both say this.\n- **More background:** `worker/src/index.md` points to DEPLOYMENT_NOTES §4 (`docs/DEPLOYMENT_NOTES.md`). I didn't open that file. Update `worker/src/index.md:7`, which lists the allowed origins, so it stays accurate.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

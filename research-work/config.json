@@ -152,5 +152,17 @@
       ],
       "docsVersion": "v6"
     }
-  ]
+  ],
+  "$claudeComment": "Settings for `run.mjs --agent claude` (Claude Code CLI). Arms keep their meaning: auto-load and node-only shell are derived from each arm's Copilot flags.",
+  "claude": {
+    "command": "claude",
+    "model": "claude-sonnet-5-5",
+    "effort": "medium",
+    "tools": [
+      "Read",
+      "Grep",
+      "Glob"
+    ],
+    "extraArgs": []
+  }
 }

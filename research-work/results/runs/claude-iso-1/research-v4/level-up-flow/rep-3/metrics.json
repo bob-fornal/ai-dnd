@@ -1,0 +1,49 @@
+{
+  "agent": "claude",
+  "inputTokens": 15939,
+  "outputTokens": 1201,
+  "cacheReadTokens": 11768,
+  "cacheWriteTokens": 4167,
+  "reasoningTokens": 0,
+  "modelRequests": 2,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0310396,
+  "apiDurationMs": 8412,
+  "mainInputTokens": 15939,
+  "mainRequests": 2,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 1,
+  "toolCallsByName": {
+    "Read": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/flows/level-up.md",
+      "kind": "doc",
+      "tokens": 668
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 0,
+  "docTokensRead": 668,
+  "codeTokensRead": 0,
+  "otherToolTokens": 0,
+  "filesModified": [],
+  "answer": "This summary comes from `docs/flows/level-up.md`. I didn't open the source files to check it.\n\n**When the UI offers it**\n- The Worker decides. `shouldLevelUp(character)` (`worker/src/services/character.ts:159`) returns true when `xp >= XP_THRESHOLDS[level]` and `level < 10`.\n- `XP_THRESHOLDS` is at `worker/src/types/index.ts:175`. It is mirrored in `game.models.ts:146`. The values are 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000. Index N is the XP needed to reach level N+1, and the maximum level is 10.\n- The Worker returns the result as `canLevelUp` from `POST /api/action` (`routes/action.ts:99`) and `POST /api/combat/resolve` (`routes/combat.ts:109`).\n- The frontend also computes it locally in `CharacterStateService.setCharacter` → `checkLevelUp` (`character-state.service.ts:52,76`). It then overwrites that value with the server's (`game-console.component.ts:128,155`).\n- Two places show the offer:\n  - A banner in the character sheet (`character-sheet.component.html:66`).\n  - An ability picker in the console sidebar (`game-console.component.html:19-28`).\n- After combat, a system message also prompts the player (`game-console.component.ts:172`).\n\n**Endpoint**\n1. The player picks an ability in the console. `levelUp(key)` (`game-console.component.ts:183`) calls `GameApiService.levelUp(sessionId, characterId, abilityChoice)` (`game-api.service.ts:74`).\n2. This sends `POST /api/levelup`, handled in `worker/src/routes/levelup.ts:10`.\n   - `abilityChoice` must be one of str, dex, con, int, wis or cha (`:23-25`).\n   - The route returns 400 if `shouldLevelUp` is false (`:31`).\n3. The route calls `levelUp` in `services/character.ts:133`.\n4. The route then writes the flavor text, a log row and a history turn (`routes/levelup.ts:39-50`):\n   - It gets the flavor text from `generateLevelUpNarrative`. That is usually fallback text (bug B-03).\n   - It writes a `system` log row `[Level Up] …`.\n   - It adds a DM history turn.\n5. The client then updates its state (`game-console.component.ts:187-194`):\n   - It calls `setCharacter` and `setCanLevelUp(false)`.\n   - It shows a system message and updates the level on the campaign slot.\n\n**What changes on the character**\n- Level goes up by 1.\n- HP gain is `roll(class hit die) + CON mod` (`character.ts:141`). It is added to both `max_hp` and current HP.\n- The hit dice (`CLASS_HIT_DICE`) are d10 for Fighter and Ranger, d8 for Rogue, Cleric and Bard, and d6 for Wizard.\n- The chosen ability gets +2 (`character.ts:152`), with no cap at 20.\n- AC is unchanged.\n- Each call grants one level only. A character with enough XP for two levels must call the endpoint twice.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}

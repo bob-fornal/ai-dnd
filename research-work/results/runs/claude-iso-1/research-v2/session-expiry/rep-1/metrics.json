@@ -1,0 +1,55 @@
+{
+  "agent": "claude",
+  "inputTokens": 24653,
+  "outputTokens": 1248,
+  "cacheReadTokens": 19794,
+  "cacheWriteTokens": 4853,
+  "reasoningTokens": 55,
+  "modelRequests": 3,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0358628,
+  "apiDurationMs": 9008,
+  "mainInputTokens": 24653,
+  "mainRequests": 3,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 3,
+  "toolCallsByName": {
+    "Read": 2,
+    "Grep": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "docs/flows/resume-session.md",
+      "kind": "doc",
+      "tokens": 607
+    },
+    {
+      "path": "worker/src/routes/session.ts",
+      "kind": "code",
+      "tokens": 181
+    }
+  ],
+  "docFilesRead": 1,
+  "codeFilesRead": 1,
+  "docTokensRead": 607,
+  "codeTokensRead": 181,
+  "otherToolTokens": 220,
+  "filesModified": [],
+  "answer": "**Short answer:** after the KV session expires, the game cannot be resumed from the UI. The character data is still in D1, but nothing reaches it. This is bug B-07.\n\n**Frontend path**\n1. `login.component.ts:51-52`, `resumeCampaign(slot)`, navigates to `/game/<sessionId>`. The `sessionId` comes from the `localStorage` campaign slot (`ai_dnd_user_<name>`), and `authGuard` only checks that a local profile exists.\n2. `game-console.component.ts:69-104`, `ngOnInit`, has no `startNarrative` on resume, so it calls `GameApiService.getSession` (`game-api.service.ts:62`). That is `GET /api/session/:id`, and the call is made at `game-console.component.ts:81`.\n\n**Worker path**\n- `worker/src/routes/session.ts:12` calls `loadSession(c.env.SESSION_KV, id)`. The KV key is `session:<id>`, with a TTL of 7 days (`SESSION_TTL_SECONDS = 604800`), refreshed on each `saveSession`.\n- When the key has expired, `loadSession` returns null, and `routes/session.ts:14` returns **404 `{ error: 'Session not found or expired' }`**.\n- The file imports `rebuildSession` on line 3 but never calls it. I confirmed this in the code.\n\n**Result**\n- The error handler at `game-console.component.ts:101` shows \"⚠ Could not load session. Is the Worker running?\".\n- The console stays empty. The character fetch, inventory load and log load never run, because they come after the failed call.\n- `rebuildSession` (`services/session.ts:58`) is called by the `action`, `combat`, `levelup` and `quest` routes. It rebuilds history from the last 20 `adventure_log` rows. Location resets to \"Unknown — session rebuilt from log\", the quest resets, and combat state is lost. The console never gets far enough to call those routes.\n\n**Fix:** in `routes/session.ts`, fall back to `rebuildSession` when `loadSession` returns null. It needs a `characterId`. That could come from the frontend slot, or from a lookup on `characters.session_id`.\n\nI read `docs/flows/resume-session.md` and checked the route and the frontend call sites. I did not open `services/session.ts`, so the `rebuildSession` behaviour above comes from the doc.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 5,
+    "total": 5,
+    "missing": []
+  }
+}

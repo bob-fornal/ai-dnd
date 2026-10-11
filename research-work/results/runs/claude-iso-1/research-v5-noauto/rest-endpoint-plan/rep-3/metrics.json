@@ -1,0 +1,85 @@
+{
+  "agent": "claude",
+  "inputTokens": 45906,
+  "outputTokens": 2528,
+  "cacheReadTokens": 31984,
+  "cacheWriteTokens": 13914,
+  "reasoningTokens": 105,
+  "modelRequests": 4,
+  "premiumRequests": 0,
+  "aiCredits": 0,
+  "costUsd": 0.0873488,
+  "apiDurationMs": 16802,
+  "mainInputTokens": 45906,
+  "mainRequests": 4,
+  "subagentInputTokens": 0,
+  "subagentRuns": 0,
+  "models": [
+    "claude-sonnet-5-5"
+  ],
+  "toolCalls": 9,
+  "toolCallsByName": {
+    "Read": 8,
+    "Glob": 1
+  },
+  "failedToolCalls": 0,
+  "toolset": "claude",
+  "multiReadCalls": 0,
+  "filesRead": [
+    {
+      "path": "AGENTS.md",
+      "kind": "doc",
+      "tokens": 1072
+    },
+    {
+      "path": "docs/code/frontend/src/app/components/game-console/game-console.component.md",
+      "kind": "doc",
+      "tokens": 1033
+    },
+    {
+      "path": "docs/code/worker/src/types/index.md",
+      "kind": "doc",
+      "tokens": 784
+    },
+    {
+      "path": "docs/code/frontend/src/app/services/game-api.service.md",
+      "kind": "doc",
+      "tokens": 763
+    },
+    {
+      "path": "docs/code/worker/src/services/character.md",
+      "kind": "doc",
+      "tokens": 726
+    },
+    {
+      "path": "docs/flows/add-endpoint.md",
+      "kind": "doc",
+      "tokens": 720
+    },
+    {
+      "path": "docs/flows/inventory.md",
+      "kind": "doc",
+      "tokens": 658
+    },
+    {
+      "path": "docs/code/worker/src/index.md",
+      "kind": "doc",
+      "tokens": 429
+    }
+  ],
+  "docFilesRead": 8,
+  "codeFilesRead": 0,
+  "docTokensRead": 6185,
+  "codeTokensRead": 0,
+  "otherToolTokens": 465,
+  "filesModified": [],
+  "answer": "Per `AGENTS.md` and `docs/flows/add-endpoint.md`, which uses \"rest at the inn\" as its worked example. I read only the docs and did not open the source files.\n\n## Worker\n\n| File | Change |\n|---|---|\n| `worker/src/types/index.ts` | Add `RestBody { sessionId, characterId }` next to the other `*Body` interfaces (around `LevelUpBody:168`). Add the cost constant here, e.g. `INN_REST_COST`. A flat cost is simplest. A per-level cost needs a formula. |\n| `worker/src/routes/rest.ts` (new) | `export const restRoutes = new Hono<{ Bindings: Env }>()` with `POST /`. It validates the body and calls `getCharacter` (`services/character.ts:86`). It returns 404 if the character is missing and 400 if `gold < cost`. If HP is already full, it should reject so the player isn't charged. Otherwise it calls `updateCharacter(db, id, { hp: max_hp, gold: gold - cost })` (`:94`, whitelisted fields only). It returns `{ updatedCharacter, ... }`. Optional extras, following `routes/action.ts`: `askDM` narration, `appendHistory` + `saveSession`, and an `adventure_log` insert. |\n| `worker/src/index.ts` (mounts around `:41-48`) | Import `restRoutes` and add `app.route('/api/rest', restRoutes)`. |\n\nNot needed:\n- **Migrations:** `characters` already has `hp`, `max_hp` and `gold`, so there is no schema change. If you did need one, it would be a new `000N_*.sql`, never an edit to `0001`.\n- **CORS:** CORS only changes for a new frontend origin.\n- **`services/character.ts`:** it only changes if the logic is shared by several routes.\n\n## Angular frontend\n\n| File | Change |\n|---|---|\n| `frontend/src/app/models/game.models.ts` | Add a `RestResponse` interface mirroring the Worker response. Nothing enforces that the two copies match. |\n| `frontend/src/app/services/game-api.service.ts` | Add `rest(sessionId, characterId)` that POSTs to `${API_BASE}/api/rest`. Anchors currently end at `shopTransaction():109`. |\n| `frontend/src/app/components/game-console/game-console.component.ts` | Add a `rest()` handler (anchors currently run to `openInventory():237`). It calls the API and then `CharacterStateService.setCharacter(res.updatedCharacter)` so the sheet updates. It pushes a narrative or system entry. It should also handle `err.error.error` for the \"not enough gold\" case, because the API service does no error mapping. |\n| `frontend/src/app/components/game-console/game-console.component.html` | Add a \"Rest at Inn\" button in the left column near the Inventory button (`:9`). Consider disabling it when HP is full or gold is below the cost, and disabling it during combat (`inCombat`). |\n| `frontend/src/app/components/game-console/game-console.component.spec.ts` | Add tests with `GameApiService` as a Jasmine spy. |\n\n`game-console.component.css` only needs a change if the button needs styling. Components must keep separate `.ts`, `.html` and `.css` files, with no inline templates.\n\n## Docs updated in the same change\n\nPer `docs/AUTHORING.md` and the end of the recipe:\n- A new `docs/code/worker/src/routes/rest.md`, plus updates to the docs beside each changed file. These are `types/index.md`, `index.md` (route mounts table), `game.models.md`, `game-api.service.md`, `game-console.component.md` and `docs/flows/inventory.md` if relevant.\n- A `code.md` entry, and a re-run of `research-work/scripts/build-symbol-index.mjs`.\n- `docs/PRD.md` §9 (API spec).\n\n## Rules to respect\n- The Worker owns the cost and HP math, and the AI only narrates.\n- Rejecting a rest while in combat needs a server-side check. The session's `CombatState` is in KV, so it needs `getSession`.",
+  "exitCode": 0,
+  "processExitCode": 0,
+  "grade": {
+    "score": 1,
+    "passed": 6,
+    "total": 6,
+    "missing": []
+  }
+}
