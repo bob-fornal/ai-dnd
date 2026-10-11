@@ -1,6 +1,6 @@
 # Agent Guidelines
 
-These rules apply to every agent (and human) working in this repository: `complete/`, `workshop/` (every phase's `starter/` and `solution/`, plus `complete-reference/`), and `research-documentation-v1/`.
+These rules apply to every agent (and human) working in this repository: `complete/`, `workshop/` (every phase's `starter/` and `solution/`, plus `complete-reference/`), and `research-documentation/implementation-v1/`.
 
 ## Angular: separation of concerns
 
